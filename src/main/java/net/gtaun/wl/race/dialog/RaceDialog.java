@@ -28,10 +28,36 @@ import net.gtaun.wl.race.data.Track;
 public class RaceDialog extends AbstractListDialog
 {
 	public RaceDialog
-	(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService, final TrackManagerImpl trackManager)
+	(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService)
 	{
 		super(player, shoebill, eventManager, parentDialog);
 		this.caption = "赛车系统";
+		final TrackManagerImpl trackManager = raceService.getTrackManager();
+
+		dialogListItems.add(new DialogListItem()
+		{
+			@Override
+			public boolean isEnabled()
+			{
+				return raceService.getEditingTrack(player) != null;
+			}
+			
+			@Override
+			public String toItemString()
+			{
+				Track track = raceService.getEditingTrack(player);
+				return String.format("编辑中的赛道: %1$s", track.getName());
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				
+				Track track = raceService.getEditingTrack(player);
+				new TrackEditDialog(player, shoebill, eventManager, RaceDialog.this, track).show();
+			}
+		});
 
 		dialogListItems.add(new DialogListItem("搜索赛道 ...")
 		{
@@ -69,6 +95,7 @@ public class RaceDialog extends AbstractListDialog
 				
 				Track track = trackManager.createTrack();
 				raceService.editTrack(player, track);
+				new TrackEditDialog(player, shoebill, eventManager, RaceDialog.this, track).show();
 			}
 		});
 

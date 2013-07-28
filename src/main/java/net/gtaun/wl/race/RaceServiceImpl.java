@@ -21,7 +21,6 @@ import java.util.Queue;
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.AbstractShoebillContext;
 import net.gtaun.shoebill.common.player.PlayerLifecycleHolder;
-import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.event.PlayerEventHandler;
 import net.gtaun.shoebill.event.player.PlayerCommandEvent;
 import net.gtaun.shoebill.event.player.PlayerConnectEvent;
@@ -98,11 +97,25 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	{
 		return plugin;
 	}
-	
+
+	@Override
+	public TrackManagerImpl getTrackManager()
+	{
+		return trackManager;
+	}
+
+	@Override
 	public void editTrack(Player player, Track track)
 	{
 		PlayerActuator actuator = playerLifecycleHolder.getObject(player, PlayerActuator.class);
 		actuator.setEditingTrack(track);
+	}
+	
+	@Override
+	public Track getEditingTrack(Player player)
+	{
+		PlayerActuator actuator = playerLifecycleHolder.getObject(player, PlayerActuator.class);
+		return actuator.getEditingTrack();
 	}
 	
 	private PlayerEventHandler playerEventHandler = new PlayerEventHandler()
@@ -137,7 +150,7 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 			
 			if (operation.equals(commandOperation))
 			{
-				new RaceDialog(player, shoebill, rootEventManager, null, RaceServiceImpl.this, trackManager).show();
+				new RaceDialog(player, shoebill, rootEventManager, null, RaceServiceImpl.this).show();
 				event.setProcessed();
 				return;
 			}

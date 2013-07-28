@@ -11,11 +11,14 @@ import net.gtaun.shoebill.object.PlayerKeyState;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
 import net.gtaun.wl.race.data.Track;
+import net.gtaun.wl.race.data.TrackCheckpoint;
+import net.gtaun.wl.race.dialog.TrackCheckpointEditDialog;
 import net.gtaun.wl.race.dialog.TrackEditDialog;
 
 public class PlayerActuator extends AbstractPlayerContext
 {
 	private Track editingTrack;
+	
 	private long lastHornKeyPressedTime;
 	
 	
@@ -56,6 +59,11 @@ public class PlayerActuator extends AbstractPlayerContext
 		}
 	}
 	
+	public Track getEditingTrack()
+	{
+		return editingTrack;
+	}
+	
 	private PlayerEventHandler playerEventHandler = new PlayerEventHandler()
 	{
 		protected void onPlayerKeyStateChange(PlayerKeyStateChangeEvent event)
@@ -71,6 +79,12 @@ public class PlayerActuator extends AbstractPlayerContext
 					new TrackEditDialog(player, shoebill, eventManager, null, editingTrack).show();
 				}
 				lastHornKeyPressedTime = System.currentTimeMillis();
+			}
+			
+			if (keyState.isKeyPressed(PlayerKey.ANALOG_DOWN) && editingTrack != null)
+			{
+				TrackCheckpoint checkpoint = new TrackCheckpoint(editingTrack, player.getLocation());
+				new TrackCheckpointEditDialog(player, shoebill, eventManager, null, checkpoint).show();
 			}
 		}
 	};

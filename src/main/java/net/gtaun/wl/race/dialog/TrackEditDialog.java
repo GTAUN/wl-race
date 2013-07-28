@@ -1,5 +1,7 @@
 package net.gtaun.wl.race.dialog;
 
+import java.util.List;
+
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.object.Player;
@@ -7,6 +9,7 @@ import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
 import net.gtaun.wl.race.data.Track;
+import net.gtaun.wl.race.data.TrackCheckpoint;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -20,7 +23,12 @@ public class TrackEditDialog extends AbstractListDialog
 	{
 		super(player, shoebill, eventManager, parentDialog);
 		this.track = track;
-		
+	}
+	
+	@Override
+	public void show()
+	{
+		dialogListItems.clear();
 		dialogListItems.add(new DialogListItem()
 		{
 			@Override
@@ -47,13 +55,15 @@ public class TrackEditDialog extends AbstractListDialog
 						name = StringUtils.replace(name, "\n", " ");
 						if (name.length() < 3)
 						{
-							append = "{7F0000}* 赛道名长度最少为 3 个字，请重新输入。";
+							append = "{FF0000}* 赛道名长度最少为 3 个字，请重新输入。";
 							show();
+							return;
 						}
 						if (name.length() > 40)
 						{
-							append = "{7F0000}* 赛道名长度最长为 40 个字，请重新输入。";
+							append = "{FF0000}* 赛道名长度最长为 40 个字，请重新输入。";
 							show();
+							return;
 						}
 						
 						track.setName(name);
@@ -63,7 +73,7 @@ public class TrackEditDialog extends AbstractListDialog
 					protected void show(String text)
 					{
 						if (append != null) super.show(this.message + "\n\n" + append);
-						super.show(text);
+						else super.show(text);
 					}
 				}.show();
 			}
@@ -106,11 +116,33 @@ public class TrackEditDialog extends AbstractListDialog
 				}.show();
 			}
 		});
-	}
-	
-	@Override
-	public void show()
-	{
+		
+		dialogListItems.add(new DialogListItem("添加当前地点为新检查点")
+		{
+			@Override
+			public void onItemSelect()
+			{
+				TrackCheckpoint checkpoint = new TrackCheckpoint(track, player.getLocation());
+				new TrackCheckpointEditDialog(player, shoebill, eventManager, TrackEditDialog.this, checkpoint).show();
+			}
+		});
+		
+		List<TrackCheckpoint> checkpoints = track.getCheckpoints();
+		for (int i=0; i<checkpoints.size(); i++)
+		{
+			final TrackCheckpoint checkpoint = checkpoints.get(i);
+			float distance = player.getLocation().distance(checkpoint.getLocation());
+			String item = String.format("检查点 %1$d (距离 %2$1.1f)", i+1, distance);
+			dialogListItems.add(new DialogListItem(item)
+			{
+				@Override
+				public void onItemSelect()
+				{
+					new TrackCheckpointEditDialog(player, shoebill, eventManager, TrackEditDialog.this, checkpoint).show();
+				}
+			});
+		}
+		
 		this.caption = String.format("%1$s: 编辑赛道: %2$s", "赛车系统", track.getName());
 		super.show();
 	}
