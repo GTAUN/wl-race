@@ -35,6 +35,23 @@ public class TrackListMainDialog extends AbstractListDialog
 			}
 		});
 		
+		dialogListItems.add(new DialogListItem("按作者搜索赛道")
+		{
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				
+				new AbstractInputDialog(player, shoebill, eventManager, "赛车系统: 按作者搜索赛道", "请输入作者名字:", TrackListMainDialog.this)
+				{
+					public void onClickOk(String inputText)
+					{
+						List<Track> tracks = trackManager.searchTrackByAuthor(inputText);
+					}
+				}.show();
+			}
+		});
+		
 		dialogListItems.add(new DialogListItem("按名字搜索赛道")
 		{
 			@Override

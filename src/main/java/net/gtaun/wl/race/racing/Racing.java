@@ -1,5 +1,6 @@
 package net.gtaun.wl.race.racing;
 
+import java.util.Collections;
 import java.util.List;
 
 import net.gtaun.shoebill.Shoebill;
@@ -31,5 +32,20 @@ public class Racing extends AbstractShoebillContext
 	protected void onDestroy()
 	{
 		
+	}
+	
+	public Track getTrack()
+	{
+		return track;
+	}
+	
+	public Player getSponsor()
+	{
+		return sponsor;
+	}
+	
+	public List<Player> getPlayers()
+	{
+		return Collections.unmodifiableList(players);
 	}
 }
