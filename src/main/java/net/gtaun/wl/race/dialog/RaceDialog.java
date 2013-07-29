@@ -15,6 +15,7 @@ package net.gtaun.wl.race.dialog;
 
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
+import net.gtaun.shoebill.exception.AlreadyExistException;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.resource.Plugin;
 import net.gtaun.shoebill.resource.ResourceDescription;
@@ -93,9 +94,25 @@ public class RaceDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				
-				Track track = trackManager.createTrack();
-				raceService.editTrack(player, track);
-				new TrackEditDialog(player, shoebill, eventManager, RaceDialog.this, track).show();
+				String caption = String.format("%1$s: 创建新赛道", "赛车系统");
+				String message = "请您输入预想的赛道名:";
+				new TrackNamingDialog(player, shoebill, rootEventManager, caption, message, RaceDialog.this)
+				{
+					@Override
+					protected void onNaming(String name)
+					{
+						try
+						{
+							Track track = trackManager.createTrack(name);
+							raceService.editTrack(player, track);
+							new TrackEditDialog(player, shoebill, eventManager, RaceDialog.this, track).show();
+						}
+						catch (AlreadyExistException e)
+						{
+							append = "{FF0000}* 此赛道名已存在，请重新命名。";
+						}
+					}
+				}.show();
 			}
 		});
 

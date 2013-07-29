@@ -41,39 +41,14 @@ public class TrackEditDialog extends AbstractListDialog
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
+				
 				String caption = String.format("%1$s: 编辑赛道名: %2$s", "赛车系统", track.getName());
 				String message = String.format("原始赛道名 \"%1$s\" ，请输入新的赛道名: ", track.getName());
-				new AbstractInputDialog(player, shoebill, rootEventManager, caption, message, TrackEditDialog.this)
+				new TrackNamingDialog(player, shoebill, rootEventManager, caption, message, TrackEditDialog.this)
 				{
-					private String append;
-					
-					public void onClickOk(String inputText)
+					protected void onNaming(String name)
 					{
-						String name = StringUtils.trimToEmpty(inputText);
-						name = StringUtils.replace(name, "%", "#");
-						name = StringUtils.replace(name, "\t", " ");
-						name = StringUtils.replace(name, "\n", " ");
-						if (name.length() < 3)
-						{
-							append = "{FF0000}* 赛道名长度最少为 3 个字，请重新输入。";
-							show();
-							return;
-						}
-						if (name.length() > 40)
-						{
-							append = "{FF0000}* 赛道名长度最长为 40 个字，请重新输入。";
-							show();
-							return;
-						}
-						
-						track.setName(name);
-						showParentDialog();
-					}
-					
-					protected void show(String text)
-					{
-						if (append != null) super.show(this.message + "\n\n" + append);
-						else super.show(text);
+						track.setName(name);	
 					}
 				}.show();
 			}
