@@ -10,10 +10,10 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.object.PlayerKeyState;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
-import net.gtaun.wl.race.data.Track;
-import net.gtaun.wl.race.data.TrackCheckpoint;
 import net.gtaun.wl.race.dialog.TrackCheckpointEditDialog;
 import net.gtaun.wl.race.dialog.TrackEditDialog;
+import net.gtaun.wl.race.track.Track;
+import net.gtaun.wl.race.track.TrackCheckpoint;
 
 public class PlayerActuator extends AbstractPlayerContext
 {

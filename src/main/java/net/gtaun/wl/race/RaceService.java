@@ -3,7 +3,7 @@ package net.gtaun.wl.race;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.resource.Plugin;
 import net.gtaun.shoebill.service.Service;
-import net.gtaun.wl.race.data.Track;
+import net.gtaun.wl.race.track.Track;
 
 public interface RaceService extends Service
 {

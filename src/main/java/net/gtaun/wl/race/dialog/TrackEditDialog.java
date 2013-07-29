@@ -8,8 +8,8 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
-import net.gtaun.wl.race.data.Track;
-import net.gtaun.wl.race.data.TrackCheckpoint;
+import net.gtaun.wl.race.track.Track;
+import net.gtaun.wl.race.track.TrackCheckpoint;
 
 import org.apache.commons.lang3.StringUtils;
 

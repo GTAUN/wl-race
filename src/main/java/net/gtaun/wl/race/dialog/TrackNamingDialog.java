@@ -1,12 +1,11 @@
 package net.gtaun.wl.race.dialog;
 
-import org.apache.commons.lang3.StringUtils;
-
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
+import net.gtaun.wl.race.util.TrackUtil;
 
 public abstract class TrackNamingDialog extends AbstractInputDialog
 {
@@ -17,19 +16,12 @@ public abstract class TrackNamingDialog extends AbstractInputDialog
 	
 	public void onClickOk(String inputText)
 	{
-		String name = StringUtils.trimToEmpty(inputText);
-		name = StringUtils.replace(name, "%", "#");
-		name = StringUtils.replace(name, "\t", " ");
-		name = StringUtils.replace(name, "\n", " ");
-		if (name.length() < 3)
+		player.playSound(1083, player.getLocation());
+		
+		String name = TrackUtil.filterName(inputText);
+		if (TrackUtil.isVaildName(name))
 		{
-			append = "{FF0000}* 赛道名长度最少为 3 个字，请重新输入。";
-			show();
-			return;
-		}
-		if (name.length() > 40)
-		{
-			append = "{FF0000}* 赛道名长度最长为 40 个字，请重新输入。";
+			append = String.format("{FF0000}* 赛道名长度要求为 %1$d ~ %2$d 个字，请重新输入。", TrackUtil.NAME_MIN_LENGTH, TrackUtil.NAME_MAX_LENGTH);
 			show();
 			return;
 		}

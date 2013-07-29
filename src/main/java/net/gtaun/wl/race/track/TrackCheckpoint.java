@@ -1,4 +1,4 @@
-package net.gtaun.wl.race.data;
+package net.gtaun.wl.race.track;
 
 import com.google.code.morphia.annotations.Reference;
 

@@ -22,9 +22,9 @@ import net.gtaun.shoebill.resource.ResourceDescription;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
 import net.gtaun.wl.common.dialog.MsgboxDialog;
-import net.gtaun.wl.race.data.Track;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
-import net.gtaun.wl.race.impl.TrackManagerImpl;
+import net.gtaun.wl.race.track.Track;
+import net.gtaun.wl.race.track.TrackManagerImpl;
 
 public class RaceDialog extends AbstractListDialog
 {
@@ -60,12 +60,14 @@ public class RaceDialog extends AbstractListDialog
 			}
 		});
 
-		dialogListItems.add(new DialogListItem("搜索赛道 ...")
+		dialogListItems.add(new DialogListItem("赛道列表 ...")
 		{
 			@Override
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
+				
+				new TrackListMainDialog(player, shoebill, eventManager, RaceDialog.this, trackManager).show();
 			}
 		});
 
@@ -103,13 +105,17 @@ public class RaceDialog extends AbstractListDialog
 					{
 						try
 						{
-							Track track = trackManager.createTrack(name);
+							Track track = trackManager.createTrack(player, name);
 							raceService.editTrack(player, track);
 							new TrackEditDialog(player, shoebill, eventManager, RaceDialog.this, track).show();
 						}
 						catch (AlreadyExistException e)
 						{
 							append = "{FF0000}* 此赛道名已存在，请重新命名。";
+						}
+						catch (IllegalArgumentException e)
+						{
+							append = "{FF0000}* 赛道名不合法，请重新命名。";
 						}
 					}
 				}.show();

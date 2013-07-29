@@ -1,31 +1,40 @@
-package net.gtaun.wl.race.data;
+package net.gtaun.wl.race.track;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Indexed;
 
 @Entity("RaceTrack")
 public class Track
 {
-	private String name;
+	@Indexed private String authorUniqueId;
+	
+	@Indexed private String name;
 	private String desc;
 	
 	private List<TrackCheckpoint> checkpoints;
 	
 	
-	public Track()
+	protected Track()
 	{
-		this("Unnamed");
+		
 	}
 	
-	public Track(String name)
+	public Track(String name, String uniqueId)
 	{
-		checkpoints = new ArrayList<>();
-		
+		this.authorUniqueId = uniqueId;
 		this.name = name;
 		this.desc = "";
+		
+		checkpoints = new ArrayList<>();
+	}
+	
+	public String getAuthorUniqueId()
+	{
+		return authorUniqueId;
 	}
 	
 	public String getName()

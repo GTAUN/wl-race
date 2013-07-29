@@ -32,8 +32,9 @@ import net.gtaun.util.event.EventManager.HandlerPriority;
 import net.gtaun.util.event.ManagedEventManager;
 import net.gtaun.wl.race.RacePlugin;
 import net.gtaun.wl.race.RaceService;
-import net.gtaun.wl.race.data.Track;
 import net.gtaun.wl.race.dialog.RaceDialog;
+import net.gtaun.wl.race.track.Track;
+import net.gtaun.wl.race.track.TrackManagerImpl;
 
 import com.google.code.morphia.Datastore;
 
@@ -73,7 +74,7 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 		eventManager = new ManagedEventManager(rootEventManager);
 		playerLifecycleHolder = new PlayerLifecycleHolder(shoebill, eventManager);
 		
-		trackManager = new TrackManagerImpl();
+		trackManager = new TrackManagerImpl(datastore);
 		
 		init();
 	}
