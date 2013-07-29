@@ -16,6 +16,8 @@ package net.gtaun.wl.race;
 import java.io.File;
 
 import net.gtaun.shoebill.common.ConfigurablePlugin;
+import net.gtaun.wl.race.impl.RaceConfig;
+import net.gtaun.wl.race.impl.RaceServiceImpl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

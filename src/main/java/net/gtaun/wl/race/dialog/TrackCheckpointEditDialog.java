@@ -92,7 +92,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				String item = String.format("大小: %1$d", checkpoint.getSize());
+				String item = String.format("大小: %1$1.1f", checkpoint.getSize());
 				return item;
 			}
 			

@@ -21,9 +21,9 @@ import net.gtaun.shoebill.resource.ResourceDescription;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
 import net.gtaun.wl.common.dialog.MsgboxDialog;
-import net.gtaun.wl.race.RaceServiceImpl;
-import net.gtaun.wl.race.TrackManagerImpl;
 import net.gtaun.wl.race.data.Track;
+import net.gtaun.wl.race.impl.RaceServiceImpl;
+import net.gtaun.wl.race.impl.TrackManagerImpl;
 
 public class RaceDialog extends AbstractListDialog
 {

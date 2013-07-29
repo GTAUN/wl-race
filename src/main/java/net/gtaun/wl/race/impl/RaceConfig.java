@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.gtaun.wl.race;
+package net.gtaun.wl.race.impl;
 
 import java.io.File;
 import java.io.FileInputStream;

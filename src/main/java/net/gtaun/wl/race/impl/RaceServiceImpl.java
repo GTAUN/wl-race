@@ -11,7 +11,7 @@
  * GNU General Public License for more details.
  */
 
-package net.gtaun.wl.race;
+package net.gtaun.wl.race.impl;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -30,6 +30,8 @@ import net.gtaun.shoebill.resource.Plugin;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
 import net.gtaun.util.event.ManagedEventManager;
+import net.gtaun.wl.race.RacePlugin;
+import net.gtaun.wl.race.RaceService;
 import net.gtaun.wl.race.data.Track;
 import net.gtaun.wl.race.dialog.RaceDialog;
 

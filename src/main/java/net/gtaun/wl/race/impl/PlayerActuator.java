@@ -1,4 +1,4 @@
-package net.gtaun.wl.race;
+package net.gtaun.wl.race.impl;
 
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.player.AbstractPlayerContext;
