@@ -2,35 +2,29 @@ package net.gtaun.wl.race.impl;
 
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.player.AbstractPlayerContext;
-import net.gtaun.shoebill.constant.PlayerKey;
 import net.gtaun.shoebill.data.Color;
-import net.gtaun.shoebill.event.PlayerEventHandler;
-import net.gtaun.shoebill.event.player.PlayerKeyStateChangeEvent;
 import net.gtaun.shoebill.object.Player;
-import net.gtaun.shoebill.object.PlayerKeyState;
 import net.gtaun.util.event.EventManager;
-import net.gtaun.util.event.EventManager.HandlerPriority;
-import net.gtaun.wl.race.dialog.TrackCheckpointEditDialog;
-import net.gtaun.wl.race.dialog.TrackEditDialog;
 import net.gtaun.wl.race.track.Track;
-import net.gtaun.wl.race.track.TrackCheckpoint;
+import net.gtaun.wl.race.track.TrackEditor;
 
 public class PlayerActuator extends AbstractPlayerContext
 {
-	private Track editingTrack;
+	private final RaceServiceImpl raceService;
 	
-	private long lastHornKeyPressedTime;
+	private TrackEditor trackEditor;
 	
 	
-	public PlayerActuator(Shoebill shoebill, EventManager rootEventManager, Player player)
+	public PlayerActuator(Shoebill shoebill, EventManager rootEventManager, Player player, RaceServiceImpl raceService)
 	{
 		super(shoebill, rootEventManager, player);
+		this.raceService = raceService;
 	}
 
 	@Override
 	protected void onInit()
 	{
-		eventManager.registerHandler(PlayerKeyStateChangeEvent.class, player, playerEventHandler, HandlerPriority.NORMAL);
+
 	}
 
 	@Override
@@ -38,54 +32,33 @@ public class PlayerActuator extends AbstractPlayerContext
 	{
 		
 	}
-	
+
+	public boolean isEditingTrack()
+	{
+		return trackEditor != null;
+	}
+
 	public void setEditingTrack(Track track)
 	{
 		if (track == null)
 		{
-			if (editingTrack == null) return;
-			player.sendMessage(Color.LIGHTBLUE, "%1$s: 已取消编辑 \"%2$s\" 赛道。", "赛车系统", editingTrack.getName());
+			if (trackEditor == null) return;
+			
+			trackEditor.destroy();
+			trackEditor = null;
 		}
 		else
 		{
-			if (editingTrack != null)
-			{
-				player.sendMessage(Color.LIGHTBLUE, "%1$s: 您现在正在编辑 \"%2$s\" 赛道，请取消编辑后重试。", "赛车系统", editingTrack.getName());				
-				return;
-			}
-			
-			editingTrack = track;
-			player.sendMessage(Color.LIGHTBLUE, "%1$s: 你现在正在编辑 \"%2$s\" 赛道。", "赛车系统", editingTrack.getName());
+			if (trackEditor != null) return;
+
+			trackEditor = new TrackEditor(shoebill, rootEventManager, player, raceService, track);
+			trackEditor.init();
 		}
 	}
-	
+
 	public Track getEditingTrack()
 	{
-		return editingTrack;
+		if (trackEditor == null) return null;
+		return trackEditor.getTrack();
 	}
-	
-	private PlayerEventHandler playerEventHandler = new PlayerEventHandler()
-	{
-		protected void onPlayerKeyStateChange(PlayerKeyStateChangeEvent event)
-		{
-			PlayerKeyState keyState = player.getKeyState();
-			if (player.isAdmin()) player.sendMessage(Color.WHITE, "OLD " + event.getOldkeys() + ", NOW " + keyState.getKeys());
-			
-			if (keyState.isKeyPressed(PlayerKey.CROUCH))
-			{
-				long now = System.currentTimeMillis();
-				if (now <= lastHornKeyPressedTime + 1000 && editingTrack != null)
-				{
-					new TrackEditDialog(player, shoebill, eventManager, null, editingTrack).show();
-				}
-				lastHornKeyPressedTime = System.currentTimeMillis();
-			}
-			
-			if (keyState.isKeyPressed(PlayerKey.ANALOG_DOWN) && editingTrack != null)
-			{
-				TrackCheckpoint checkpoint = new TrackCheckpoint(editingTrack, player.getLocation());
-				new TrackCheckpointEditDialog(player, shoebill, eventManager, null, checkpoint).show();
-			}
-		}
-	};
 }

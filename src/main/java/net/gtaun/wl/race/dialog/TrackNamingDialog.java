@@ -19,7 +19,7 @@ public abstract class TrackNamingDialog extends AbstractInputDialog
 		player.playSound(1083, player.getLocation());
 		
 		String name = TrackUtil.filterName(inputText);
-		if (TrackUtil.isVaildName(name))
+		if (TrackUtil.isVaildName(name) == false)
 		{
 			append = String.format("{FF0000}* 赛道名长度要求为 %1$d ~ %2$d 个字，请重新输入。", TrackUtil.NAME_MIN_LENGTH, TrackUtil.NAME_MAX_LENGTH);
 			show();
@@ -27,7 +27,6 @@ public abstract class TrackNamingDialog extends AbstractInputDialog
 		}
 		
 		onNaming(name);
-		showParentDialog();
 	}
 	
 	protected abstract void onNaming(String name);

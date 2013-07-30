@@ -44,8 +44,8 @@ public class TrackManagerImpl implements TrackManager, Saveable
 	@Override
 	public Track createTrack(Player player, String name) throws AlreadyExistException, IllegalArgumentException
 	{
-		if (tracks.containsKey(name)) throw new AlreadyExistException();
 		if (!TrackUtil.isVaildName(name)) throw new IllegalArgumentException();
+		if (tracks.containsKey(name)) throw new AlreadyExistException();
 		
 		Track track = new Track(name, RaceUtil.getPlayerUniqueId(player));
 		tracks.put(track.getName(), track);

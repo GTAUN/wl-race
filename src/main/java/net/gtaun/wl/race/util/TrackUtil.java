@@ -10,7 +10,7 @@ public final class TrackUtil
 	
 	public static boolean isVaildName(String name)
 	{
-		if (name.length() < NAME_MIN_LENGTH && name.length() > NAME_MAX_LENGTH) return false;
+		if (name.length() < NAME_MIN_LENGTH || name.length() > NAME_MAX_LENGTH) return false;
 		if (name.contains("%") || name.contains("\t") || name.contains("\n")) return false;
 		if (!StringUtils.trimToEmpty(name).equals(name)) return false;
 		return true;

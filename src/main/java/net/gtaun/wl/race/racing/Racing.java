@@ -1,5 +1,6 @@
 package net.gtaun.wl.race.racing;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,15 +12,21 @@ import net.gtaun.wl.race.track.Track;
 
 public class Racing extends AbstractShoebillContext
 {
-	private Track track;
-	private Player sponsor;
+	private final Track track;
+	private final Player sponsor;
 	
 	private List<Player> players;
+	private String name;
 	
 	
-	public Racing(Shoebill shoebill, EventManager rootEventManager, Track track, Player player)
+	Racing(Shoebill shoebill, EventManager rootEventManager, Track track, Player sponsor)
 	{
 		super(shoebill, rootEventManager);
+		this.track = track;
+		this.sponsor = sponsor;
+		
+		players = new ArrayList<>();
+		players.add(sponsor);
 	}
 
 	@Override
@@ -47,5 +54,15 @@ public class Racing extends AbstractShoebillContext
 	public List<Player> getPlayers()
 	{
 		return Collections.unmodifiableList(players);
+	}
+	
+	public String getName()
+	{
+		return name;
+	}
+	
+	public void setName(String name)
+	{
+		this.name = name;
 	}
 }

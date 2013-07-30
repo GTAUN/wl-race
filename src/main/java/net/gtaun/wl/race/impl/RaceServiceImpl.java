@@ -21,6 +21,7 @@ import java.util.Queue;
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.AbstractShoebillContext;
 import net.gtaun.shoebill.common.player.PlayerLifecycleHolder;
+import net.gtaun.shoebill.common.player.PlayerLifecycleHolder.PlayerLifecycleObjectFactory;
 import net.gtaun.shoebill.event.PlayerEventHandler;
 import net.gtaun.shoebill.event.player.PlayerCommandEvent;
 import net.gtaun.shoebill.event.player.PlayerConnectEvent;
@@ -33,6 +34,7 @@ import net.gtaun.util.event.ManagedEventManager;
 import net.gtaun.wl.race.RacePlugin;
 import net.gtaun.wl.race.RaceService;
 import net.gtaun.wl.race.dialog.RaceDialog;
+import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackManagerImpl;
 
@@ -60,6 +62,7 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	private final PlayerLifecycleHolder playerLifecycleHolder;
 	
 	private final TrackManagerImpl trackManager;
+	private final RacingManagerImpl racingManager;
 	
 	private boolean isCommandEnabled = true;
 	private String commandOperation = "/r";
@@ -75,6 +78,7 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 		playerLifecycleHolder = new PlayerLifecycleHolder(shoebill, eventManager);
 		
 		trackManager = new TrackManagerImpl(datastore);
+		racingManager = new RacingManagerImpl(shoebill, eventManager, datastore);
 		
 		init();
 	}
@@ -85,7 +89,15 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 		eventManager.registerHandler(PlayerDisconnectEvent.class, playerEventHandler, HandlerPriority.NORMAL);
 		eventManager.registerHandler(PlayerCommandEvent.class, playerEventHandler, HandlerPriority.NORMAL);
 		
-		playerLifecycleHolder.registerClass(PlayerActuator.class);
+		PlayerLifecycleObjectFactory<PlayerActuator> objectFactory = new PlayerLifecycleObjectFactory<PlayerActuator>()
+		{
+			@Override
+			public PlayerActuator create(Shoebill shoebill, EventManager eventManager, Player player)
+			{
+				return new PlayerActuator(shoebill, eventManager, player, RaceServiceImpl.this);
+			}
+		};
+		playerLifecycleHolder.registerClass(PlayerActuator.class, objectFactory);
 
 		addDestroyable(playerLifecycleHolder);
 	}
@@ -106,12 +118,25 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	{
 		return trackManager;
 	}
+	
+	@Override
+	public RacingManagerImpl getRacingManager()
+	{
+		return racingManager;
+	}
 
 	@Override
 	public void editTrack(Player player, Track track)
 	{
 		PlayerActuator actuator = playerLifecycleHolder.getObject(player, PlayerActuator.class);
 		actuator.setEditingTrack(track);
+	}
+	
+	@Override
+	public boolean isEditingTrack(Player player)
+	{
+		PlayerActuator actuator = playerLifecycleHolder.getObject(player, PlayerActuator.class);
+		return actuator.isEditingTrack();
 	}
 	
 	@Override

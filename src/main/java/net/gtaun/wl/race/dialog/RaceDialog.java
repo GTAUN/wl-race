@@ -56,7 +56,7 @@ public class RaceDialog extends AbstractListDialog
 				player.playSound(1083, player.getLocation());
 				
 				Track track = raceService.getEditingTrack(player);
-				new TrackEditDialog(player, shoebill, eventManager, RaceDialog.this, track).show();
+				new TrackEditDialog(player, shoebill, eventManager, RaceDialog.this, raceService, track).show();
 			}
 		});
 
@@ -88,8 +88,15 @@ public class RaceDialog extends AbstractListDialog
 			}
 		});
 
-		dialogListItems.add(new DialogListItem("创建新赛道 ...")
+		dialogListItems.add(new DialogListItem("创建新赛道")
 		{
+			@Override
+			public boolean isEnabled()
+			{
+				if (raceService.isEditingTrack(player)) return false;
+				return true;
+			}
+			
 			@Override
 			public void onItemSelect()
 			{
@@ -106,15 +113,17 @@ public class RaceDialog extends AbstractListDialog
 						{
 							Track track = trackManager.createTrack(player, name);
 							raceService.editTrack(player, track);
-							new TrackEditDialog(player, shoebill, eventManager, RaceDialog.this, track).show();
+							new TrackEditDialog(player, shoebill, eventManager, RaceDialog.this, raceService, track).show();
 						}
 						catch (AlreadyExistException e)
 						{
-							append = "{FF0000}* 此赛道名已存在，请重新命名。";
+							append = String.format("{FF0000}* 赛道名 {FFFFFF}\"%1$s\" {FF0000}已存在，请重新命名。", name);
+							show();
 						}
 						catch (IllegalArgumentException e)
 						{
-							append = "{FF0000}* 赛道名不合法，请重新命名。";
+							append = String.format("{FF0000}* 赛道名 {FFFFFF}\"%1$s\" {FF0000}不合法，请重新命名。", name);
+							show();
 						}
 					}
 				}.show();

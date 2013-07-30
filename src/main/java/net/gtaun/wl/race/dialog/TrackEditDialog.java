@@ -8,6 +8,7 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
+import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackCheckpoint;
 
@@ -15,13 +16,15 @@ import org.apache.commons.lang3.StringUtils;
 
 public class TrackEditDialog extends AbstractListDialog
 {
+	private final RaceServiceImpl raceService;
 	private final Track track;
 	
 
 	public TrackEditDialog
-	(final Player player, final Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, final Track track)
+	(final Player player, final Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, RaceServiceImpl raceService, final Track track)
 	{
 		super(player, shoebill, eventManager, parentDialog);
+		this.raceService = raceService;
 		this.track = track;
 	}
 	
@@ -48,7 +51,8 @@ public class TrackEditDialog extends AbstractListDialog
 				{
 					protected void onNaming(String name)
 					{
-						track.setName(name);	
+						track.setName(name);
+						showParentDialog();
 					}
 				}.show();
 			}
@@ -97,8 +101,38 @@ public class TrackEditDialog extends AbstractListDialog
 			@Override
 			public void onItemSelect()
 			{
+				player.playSound(1083, player.getLocation());
+				
 				TrackCheckpoint checkpoint = new TrackCheckpoint(track, player.getLocation());
 				new TrackCheckpointEditDialog(player, shoebill, eventManager, TrackEditDialog.this, checkpoint).show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem("测试本赛道")
+		{
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				
+				new StartNewRacingDialog(player, shoebill, eventManager, TrackEditDialog.this, raceService, track).show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem()
+		{
+			@Override
+			public boolean isEnabled()
+			{
+				List<TrackCheckpoint> checkpoints = track.getCheckpoints();
+				return !checkpoints.isEmpty();
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				show();
 			}
 		});
 		
@@ -113,6 +147,7 @@ public class TrackEditDialog extends AbstractListDialog
 				@Override
 				public void onItemSelect()
 				{
+					player.playSound(1083, player.getLocation());
 					new TrackCheckpointEditDialog(player, shoebill, eventManager, TrackEditDialog.this, checkpoint).show();
 				}
 			});
