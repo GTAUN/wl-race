@@ -32,7 +32,11 @@ public class TrackManagerImpl implements TrackManager, Saveable
 	public void load()
 	{
 		List<Track> list = datastore.createQuery(Track.class).asList();
-		for (Track track : list) tracks.put(track.getName(), track);
+		for (Track track : list)
+		{
+			track.setTrackManager(this);
+			tracks.put(track.getName(), track);
+		}
 	}
 	
 	@Override
@@ -42,12 +46,23 @@ public class TrackManagerImpl implements TrackManager, Saveable
 	}
 
 	@Override
+	public void renameTrack(Track track, String name) throws AlreadyExistException, IllegalArgumentException
+	{
+		if (!TrackUtil.isVaildName(name)) throw new IllegalArgumentException();
+		if (tracks.containsKey(name)) throw new AlreadyExistException();
+		
+		tracks.remove(track.getName());
+		track.setName(name);
+		tracks.put(name, track);
+	}
+
+	@Override
 	public Track createTrack(Player player, String name) throws AlreadyExistException, IllegalArgumentException
 	{
 		if (!TrackUtil.isVaildName(name)) throw new IllegalArgumentException();
 		if (tracks.containsKey(name)) throw new AlreadyExistException();
 		
-		Track track = new Track(name, RaceUtil.getPlayerUniqueId(player));
+		Track track = new Track(this, name, RaceUtil.getPlayerUniqueId(player));
 		tracks.put(track.getName(), track);
 		return track;
 	}

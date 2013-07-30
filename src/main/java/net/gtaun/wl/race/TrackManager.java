@@ -8,6 +8,8 @@ import net.gtaun.wl.race.track.Track;
 
 public interface TrackManager
 {
+	void renameTrack(Track track, String name) throws AlreadyExistException, IllegalArgumentException;
+	
 	Track createTrack(Player player, String name) throws AlreadyExistException, IllegalArgumentException;
 	Track getTrack(String name);
 

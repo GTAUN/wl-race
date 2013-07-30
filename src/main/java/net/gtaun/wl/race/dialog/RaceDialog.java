@@ -117,7 +117,7 @@ public class RaceDialog extends AbstractListDialog
 						}
 						catch (AlreadyExistException e)
 						{
-							append = String.format("{FF0000}* 赛道名 {FFFFFF}\"%1$s\" {FF0000}已存在，请重新命名。", name);
+							append = String.format("{FF0000}* 赛道名 {FFFFFF}\"%1$s\" {FF0000}已被使用，请重新命名。", name);
 							show();
 						}
 						catch (IllegalArgumentException e)

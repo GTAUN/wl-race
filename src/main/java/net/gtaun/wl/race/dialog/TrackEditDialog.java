@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
+import net.gtaun.shoebill.exception.AlreadyExistException;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
@@ -11,6 +12,7 @@ import net.gtaun.wl.common.dialog.AbstractListDialog;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackCheckpoint;
+import net.gtaun.wl.race.track.TrackManagerImpl;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,8 +53,22 @@ public class TrackEditDialog extends AbstractListDialog
 				{
 					protected void onNaming(String name)
 					{
-						track.setName(name);
-						showParentDialog();
+						try
+						{
+							TrackManagerImpl trackManager = raceService.getTrackManager();
+							trackManager.renameTrack(track, name);
+							showParentDialog();
+						}
+						catch (AlreadyExistException e)
+						{
+							append = String.format("{FF0000}* 赛道名 {FFFFFF}\"%1$s\" {FF0000}已被使用，请重新命名。", name);
+							show();
+						}
+						catch (IllegalArgumentException e)
+						{
+							append = String.format("{FF0000}* 赛道名 {FFFFFF}\"%1$s\" {FF0000}不合法，请重新命名。", name);
+							show();
+						}
 					}
 				}.show();
 			}

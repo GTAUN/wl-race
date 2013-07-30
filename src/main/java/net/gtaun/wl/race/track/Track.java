@@ -6,10 +6,13 @@ import java.util.List;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
+import com.google.code.morphia.annotations.Transient;
 
 @Entity("RaceTrack")
 public class Track
 {
+	@Transient private TrackManagerImpl trackManager;
+	
 	@Indexed private String authorUniqueId;
 	
 	@Indexed private String name;
@@ -23,13 +26,19 @@ public class Track
 		
 	}
 	
-	public Track(String name, String uniqueId)
+	public Track(TrackManagerImpl trackManager, String name, String uniqueId)
 	{
-		this.authorUniqueId = uniqueId;
+		this.trackManager = trackManager;
 		this.name = name;
+		this.authorUniqueId = uniqueId;
 		this.desc = "";
 		
 		checkpoints = new ArrayList<>();
+	}
+	
+	public void setTrackManager(TrackManagerImpl trackManager)
+	{
+		this.trackManager = trackManager;
 	}
 	
 	public String getAuthorUniqueId()
@@ -42,7 +51,7 @@ public class Track
 		return name;
 	}
 	
-	public void setName(String name)
+	void setName(String name)
 	{
 		this.name = name;
 	}
