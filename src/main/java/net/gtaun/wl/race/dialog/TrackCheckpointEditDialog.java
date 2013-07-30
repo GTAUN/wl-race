@@ -25,21 +25,40 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 		super(player, shoebill, eventManager, parentDialog);
 		this.checkpoint = checkpoint;
 		this.track = checkpoint.getTrack();
+		
+		if (track.getCheckpoints().contains(checkpoint) == false) player.setLocation(checkpoint.getLocation());
 
-		dialogListItems.add(new DialogListItem()
+		dialogListItems.add(new DialogListItem("保存")
 		{
 			@Override
-			public String toItemString()
+			public boolean isEnabled()
 			{
-				int number = checkpoint.getNumber();
-				String item = "创建新检查点";
-				if (number != -1) item = String.format("编辑检查点 %1$d", number);
-				return item;
+				return track.getCheckpoints().contains(checkpoint) == false;
 			}
 			
 			@Override
 			public void onItemSelect()
 			{
+				player.playSound(1083, player.getLocation());
+				track.addCheckpoint(checkpoint);
+				showParentDialog();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem("传送到这个检查点")
+		{
+			@Override
+			public boolean isEnabled()
+			{
+				if (player.getLocation().equals(checkpoint.getLocation())) return false;
+				return track.getCheckpoints().contains(checkpoint);
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				player.setLocation(checkpoint.getLocation());
 				show();
 			}
 		});
@@ -65,6 +84,8 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 					
 					public void onClickOk(String inputText)
 					{
+						player.playSound(1083, player.getLocation());
+						
 						try (Scanner scanner = new Scanner(inputText))
 						{
 							Radius loc = new Radius(scanner.nextFloat(), scanner.nextFloat(), scanner.nextFloat(), scanner.nextInt(), oldLoc.getWorldId(), oldLoc.getRadius());
@@ -106,6 +127,8 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 					
 					public void onClickOk(String inputText)
 					{
+						player.playSound(1083, player.getLocation());
+						
 						try (Scanner scanner = new Scanner(inputText))
 						{
 							checkpoint.setSize(scanner.nextFloat());
@@ -139,6 +162,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			@Override
 			public void onItemSelect()
 			{
+				player.playSound(1083, player.getLocation());
 				checkpoint.setLocation(player.getLocation());
 				player.sendMessage(Color.LIGHTBLUE, "赛车系统: 检查点位置已更新。");
 				show();
@@ -156,23 +180,8 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			@Override
 			public void onItemSelect()
 			{
+				player.playSound(1083, player.getLocation());
 				track.removeChechpoint(checkpoint);
-				showParentDialog();
-			}
-		});
-
-		dialogListItems.add(new DialogListItem("保存")
-		{
-			@Override
-			public boolean isEnabled()
-			{
-				return track.getCheckpoints().contains(checkpoint) == false;
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				track.addCheckpoint(checkpoint);
 				showParentDialog();
 			}
 		});

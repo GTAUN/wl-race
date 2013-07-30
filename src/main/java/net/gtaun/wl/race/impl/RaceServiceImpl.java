@@ -24,8 +24,6 @@ import net.gtaun.shoebill.common.player.PlayerLifecycleHolder;
 import net.gtaun.shoebill.common.player.PlayerLifecycleHolder.PlayerLifecycleObjectFactory;
 import net.gtaun.shoebill.event.PlayerEventHandler;
 import net.gtaun.shoebill.event.player.PlayerCommandEvent;
-import net.gtaun.shoebill.event.player.PlayerConnectEvent;
-import net.gtaun.shoebill.event.player.PlayerDisconnectEvent;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.resource.Plugin;
 import net.gtaun.util.event.EventManager;
@@ -56,7 +54,6 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	
 	
 	private final RacePlugin plugin;
-	private final Datastore datastore;
 	
 	private final ManagedEventManager eventManager;
 	private final PlayerLifecycleHolder playerLifecycleHolder;
@@ -72,7 +69,6 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	{
 		super(shoebill, rootEventManager);
 		this.plugin = plugin;
-		this.datastore = datastore;
 		
 		eventManager = new ManagedEventManager(rootEventManager);
 		playerLifecycleHolder = new PlayerLifecycleHolder(shoebill, eventManager);
@@ -85,8 +81,6 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	
 	protected void onInit()
 	{
-		eventManager.registerHandler(PlayerConnectEvent.class, playerEventHandler, HandlerPriority.NORMAL);
-		eventManager.registerHandler(PlayerDisconnectEvent.class, playerEventHandler, HandlerPriority.NORMAL);
 		eventManager.registerHandler(PlayerCommandEvent.class, playerEventHandler, HandlerPriority.NORMAL);
 		
 		PlayerLifecycleObjectFactory<PlayerActuator> objectFactory = new PlayerLifecycleObjectFactory<PlayerActuator>()
@@ -148,16 +142,6 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	
 	private PlayerEventHandler playerEventHandler = new PlayerEventHandler()
 	{
-		protected void onPlayerConnect(PlayerConnectEvent event)
-		{
-			
-		}
-		
-		protected void onPlayerDisconnect(PlayerDisconnectEvent event)
-		{
-			Player player = event.getPlayer();
-		}
-		
 		protected void onPlayerCommand(PlayerCommandEvent event)
 		{
 			if (isCommandEnabled == false) return;

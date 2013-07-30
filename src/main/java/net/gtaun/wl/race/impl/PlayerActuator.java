@@ -2,7 +2,6 @@ package net.gtaun.wl.race.impl;
 
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.player.AbstractPlayerContext;
-import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.race.track.Track;
