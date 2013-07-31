@@ -14,6 +14,8 @@ import net.gtaun.shoebill.object.RaceCheckpoint;
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
 import com.google.code.morphia.annotations.Transient;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 @Entity("RaceTrack")
 public class Track
@@ -123,20 +125,19 @@ public class Track
 		checkpoints.remove(checkpoint);
 	}
 	
-	public List<RaceCheckpoint> generateRaceCheckpoints()
+	public BiMap<RaceCheckpoint, TrackCheckpoint> generateRaceCheckpoints()
 	{
 		SampObjectFactory factory = Shoebill.Instance.get().getSampObjectFactory();
 
 		RaceCheckpoint lastCheckpoint = null;
-		List<RaceCheckpoint> list = new ArrayList<>(checkpoints.size());
+		BiMap<RaceCheckpoint, TrackCheckpoint> list = HashBiMap.create(checkpoints.size());
 		for (ListIterator<TrackCheckpoint> it = checkpoints.listIterator(checkpoints.size()); it.hasPrevious();)
 		{
 			TrackCheckpoint checkpoint = it.previous();
 			lastCheckpoint = factory.createRaceCheckpoint(checkpoint.getLocation(), checkpoint.getType(), lastCheckpoint);
-			list.add(lastCheckpoint);
+			list.put(lastCheckpoint, checkpoint);
 		}
 		
-		Collections.reverse(list);
 		return list;
 	}
 }

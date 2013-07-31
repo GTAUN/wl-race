@@ -2,10 +2,15 @@ package net.gtaun.wl.race.racing;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.script.ScriptException;
 
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.AbstractShoebillContext;
+import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.event.PlayerEventHandler;
 import net.gtaun.shoebill.event.checkpoint.RaceCheckpointEnterEvent;
 import net.gtaun.shoebill.event.checkpoint.RaceCheckpointLeaveEvent;
@@ -13,7 +18,12 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.object.RaceCheckpoint;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
+import net.gtaun.wl.race.script.ScriptExecutorFactory;
+import net.gtaun.wl.race.script.ScriptExecutor;
 import net.gtaun.wl.race.track.Track;
+import net.gtaun.wl.race.track.TrackCheckpoint;
+
+import com.google.common.collect.BiMap;
 
 public class Racing extends AbstractShoebillContext
 {
@@ -28,11 +38,13 @@ public class Racing extends AbstractShoebillContext
 	private final Track track;
 	private final Player sponsor;
 	
-	private final List<RaceCheckpoint> checkpoints;
+	private final List<TrackCheckpoint> trackCheckpoints;
+	private final BiMap<RaceCheckpoint, TrackCheckpoint> checkpoints;
 	
 	private List<Player> players;
-	private String name;
+	private Map<Player, ScriptExecutor> executors;
 	
+	private String name;
 	private RacingStatus status;
 	
 	
@@ -42,10 +54,13 @@ public class Racing extends AbstractShoebillContext
 		this.track = track;
 		this.sponsor = sponsor;
 		
+		trackCheckpoints = track.getCheckpoints();
 		checkpoints = track.generateRaceCheckpoints();
 		
 		players = new ArrayList<>();
 		players.add(sponsor);
+		
+		executors = new HashMap<>();
 		
 		status = RacingStatus.WAITING;
 	}
@@ -101,9 +116,10 @@ public class Racing extends AbstractShoebillContext
 		status = RacingStatus.RACING;
 		init();
 		
-		RaceCheckpoint first = checkpoints.get(0);
+		RaceCheckpoint first = checkpoints.inverse().get(trackCheckpoints.get(0));
 		for (Player player : players) 
 		{
+			executors.put(player, ScriptExecutorFactory.createCheckpointScriptExecutor(player, player.getVehicle()));
 			player.playSound(1057, player.getLocation());
 			player.setRaceCheckpoint(first);
 		}
@@ -118,6 +134,17 @@ public class Racing extends AbstractShoebillContext
 
 			RaceCheckpoint checkpoint = event.getCheckpoint();
 			player.playSound(1039, player.getLocation());
+			
+			TrackCheckpoint trackCheckpoint = checkpoints.get(checkpoint);
+			ScriptExecutor executor = executors.get(player);
+			try
+			{
+				executor.execute(trackCheckpoint.getScript());
+			}
+			catch (ScriptException e)
+			{
+				player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$s): 脚本运行到第 %4$s 行时候发生错误。", "赛车系统", track.getName(), trackCheckpoint.getNumber(), e.getLineNumber());
+			}
 			
 			RaceCheckpoint next = checkpoint.getNext();
 			player.setRaceCheckpoint(next);
