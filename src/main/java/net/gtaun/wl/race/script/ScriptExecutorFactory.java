@@ -19,6 +19,14 @@ public final class ScriptExecutorFactory
 			@Override
 			public void execute(String script) throws ScriptException
 			{
+				Bindings bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+				for (Object obj : bindings.values())
+				{
+					if (obj instanceof ScriptBinding == false) continue;
+					ScriptBinding binding = (ScriptBinding) obj;
+					binding.update();
+				}
+				
 				engine.eval(script);
 			}
 		};

@@ -35,4 +35,19 @@ public class ScriptPlayerBinding implements ScriptBinding
 	{
 		player.setWeather(weatherId);
 	}
+
+	public void playAudioStream(String url)
+	{
+		player.playAudioStream(url);
+	}
+
+	public void stopAudioStream()
+	{
+		player.stopAudioStream();
+	}
+	
+	public void playSound(int sound)
+	{
+		player.playSound(sound, player.getLocation());
+	}
 }

@@ -8,6 +8,8 @@ import java.util.Map;
 
 import javax.script.ScriptException;
 
+import org.apache.commons.lang3.StringUtils;
+
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.AbstractShoebillContext;
 import net.gtaun.shoebill.data.Color;
@@ -137,13 +139,22 @@ public class Racing extends AbstractShoebillContext
 			
 			TrackCheckpoint trackCheckpoint = checkpoints.get(checkpoint);
 			ScriptExecutor executor = executors.get(player);
-			try
+			String script = trackCheckpoint.getScript();
+			if (StringUtils.isBlank(script) == false)
 			{
-				executor.execute(trackCheckpoint.getScript());
-			}
-			catch (ScriptException e)
-			{
-				player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$s): 脚本运行到第 %4$s 行时候发生错误。", "赛车系统", track.getName(), trackCheckpoint.getNumber(), e.getLineNumber());
+				try
+				{
+					executor.execute(script);
+				}
+				catch (ScriptException e)
+				{
+					int lineNum = e.getLineNumber();
+					int colNum = e.getColumnNumber();
+					String line = StringUtils.split(script, '\n') [lineNum];
+					line = line.substring(0, colNum) + "<ERROR>" + line.substring(colNum, line.length());
+					player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$d): 脚本运行到第 %4$d 行时候发生错误。", "赛车系统", track.getName(), trackCheckpoint.getNumber(), lineNum);
+					player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$d): 错误代码: %4$s 。", "赛车系统", track.getName(), trackCheckpoint.getNumber(), line);
+				}
 			}
 			
 			RaceCheckpoint next = checkpoint.getNext();
