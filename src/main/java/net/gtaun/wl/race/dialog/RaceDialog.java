@@ -157,6 +157,15 @@ public class RaceDialog extends AbstractListDialog
 			}
 		});
 		
+		dialogListItems.add(new DialogListItem("个人偏好设置 ...")
+		{
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+			}
+		});
+		
 		dialogListItems.add(new DialogListItem("帮助信息")
 		{
 			@Override

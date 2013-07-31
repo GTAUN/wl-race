@@ -27,7 +27,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 		super(player, shoebill, eventManager, parentDialog);
 
 		final RacingManagerImpl racingManager = raceService.getRacingManager();
-		final String racingTypeStr = (track.getStatus() == TrackStatus.EDITING) ? "发起新比赛" : "测试编辑中的赛道";
+		final String racingTypeStr = (track.getStatus() == TrackStatus.EDITING) ? "测试编辑中的赛道" : "发起新比赛";
 		
 		this.caption = String.format("%1$s: %2$s", "赛车系统", racingTypeStr);
 		this.racingName = player.getName() + "'s Racing";
