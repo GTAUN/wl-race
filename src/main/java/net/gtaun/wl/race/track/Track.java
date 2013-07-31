@@ -2,8 +2,10 @@ package net.gtaun.wl.race.track;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import net.gtaun.shoebill.SampObjectFactory;
 import net.gtaun.shoebill.Shoebill;
@@ -22,6 +24,16 @@ public class Track
 		COMPLETED,
 	}
 	
+	public enum ScriptType
+	{
+		JOIN,
+		BEGIN,
+		RANKING,
+		COMPLETE,
+		QUIT,
+		END,
+	}
+	
 	
 	@Transient private TrackManagerImpl trackManager;
 	
@@ -32,6 +44,7 @@ public class Track
 	private TrackStatus status;
 	
 	private List<TrackCheckpoint> checkpoints;
+	private Map<ScriptType, String> scripts;
 	
 	
 	protected Track()
@@ -46,8 +59,8 @@ public class Track
 		this.authorUniqueId = uniqueId;
 		this.desc = "";
 		this.status = TrackStatus.EDITING;
-		
-		checkpoints = new ArrayList<>();
+		this.checkpoints = new ArrayList<>();
+		this.scripts = new HashMap<>();
 	}
 	
 	public void setTrackManager(TrackManagerImpl trackManager)
@@ -83,6 +96,16 @@ public class Track
 	public TrackStatus getStatus()
 	{
 		return status;
+	}
+	
+	public String getScript(ScriptType type)
+	{
+		return scripts.get(type);
+	}
+	
+	public void setScript(ScriptType type, String script)
+	{
+		scripts.put(type, script);
 	}
 	
 	public List<TrackCheckpoint> getCheckpoints()

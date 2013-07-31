@@ -3,6 +3,8 @@ package net.gtaun.wl.race.dialog;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
+import org.apache.commons.lang3.StringUtils;
+
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.data.Color;
@@ -80,8 +82,6 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 				String msg = String.format("当前坐标值为: x=%1$1.2f, y=%2$1.2f z=%3$1.2f interior=%4$d\n请输入新坐标值，格式: [x] [y] [z] [interior]", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ(), oldLoc.getInteriorId());
 				new AbstractInputDialog(player, shoebill, eventManager, "编辑检查点坐标", msg, TrackCheckpointEditDialog.this)
 				{
-					private String append;
-					
 					public void onClickOk(String inputText)
 					{
 						player.playSound(1083, player.getLocation());
@@ -98,13 +98,17 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 							show();
 						}
 					}
-					
-					protected void show(String text)
-					{
-						if (append != null) super.show(this.message + "\n\n" + append);
-						else super.show(text);
-					}
 				}.show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem(String.format("类型: %1$s", "普通"))
+		{
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				show();
 			}
 		});
 
@@ -145,6 +149,33 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 					{
 						if (append != null) super.show(this.message + "\n\n" + append);
 						else super.show(text);
+					}
+				}.show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem()
+		{
+			@Override
+			public String toItemString()
+			{
+				String code = checkpoint.getScript();
+				int lines = StringUtils.countMatches(code, "\n");
+				return String.format("触发代码: %1$d 行 (%2$d 个字符)", lines, code.length());
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				String title = String.format("检查点 %1$d", checkpoint.getNumber());
+				String code = checkpoint.getScript();
+				new CodeEditorDialog(player, shoebill, eventManager, TrackCheckpointEditDialog.this, title, code)
+				{
+					@Override
+					protected void onComplete(String code)
+					{
+						checkpoint.setScript(code);
+						showParentDialog();
 					}
 				}.show();
 			}

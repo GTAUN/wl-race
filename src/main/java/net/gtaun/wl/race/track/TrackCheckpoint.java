@@ -15,6 +15,8 @@ public class TrackCheckpoint
 	
 	private Radius location;
 	private RaceCheckpointType type;
+
+	private String script;
 	
 
 	public TrackCheckpoint()
@@ -27,6 +29,7 @@ public class TrackCheckpoint
 		this.track = track;
 		setLocation(location);
 		type = RaceCheckpointType.NORMAL;
+		this.script = "";
 	}
 	
 	public Track getTrack()
@@ -67,6 +70,16 @@ public class TrackCheckpoint
 	public void setTrack(Track track)
 	{
 		this.track = track;
+	}
+	
+	public String getScript()
+	{
+		return script;
+	}
+	
+	public void setScript(String script)
+	{
+		this.script = script;
 	}
 	
 	public int getNumber()
