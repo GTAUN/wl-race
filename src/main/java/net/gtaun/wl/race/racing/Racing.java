@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 
 import javax.script.ScriptException;
 
@@ -21,11 +22,10 @@ import net.gtaun.util.event.EventManager.HandlerPriority;
 import net.gtaun.wl.race.script.ScriptExecutor;
 import net.gtaun.wl.race.script.ScriptExecutorFactory;
 import net.gtaun.wl.race.track.Track;
+import net.gtaun.wl.race.track.Track.TrackRaceCheckpoint;
 import net.gtaun.wl.race.track.TrackCheckpoint;
 
 import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.collect.BiMap;
 
 public class Racing extends AbstractShoebillContext
 {
@@ -40,8 +40,7 @@ public class Racing extends AbstractShoebillContext
 	private final Track track;
 	private final Player sponsor;
 	
-	private final List<TrackCheckpoint> trackCheckpoints;
-	private final BiMap<RaceCheckpoint, TrackCheckpoint> checkpoints;
+	private final SortedSet<TrackRaceCheckpoint> checkpoints;
 	
 	private List<Player> players;
 	private Map<Player, ScriptExecutor> executors;
@@ -56,7 +55,6 @@ public class Racing extends AbstractShoebillContext
 		this.track = track;
 		this.sponsor = sponsor;
 		
-		trackCheckpoints = track.getCheckpoints();
 		checkpoints = track.generateRaceCheckpoints();
 		
 		players = new ArrayList<>();
@@ -118,7 +116,7 @@ public class Racing extends AbstractShoebillContext
 		status = RacingStatus.RACING;
 		init();
 		
-		RaceCheckpoint first = checkpoints.inverse().get(trackCheckpoints.get(0));
+		RaceCheckpoint first = checkpoints.first();
 		for (Player player : players) 
 		{
 			executors.put(player, ScriptExecutorFactory.createCheckpointScriptExecutor(player, player.getVehicle()));
@@ -134,10 +132,10 @@ public class Racing extends AbstractShoebillContext
 			Player player = event.getPlayer();
 			if (!players.contains(player)) return;
 
-			RaceCheckpoint checkpoint = event.getCheckpoint();
+			TrackRaceCheckpoint checkpoint = (TrackRaceCheckpoint) event.getCheckpoint();
 			player.playSound(1039, player.getLocation());
 			
-			TrackCheckpoint trackCheckpoint = checkpoints.get(checkpoint);
+			TrackCheckpoint trackCheckpoint = checkpoint.trackCheckpoint;
 			ScriptExecutor executor = executors.get(player);
 			String script = trackCheckpoint.getScript();
 			if (StringUtils.isBlank(script) == false)

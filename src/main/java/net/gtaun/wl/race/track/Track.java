@@ -2,24 +2,34 @@ package net.gtaun.wl.race.track;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-import net.gtaun.shoebill.SampObjectFactory;
-import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.data.RaceCheckpoint;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
 import com.google.code.morphia.annotations.Transient;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 
 @Entity("RaceTrack")
 public class Track
 {
+	public static class TrackRaceCheckpoint extends RaceCheckpoint
+	{
+		public final TrackCheckpoint trackCheckpoint;
+		
+		private TrackRaceCheckpoint(TrackCheckpoint trackCheckpoint, RaceCheckpoint next)
+		{
+			super(trackCheckpoint.getLocation(), trackCheckpoint.getType(), next);
+			this.trackCheckpoint = trackCheckpoint;
+		}
+	}
+	
 	public enum TrackStatus
 	{
 		EDITING,
@@ -126,17 +136,25 @@ public class Track
 		checkpoints.remove(checkpoint);
 	}
 	
-	public BiMap<RaceCheckpoint, TrackCheckpoint> generateRaceCheckpoints()
+	public SortedSet<TrackRaceCheckpoint> generateRaceCheckpoints()
 	{
-		RaceCheckpoint lastCheckpoint = null;
-		BiMap<RaceCheckpoint, TrackCheckpoint> list = HashBiMap.create(checkpoints.size());
+		SortedSet<TrackRaceCheckpoint> set = new TreeSet<>(new Comparator<TrackRaceCheckpoint>()
+		{
+			@Override
+			public int compare(TrackRaceCheckpoint o1, TrackRaceCheckpoint o2)
+			{
+				return o1.trackCheckpoint.getNumber() - o2.trackCheckpoint.getNumber();
+			}
+		});
+
+		TrackRaceCheckpoint lastCheckpoint = null;
 		for (ListIterator<TrackCheckpoint> it = checkpoints.listIterator(checkpoints.size()); it.hasPrevious();)
 		{
 			TrackCheckpoint checkpoint = it.previous();
-			lastCheckpoint = new RaceCheckpoint(checkpoint.getLocation(), checkpoint.getType(), lastCheckpoint);
-			list.put(lastCheckpoint, checkpoint);
+			lastCheckpoint = new TrackRaceCheckpoint(checkpoint, lastCheckpoint);
+			set.add(lastCheckpoint);
 		}
 		
-		return list;
+		return set;
 	}
 }
