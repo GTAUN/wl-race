@@ -150,8 +150,8 @@ public class Racing extends AbstractShoebillContext
 				{
 					int lineNum = e.getLineNumber();
 					int colNum = e.getColumnNumber();
-					String line = StringUtils.split(script, '\n') [lineNum];
-					line = line.substring(0, colNum) + "<ERROR>" + line.substring(colNum, line.length());
+					String line = StringUtils.split(script, '\n') [lineNum-1];
+					if (colNum != -1) line = line.substring(0, colNum) + "<ERROR>" + line.substring(colNum, line.length());
 					player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$d): 脚本运行到第 %4$d 行时候发生错误。", "赛车系统", track.getName(), trackCheckpoint.getNumber(), lineNum);
 					player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$d): 错误代码: %4$s 。", "赛车系统", track.getName(), trackCheckpoint.getNumber(), line);
 				}

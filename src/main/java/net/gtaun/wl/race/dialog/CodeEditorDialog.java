@@ -107,7 +107,7 @@ public abstract class CodeEditorDialog extends AbstractPageListDialog
 	
 	private void addNewLine(final int line, AbstractDialog dialog)
 	{
-		final String caption = String.format("代码编辑器: 添加 %1$d 行代码", line);
+		final String caption = String.format("代码编辑器: 添加第 %1$d 行代码", line);
 		final String message = String.format("请您输入第 %1$s 行的新代码，每行最长 144 字节:", line);
 		new AbstractInputDialog(player, shoebill, rootEventManager, caption, message, dialog)
 		{
