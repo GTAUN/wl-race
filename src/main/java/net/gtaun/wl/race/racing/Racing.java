@@ -8,22 +8,22 @@ import java.util.Map;
 
 import javax.script.ScriptException;
 
-import org.apache.commons.lang3.StringUtils;
-
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.AbstractShoebillContext;
 import net.gtaun.shoebill.data.Color;
+import net.gtaun.shoebill.data.RaceCheckpoint;
 import net.gtaun.shoebill.event.PlayerEventHandler;
 import net.gtaun.shoebill.event.checkpoint.RaceCheckpointEnterEvent;
 import net.gtaun.shoebill.event.checkpoint.RaceCheckpointLeaveEvent;
 import net.gtaun.shoebill.object.Player;
-import net.gtaun.shoebill.object.RaceCheckpoint;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
-import net.gtaun.wl.race.script.ScriptExecutorFactory;
 import net.gtaun.wl.race.script.ScriptExecutor;
+import net.gtaun.wl.race.script.ScriptExecutorFactory;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackCheckpoint;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.collect.BiMap;
 

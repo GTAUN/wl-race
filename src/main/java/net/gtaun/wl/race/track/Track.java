@@ -9,7 +9,7 @@ import java.util.Map;
 
 import net.gtaun.shoebill.SampObjectFactory;
 import net.gtaun.shoebill.Shoebill;
-import net.gtaun.shoebill.object.RaceCheckpoint;
+import net.gtaun.shoebill.data.RaceCheckpoint;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
@@ -46,6 +46,7 @@ public class Track
 	private TrackStatus status;
 	
 	private List<TrackCheckpoint> checkpoints;
+	
 	private Map<ScriptType, String> scripts;
 	
 	
@@ -127,14 +128,12 @@ public class Track
 	
 	public BiMap<RaceCheckpoint, TrackCheckpoint> generateRaceCheckpoints()
 	{
-		SampObjectFactory factory = Shoebill.Instance.get().getSampObjectFactory();
-
 		RaceCheckpoint lastCheckpoint = null;
 		BiMap<RaceCheckpoint, TrackCheckpoint> list = HashBiMap.create(checkpoints.size());
 		for (ListIterator<TrackCheckpoint> it = checkpoints.listIterator(checkpoints.size()); it.hasPrevious();)
 		{
 			TrackCheckpoint checkpoint = it.previous();
-			lastCheckpoint = factory.createRaceCheckpoint(checkpoint.getLocation(), checkpoint.getType(), lastCheckpoint);
+			lastCheckpoint = new RaceCheckpoint(checkpoint.getLocation(), checkpoint.getType(), lastCheckpoint);
 			list.put(lastCheckpoint, checkpoint);
 		}
 		
