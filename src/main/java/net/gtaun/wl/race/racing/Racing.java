@@ -37,6 +37,8 @@ public class Racing extends AbstractShoebillContext
 	}
 	
 	
+	private final RacingManagerImpl manager;
+	
 	private final Track track;
 	private final Player sponsor;
 	
@@ -49,9 +51,10 @@ public class Racing extends AbstractShoebillContext
 	private RacingStatus status;
 	
 	
-	Racing(Shoebill shoebill, EventManager rootEventManager, Track track, Player sponsor)
+	Racing(Shoebill shoebill, EventManager rootEventManager, RacingManagerImpl racingManager, Track track, Player sponsor)
 	{
 		super(shoebill, rootEventManager);
+		this.manager = racingManager;
 		this.track = track;
 		this.sponsor = sponsor;
 		
@@ -106,6 +109,13 @@ public class Racing extends AbstractShoebillContext
 	public RacingStatus getStatus()
 	{
 		return status;
+	}
+	
+	public void join(Player player)
+	{
+		if (manager.isPlayerInRacing(player)) return;
+		manager.joinRacing(this, player);
+		players.add(player);
 	}
 	
 	public void start()
