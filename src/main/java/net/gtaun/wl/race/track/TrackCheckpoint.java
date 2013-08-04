@@ -1,17 +1,19 @@
 package net.gtaun.wl.race.track;
 
-import com.google.code.morphia.annotations.Reference;
-
 import net.gtaun.shoebill.constant.RaceCheckpointType;
 import net.gtaun.shoebill.data.Location;
 import net.gtaun.shoebill.data.Radius;
 
+import com.google.code.morphia.annotations.Embedded;
+import com.google.code.morphia.annotations.Transient;
+
+@Embedded
 public class TrackCheckpoint
 {
 	private static final float DEFAULT_SIZE = 15.0f;
 	
 	
-	@Reference private Track track;
+	@Transient private Track track;
 	
 	private Radius location;
 	private RaceCheckpointType type;
@@ -35,6 +37,11 @@ public class TrackCheckpoint
 	public Track getTrack()
 	{
 		return track;
+	}
+	
+	public void setTrack(Track track)
+	{
+		this.track = track;
 	}
 	
 	public Radius getLocation()
@@ -65,11 +72,6 @@ public class TrackCheckpoint
 	public RaceCheckpointType getType()
 	{
 		return type;
-	}
-	
-	public void setTrack(Track track)
-	{
-		this.track = track;
 	}
 	
 	public String getScript()

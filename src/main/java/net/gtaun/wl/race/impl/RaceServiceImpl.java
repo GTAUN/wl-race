@@ -98,7 +98,7 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 
 	protected void onDestroy()
 	{
-		
+		trackManager.save();
 	}
 	
 	@Override

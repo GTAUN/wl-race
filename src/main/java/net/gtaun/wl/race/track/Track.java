@@ -12,8 +12,12 @@ import java.util.TreeSet;
 
 import net.gtaun.shoebill.data.RaceCheckpoint;
 
+import org.bson.types.ObjectId;
+
 import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Id;
 import com.google.code.morphia.annotations.Indexed;
+import com.google.code.morphia.annotations.PostLoad;
 import com.google.code.morphia.annotations.Transient;
 
 @Entity("RaceTrack")
@@ -49,14 +53,15 @@ public class Track
 	
 	@Transient private TrackManagerImpl trackManager;
 	
+	@Id private ObjectId id;
+	
 	@Indexed private String authorUniqueId;
 	
 	@Indexed private String name;
 	private String desc;
 	private TrackStatus status;
-	
+
 	private List<TrackCheckpoint> checkpoints;
-	
 	private Map<ScriptType, String> scripts;
 	
 	
@@ -74,6 +79,15 @@ public class Track
 		this.status = TrackStatus.EDITING;
 		this.checkpoints = new ArrayList<>();
 		this.scripts = new HashMap<>();
+	}
+	
+	@PostLoad
+	private void postLoad()
+	{
+		if (checkpoints == null) checkpoints = new ArrayList<>();
+		if (scripts == null) scripts = new HashMap<>();
+		
+		for (TrackCheckpoint checkpoint : checkpoints) checkpoint.setTrack(this);
 	}
 	
 	public void setTrackManager(TrackManagerImpl trackManager)

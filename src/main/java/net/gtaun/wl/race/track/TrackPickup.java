@@ -2,11 +2,13 @@ package net.gtaun.wl.race.track;
 
 import net.gtaun.shoebill.data.Location;
 
-import com.google.code.morphia.annotations.Reference;
+import com.google.code.morphia.annotations.Embedded;
+import com.google.code.morphia.annotations.Transient;
 
+@Embedded
 public class TrackPickup
 {
-	@Reference private Track track;
+	@Transient private Track track;
 	
 	private Location location;
 	private int modelId;

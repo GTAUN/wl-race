@@ -8,14 +8,16 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
+import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackManagerImpl;
 
 public class TrackListMainDialog extends AbstractListDialog
 {
-	public TrackListMainDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final TrackManagerImpl trackManager)
+	public TrackListMainDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService)
 	{
 		super(player, shoebill, eventManager, parentDialog);
+		final TrackManagerImpl trackManager = raceService.getTrackManager();
 
 		dialogListItems.add(new DialogListItem("搜索附近的赛道 ...")
 		{
@@ -23,6 +25,8 @@ public class TrackListMainDialog extends AbstractListDialog
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
+				List<Track> tracks = trackManager.getAllTracks();
+				new TrackListDialog(player, shoebill, eventManager, TrackListMainDialog.this, raceService, tracks).show();
 			}
 		});
 		
@@ -47,6 +51,7 @@ public class TrackListMainDialog extends AbstractListDialog
 					public void onClickOk(String inputText)
 					{
 						List<Track> tracks = trackManager.searchTrackByAuthor(inputText);
+						new TrackListDialog(player, shoebill, eventManager, TrackListMainDialog.this, raceService, tracks).show();
 					}
 				}.show();
 			}
@@ -64,6 +69,7 @@ public class TrackListMainDialog extends AbstractListDialog
 					public void onClickOk(String inputText)
 					{
 						List<Track> tracks = trackManager.searchTrackByName(inputText);
+						new TrackListDialog(player, shoebill, eventManager, TrackListMainDialog.this, raceService, tracks).show();
 					}
 				}.show();
 			}
