@@ -45,6 +45,8 @@ public class Racing extends AbstractShoebillContext
 	private final SortedSet<TrackRaceCheckpoint> checkpoints;
 	
 	private List<Player> players;
+	private List<Player> finishedPlayers;
+	
 	private Map<Player, ScriptExecutor> executors;
 	
 	private String name;
@@ -61,10 +63,10 @@ public class Racing extends AbstractShoebillContext
 		checkpoints = track.generateRaceCheckpoints();
 		
 		players = new ArrayList<>();
-		players.add(sponsor);
-		
+		finishedPlayers = new ArrayList<>();
 		executors = new HashMap<>();
 		
+		players.add(sponsor);
 		status = RacingStatus.WAITING;
 	}
 
@@ -78,7 +80,8 @@ public class Racing extends AbstractShoebillContext
 	@Override
 	protected void onDestroy()
 	{
-		
+		manager.destroyRacing(this);
+		executors = null;
 	}
 	
 	public Track getTrack()
@@ -118,7 +121,13 @@ public class Racing extends AbstractShoebillContext
 		players.add(player);
 	}
 	
-	public void start()
+	public void leave(Player player)
+	{
+		manager.leaveRacing(this, player);
+		players.remove(player);
+	}
+	
+	public void begin()
 	{
 		if (status != RacingStatus.WAITING) return;
 		if (checkpoints.size() == 0) return;
@@ -133,6 +142,14 @@ public class Racing extends AbstractShoebillContext
 			player.playSound(1057, player.getLocation());
 			player.setRaceCheckpoint(first);
 		}
+	}
+	
+	public void end()
+	{
+		if (status != RacingStatus.RACING) return;
+		status = RacingStatus.ENDED;
+		
+		destroy();
 	}
 	
 	private PlayerEventHandler playerEventHandler = new PlayerEventHandler()
@@ -167,6 +184,12 @@ public class Racing extends AbstractShoebillContext
 			
 			RaceCheckpoint next = checkpoint.getNext();
 			player.setRaceCheckpoint(next);
+			
+			if (next == null)
+			{
+				players.remove(player);
+				finishedPlayers.add(player);
+			}
 		}
 		
 		protected void onPlayerLeaveRaceCheckpoint(RaceCheckpointLeaveEvent event)

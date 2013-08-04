@@ -1,13 +1,25 @@
 package net.gtaun.wl.race.track;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import net.gtaun.shoebill.Shoebill;
+import net.gtaun.shoebill.common.ColorUtils;
 import net.gtaun.shoebill.common.player.AbstractPlayerContext;
+import net.gtaun.shoebill.constant.MapIconStyle;
 import net.gtaun.shoebill.constant.PlayerKey;
 import net.gtaun.shoebill.data.Color;
+import net.gtaun.shoebill.data.Location;
 import net.gtaun.shoebill.event.PlayerEventHandler;
 import net.gtaun.shoebill.event.player.PlayerKeyStateChangeEvent;
+import net.gtaun.shoebill.event.player.PlayerUpdateEvent;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.object.PlayerKeyState;
+import net.gtaun.shoebill.object.PlayerMapIcon.MapIcon;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
 import net.gtaun.wl.race.dialog.TrackCheckpointEditDialog;
@@ -18,7 +30,8 @@ public class TrackEditor extends AbstractPlayerContext
 {
 	private final RaceServiceImpl raceService;
 	private final Track track;
-
+	
+	private Map<TrackCheckpoint, MapIcon> mapIcons;
 	private long lastHornKeyPressedTime;
 	
 	
@@ -27,12 +40,14 @@ public class TrackEditor extends AbstractPlayerContext
 		super(shoebill, rootEventManager, player);
 		this.raceService = raceService;
 		this.track = track;
+		this.mapIcons = new HashMap<>();
 	}
 	
 	@Override
 	protected void onInit()
 	{
 		eventManager.registerHandler(PlayerKeyStateChangeEvent.class, player, playerEventHandler, HandlerPriority.NORMAL);
+		eventManager.registerHandler(PlayerUpdateEvent.class, player, playerEventHandler, HandlerPriority.NORMAL);
 		
 		player.sendMessage(Color.LIGHTBLUE, "%1$s: 你现在正在编辑 \"%2$s\" 赛道。", "赛车系统", track.getName());
 	}
@@ -41,6 +56,9 @@ public class TrackEditor extends AbstractPlayerContext
 	protected void onDestroy()
 	{
 		player.sendMessage(Color.LIGHTBLUE, "%1$s: 已停止编辑 \"%2$s\" 赛道。", "赛车系统", track.getName());
+		
+		for (MapIcon icon : mapIcons.values()) icon.destroy();
+		mapIcons.clear();
 	}
 	
 	public Track getTrack()
@@ -70,6 +88,49 @@ public class TrackEditor extends AbstractPlayerContext
 				TrackCheckpoint checkpoint = new TrackCheckpoint(track, player.getLocation());
 				new TrackCheckpointEditDialog(player, shoebill, eventManager, null, checkpoint).show();
 			}
+		}
+		
+		protected void onPlayerUpdate(PlayerUpdateEvent event)
+		{
+			if (player.getUpdateFrameCount() % 40 != 0) return;
+			
+			List<TrackCheckpoint> checkpoints = new ArrayList<>(track.getCheckpoints());
+			Collections.sort(checkpoints, new Comparator<TrackCheckpoint>()
+			{
+				@Override
+				public int compare(TrackCheckpoint o1, TrackCheckpoint o2)
+				{
+					Location playerLoc = player.getLocation();
+					return (int) (o1.getLocation().distance(playerLoc) - o2.getLocation().distance(playerLoc));
+				}
+			});
+			
+			Map<TrackCheckpoint, MapIcon> lastMapIcons = mapIcons;
+			mapIcons = new HashMap<>();
+
+			int size = Math.min(10, checkpoints.size());
+			for (int i=0; i<size; i++)
+			{
+				TrackCheckpoint checkpoint = checkpoints.get(i);
+				MapIcon icon = lastMapIcons.get(checkpoint);
+				
+				if (icon == null) icon = player.getMapIcon().createIcon();
+				else lastMapIcons.remove(checkpoint);
+				
+				final int fadeOutDistance = 1000;
+				int alpha = (int) checkpoint.getLocation().distance(player.getLocation());
+				if (alpha > fadeOutDistance) alpha = fadeOutDistance;
+				alpha = 255 * alpha / fadeOutDistance;
+				
+				Color subColor = new Color(Color.GREEN);
+				subColor.setA(128);
+				Color color = ColorUtils.colorBlend(Color.RED, subColor, alpha);
+				
+				icon.update(checkpoint.getLocation(), 0, color, MapIconStyle.GLOBAL_CHECKPOINT);
+				mapIcons.put(checkpoint, icon);
+			}
+
+			for (MapIcon icon : lastMapIcons.values()) icon.destroy();
 		}
 	};
 }

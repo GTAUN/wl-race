@@ -2,19 +2,25 @@ package net.gtaun.wl.race.racing;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import com.google.code.morphia.Datastore;
+import java.util.Map.Entry;
 
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.AbstractShoebillContext;
+import net.gtaun.shoebill.event.PlayerEventHandler;
+import net.gtaun.shoebill.event.player.PlayerDisconnectEvent;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
+import net.gtaun.util.event.EventManager.HandlerPriority;
 import net.gtaun.wl.race.RacingManager;
 import net.gtaun.wl.race.exception.AlreadyJoinedException;
 import net.gtaun.wl.race.racing.Racing.RacingStatus;
 import net.gtaun.wl.race.track.Track;
+
+import com.google.code.morphia.Datastore;
 
 public class RacingManagerImpl extends AbstractShoebillContext implements RacingManager
 {
@@ -26,12 +32,13 @@ public class RacingManagerImpl extends AbstractShoebillContext implements Racing
 	{
 		super(shoebill, rootEventManager);
 		racings = new ArrayList<>();
+		playerRacings = new HashMap<>();
 	}
 
 	@Override
 	protected void onInit()
 	{
-		
+		eventManager.registerHandler(PlayerDisconnectEvent.class, playerEventHandler, HandlerPriority.NORMAL);
 	}
 
 	@Override
@@ -55,11 +62,22 @@ public class RacingManagerImpl extends AbstractShoebillContext implements Racing
 	}
 
 	@Override
-	public Racing createRacing(Track track, Player sponsor)
+	public Racing createRacing(Track track, Player sponsor) throws AlreadyJoinedException
 	{
+		if (isPlayerInRacing(sponsor)) throw new AlreadyJoinedException();
 		Racing racing = new Racing(shoebill, rootEventManager, this, track, sponsor);
 		racings.add(racing);
 		return racing;
+	}
+	
+	public void destroyRacing(Racing racing)
+	{
+		racings.remove(racing);
+		for (Iterator<Entry<Player, Racing>> it = playerRacings.entrySet().iterator(); it.hasNext();)
+		{
+			Entry<Player, Racing> entry = it.next();
+			if (entry.getValue() == racing) it.remove();
+		}
 	}
 	
 	@Override
@@ -95,4 +113,13 @@ public class RacingManagerImpl extends AbstractShoebillContext implements Racing
 		if (playerRacings.get(player) != racing) throw new IllegalStateException("Invaild Racing or Player");
 		playerRacings.remove(player);
 	}
+	
+	private PlayerEventHandler playerEventHandler = new PlayerEventHandler()
+	{
+		protected void onPlayerDisconnect(PlayerDisconnectEvent event)
+		{
+			Player player = event.getPlayer();
+			if (isPlayerInRacing(player)) getPlayerRacing(player).leave(player);
+		}
+	};
 }

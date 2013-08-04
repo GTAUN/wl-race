@@ -108,7 +108,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 				
 				Racing racing = racingManager.createRacing(track, player);
 				racing.setName(racingName);
-				racing.start();
+				racing.begin();
 			}
 		});
 		
