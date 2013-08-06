@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import net.gtaun.shoebill.SampObjectFactory;
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.AbstractShoebillContext;
 import net.gtaun.shoebill.common.player.PlayerLifecycleHolder;
@@ -25,6 +26,8 @@ import net.gtaun.shoebill.common.player.PlayerLifecycleHolder.PlayerLifecycleObj
 import net.gtaun.shoebill.event.PlayerEventHandler;
 import net.gtaun.shoebill.event.player.PlayerCommandEvent;
 import net.gtaun.shoebill.object.Player;
+import net.gtaun.shoebill.object.Timer;
+import net.gtaun.shoebill.object.Timer.TimerCallback;
 import net.gtaun.shoebill.resource.Plugin;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
@@ -64,6 +67,8 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	private boolean isCommandEnabled = true;
 	private String commandOperation = "/r";
 	
+	private Timer timer;
+	
 	
 	public RaceServiceImpl(Shoebill shoebill, EventManager rootEventManager, RacePlugin plugin, Datastore datastore)
 	{
@@ -92,8 +97,18 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 			}
 		};
 		playerLifecycleHolder.registerClass(PlayerActuator.class, objectFactory);
-
 		addDestroyable(playerLifecycleHolder);
+		
+		SampObjectFactory factory = shoebill.getSampObjectFactory();
+		timer = factory.createTimer(1000*60*5, new TimerCallback()
+		{	
+			@Override
+			public void onTick(int factualInterval)
+			{
+				trackManager.save();
+			}
+		});
+		addDestroyable(timer);
 	}
 
 	protected void onDestroy()

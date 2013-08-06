@@ -44,6 +44,11 @@ public class TrackManagerImpl implements TrackManager, Saveable
 	{
 		datastore.save(tracks.values());
 	}
+	
+	public void save(Track track)
+	{
+		datastore.save(track);
+	}
 
 	@Override
 	public void renameTrack(Track track, String name) throws AlreadyExistException, IllegalArgumentException

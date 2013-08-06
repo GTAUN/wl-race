@@ -43,8 +43,11 @@ public class PlayerActuator extends AbstractPlayerContext
 		{
 			if (trackEditor == null) return;
 			
+			Track lastTrack = trackEditor.getTrack();
 			trackEditor.destroy();
 			trackEditor = null;
+			
+			raceService.getTrackManager().save(lastTrack);
 		}
 		else
 		{
