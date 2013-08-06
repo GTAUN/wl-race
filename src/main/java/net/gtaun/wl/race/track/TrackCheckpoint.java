@@ -51,7 +51,7 @@ public class TrackCheckpoint
 	
 	public void setLocation(Location location)
 	{
-		this.location = new Radius(location, DEFAULT_SIZE);
+		this.location = new Radius(location, DEFAULT_SIZE).immutable();
 	}
 	
 	public void setLocation(Radius location)

@@ -127,6 +127,13 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	}
 	
 	@Override
+	public void stopEditingTrack(Player player)
+	{
+		PlayerActuator actuator = playerLifecycleHolder.getObject(player, PlayerActuator.class);
+		actuator.setEditingTrack(null);
+	}
+	
+	@Override
 	public boolean isEditingTrack(Player player)
 	{
 		PlayerActuator actuator = playerLifecycleHolder.getObject(player, PlayerActuator.class);

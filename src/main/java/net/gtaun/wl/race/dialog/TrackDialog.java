@@ -41,6 +41,22 @@ public class TrackDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
+				return String.format("作者: %1$s", track.getAuthorUniqueId());
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem()
+		{
+			@Override
+			public String toItemString()
+			{
 				String desc = track.getDesc();
 				if (StringUtils.isBlank(desc)) desc = "空";
 				return String.format("描述: %1$s", desc);
@@ -61,6 +77,28 @@ public class TrackDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				new StartNewRacingDialog(player, shoebill, eventManager, parentDialog, raceService, track).show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem()
+		{
+			@Override
+			public boolean isEnabled()
+			{
+				return player.getName().equals(track.getAuthorUniqueId());
+			}
+			
+			@Override
+			public String toItemString()
+			{
+				return "编辑赛道";
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				raceService.editTrack(player, track);
 			}
 		});
 	}

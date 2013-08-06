@@ -13,6 +13,7 @@ public interface RaceService extends Service
 	RacingManager getRacingManager();
 
 	void editTrack(Player player, Track track);
+	void stopEditingTrack(Player player);
 	
 	boolean isEditingTrack(Player player);
 	Track getEditingTrack(Player player);

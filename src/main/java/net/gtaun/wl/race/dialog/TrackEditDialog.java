@@ -130,8 +130,17 @@ public class TrackEditDialog extends AbstractListDialog
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
-				
 				new StartNewRacingDialog(player, shoebill, eventManager, TrackEditDialog.this, raceService, track).show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem("停止编辑赛道")
+		{
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				raceService.stopEditingTrack(player);
 			}
 		});
 		
