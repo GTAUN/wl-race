@@ -67,6 +67,8 @@ public class RacingManagerImpl extends AbstractShoebillContext implements Racing
 		if (isPlayerInRacing(sponsor)) throw new AlreadyJoinedException();
 		Racing racing = new Racing(shoebill, rootEventManager, this, track, sponsor);
 		racings.add(racing);
+		
+		racing.join(sponsor);
 		return racing;
 	}
 	

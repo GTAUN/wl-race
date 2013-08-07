@@ -67,7 +67,6 @@ public class Racing extends AbstractShoebillContext
 		playerContexts = new HashMap<>();
 
 		status = RacingStatus.WAITING;
-		join(sponsor);
 	}
 
 	@Override
