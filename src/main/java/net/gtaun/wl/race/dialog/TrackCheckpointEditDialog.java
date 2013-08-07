@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
+import net.gtaun.shoebill.constant.RaceCheckpointType;
 import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.data.Radius;
 import net.gtaun.shoebill.object.Player;
@@ -104,13 +105,19 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem(String.format("类型: %1$s", "普通"))
+		dialogListItems.add(new DialogListItemSwitch("类型:", "赛车检查点", "飞行检查点")
 		{
 			@Override
 			public void onItemSelect()
 			{
-				player.playSound(1083, player.getLocation());
-				show();
+				if (checkpoint.getType() != RaceCheckpointType.NORMAL) checkpoint.setType(RaceCheckpointType.NORMAL);
+				else checkpoint.setType(RaceCheckpointType.AIR);
+			}
+			
+			@Override
+			public boolean isSwitched()
+			{
+				return checkpoint.getType() == RaceCheckpointType.NORMAL;
 			}
 		});
 

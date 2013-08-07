@@ -74,6 +74,11 @@ public class TrackCheckpoint
 		return type;
 	}
 	
+	public void setType(RaceCheckpointType type)
+	{
+		this.type = type;
+	}
+	
 	public String getScript()
 	{
 		return script;
