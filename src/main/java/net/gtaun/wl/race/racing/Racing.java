@@ -124,6 +124,13 @@ public class Racing extends AbstractShoebillContext
 	public void leave(Player player)
 	{
 		manager.leaveRacing(this, player);
+		
+		RacingPlayerContext context = playerContexts.get(player);
+		if (context != null)
+		{
+			context.destroy();
+			playerContexts.remove(player);
+		}
 		players.remove(player);
 	}
 	

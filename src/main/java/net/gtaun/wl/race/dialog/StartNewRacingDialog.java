@@ -139,7 +139,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 							player.playSound(1083, player.getLocation());
 							showParentDialog();
 						}
-					};
+					}.show();
 				}
 				else startNewRacing(startLoc);
 			}
