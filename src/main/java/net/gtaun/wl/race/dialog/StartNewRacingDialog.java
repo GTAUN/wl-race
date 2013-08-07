@@ -4,16 +4,19 @@ import java.util.List;
 
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
+import net.gtaun.shoebill.data.Location;
+import net.gtaun.shoebill.event.dialog.DialogCancelEvent.DialogCancelType;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
+import net.gtaun.wl.common.dialog.MsgboxDialog;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing;
 import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
-import net.gtaun.wl.race.track.TrackCheckpoint;
 import net.gtaun.wl.race.track.Track.TrackStatus;
+import net.gtaun.wl.race.track.TrackCheckpoint;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -97,6 +100,15 @@ public class StartNewRacingDialog extends AbstractListDialog
 				return track.getStatus() == TrackStatus.EDITING;
 			}
 			
+			private void startNewRacing(Location location)
+			{
+				Racing racing = racingManager.createRacing(track, player);
+				racing.setName(racingName);
+				
+				player.setLocation(location);
+				racing.begin();
+			}
+			
 			@Override
 			public void onItemSelect()
 			{
@@ -104,11 +116,32 @@ public class StartNewRacingDialog extends AbstractListDialog
 				
 				List<TrackCheckpoint> checkpoints = track.getCheckpoints();
 				if (checkpoints.isEmpty()) return;
-				player.setLocation(checkpoints.get(0).getLocation());
 				
-				Racing racing = racingManager.createRacing(track, player);
-				racing.setName(racingName);
-				racing.begin();
+				final Location startLoc = checkpoints.get(0).getLocation();
+				
+				if (racingManager.isPlayerInRacing(player))
+				{
+					final Racing racing = racingManager.getPlayerRacing(player);
+					String text = String.format("当前正在参加 %1$s 比赛，您确定要退出并举行新比赛吗？", racing.getName());
+					new MsgboxDialog(player, shoebill, eventManager, StartNewRacingDialog.this, "开始新比赛", text)
+					{
+						@Override
+						protected void onClickOk()
+						{
+							player.playSound(1083, player.getLocation());
+							racing.leave(player);
+							startNewRacing(startLoc);
+						}
+						
+						@Override
+						protected void onCancel(DialogCancelType type)
+						{
+							player.playSound(1083, player.getLocation());
+							showParentDialog();
+						}
+					};
+				}
+				else startNewRacing(startLoc);
 			}
 		});
 		

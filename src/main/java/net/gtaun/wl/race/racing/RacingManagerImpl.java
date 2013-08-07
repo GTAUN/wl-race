@@ -100,7 +100,7 @@ public class RacingManagerImpl extends AbstractShoebillContext implements Racing
 		return racing.getStatus() == RacingStatus.WAITING ? PlayerRacingStatus.WAITING : PlayerRacingStatus.RACING;
 	}
 	
-	public void joinRacing(Racing racing, Player player) throws AlreadyJoinedException
+	void joinRacing(Racing racing, Player player) throws AlreadyJoinedException
 	{
 		if (playerRacings.containsKey(player)) throw new AlreadyJoinedException();
 		if (!racings.contains(racing)) throw new IllegalArgumentException("Unknown Racing");
@@ -108,7 +108,7 @@ public class RacingManagerImpl extends AbstractShoebillContext implements Racing
 		playerRacings.put(player, racing);
 	}
 	
-	public void leaveRacing(Racing racing, Player player)
+	void leaveRacing(Racing racing, Player player)
 	{
 		if (playerRacings.get(player) != racing) throw new IllegalStateException("Invaild Racing or Player");
 		playerRacings.remove(player);
