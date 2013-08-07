@@ -28,6 +28,7 @@ public class TrackListDialog extends AbstractPageListDialog
 				@Override
 				public void onItemSelect()
 				{
+					player.playSound(1083, player.getLocation());
 					new TrackDialog(player, shoebill, eventManager, TrackListDialog.this, raceService, track).show();
 				}
 			});

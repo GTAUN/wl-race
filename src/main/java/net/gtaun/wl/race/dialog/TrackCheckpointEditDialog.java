@@ -78,6 +78,8 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			@Override
 			public void onItemSelect()
 			{
+				player.playSound(1083, player.getLocation());
+				
 				final Radius oldLoc = checkpoint.getLocation();
 				String msg = String.format("当前坐标值为: x=%1$1.2f, y=%2$1.2f z=%3$1.2f interior=%4$d\n请输入新坐标值，格式: [x] [y] [z] [interior]", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ(), oldLoc.getInteriorId());
 				new AbstractInputDialog(player, shoebill, eventManager, "编辑检查点坐标", msg, TrackCheckpointEditDialog.this)
@@ -124,6 +126,8 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			@Override
 			public void onItemSelect()
 			{
+				player.playSound(1083, player.getLocation());
+				
 				String msg = String.format("当前大小值为: %1$1.1f\n请输入新坐标值:", checkpoint.getSize());
 				new AbstractInputDialog(player, shoebill, eventManager, "编辑检查点大小", msg, TrackCheckpointEditDialog.this)
 				{
@@ -167,6 +171,8 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			@Override
 			public void onItemSelect()
 			{
+				player.playSound(1083, player.getLocation());
+				
 				String title = String.format("检查点 %1$d", checkpoint.getNumber());
 				String code = checkpoint.getScript();
 				new CodeEditorDialog(player, shoebill, eventManager, TrackCheckpointEditDialog.this, title, code)

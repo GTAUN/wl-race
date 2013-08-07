@@ -33,6 +33,8 @@ public class TrackScriptEditDialog extends AbstractListDialog
 				@Override
 				public void onItemSelect()
 				{
+					player.playSound(1083, player.getLocation());
+					
 					final String title = String.format("事件 %1$s", type.name());
 					final String code = track.getScript(type);
 					new CodeEditorDialog(player, shoebill, eventManager, TrackScriptEditDialog.this, title, code)
