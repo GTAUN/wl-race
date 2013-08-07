@@ -20,7 +20,6 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
 import net.gtaun.wl.race.script.ScriptExecutor;
-import net.gtaun.wl.race.script.ScriptExecutorFactory;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.Track.TrackRaceCheckpoint;
 import net.gtaun.wl.race.track.TrackCheckpoint;
@@ -47,7 +46,7 @@ public class Racing extends AbstractShoebillContext
 	private List<Player> players;
 	private List<Player> finishedPlayers;
 	
-	private Map<Player, ScriptExecutor> executors;
+	private Map<Player, RacingPlayerContext> playerContexts;
 	
 	private String name;
 	private RacingStatus status;
@@ -64,10 +63,11 @@ public class Racing extends AbstractShoebillContext
 		
 		players = new ArrayList<>();
 		finishedPlayers = new ArrayList<>();
-		executors = new HashMap<>();
 		
-		players.add(sponsor);
+		playerContexts = new HashMap<>();
+
 		status = RacingStatus.WAITING;
+		join(sponsor);
 	}
 
 	@Override
@@ -81,7 +81,8 @@ public class Racing extends AbstractShoebillContext
 	protected void onDestroy()
 	{
 		manager.destroyRacing(this);
-		executors = null;
+		for (RacingPlayerContext ctx : playerContexts.values()) ctx.destroy();
+		playerContexts.clear();
 	}
 	
 	public Track getTrack()
@@ -138,7 +139,11 @@ public class Racing extends AbstractShoebillContext
 		RaceCheckpoint first = checkpoints.first();
 		for (Player player : players) 
 		{
-			executors.put(player, ScriptExecutorFactory.createCheckpointScriptExecutor(player, player.getVehicle()));
+			RacingPlayerContext context = new RacingPlayerContext(shoebill, rootEventManager, player);
+			context.init();
+			
+			playerContexts.put(player, context);
+			
 			player.playSound(1057, player.getLocation());
 			player.setRaceCheckpoint(first);
 		}
@@ -157,16 +162,17 @@ public class Racing extends AbstractShoebillContext
 		protected void onPlayerEnterRaceCheckpoint(RaceCheckpointEnterEvent event)
 		{
 			Player player = event.getPlayer();
-			if (!players.contains(player)) return;
+			if (!playerContexts.containsKey(player)) return;
 
 			TrackRaceCheckpoint checkpoint = (TrackRaceCheckpoint) event.getCheckpoint();
-			player.playSound(1039, player.getLocation());
+			player.playSound(1038, player.getLocation());
 			
 			TrackCheckpoint trackCheckpoint = checkpoint.trackCheckpoint;
-			ScriptExecutor executor = executors.get(player);
 			String script = trackCheckpoint.getScript();
-			if (StringUtils.isBlank(script) == false)
+			if (!StringUtils.isBlank(script))
 			{
+				ScriptExecutor executor = playerContexts.get(player).getScriptExecutor();
+				
 				try
 				{
 					executor.execute(script);

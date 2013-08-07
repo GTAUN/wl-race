@@ -3,14 +3,14 @@ package net.gtaun.wl.race.script;
 import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.object.Player;
 
-public class ScriptPlayerBinding implements ScriptBinding
+public class PlayerBinding implements ScriptBinding
 {
 	private final Player player;
 	
 	public String name;
 	
 	
-	public ScriptPlayerBinding(Player player)
+	public PlayerBinding(Player player)
 	{
 		this.player = player;
 	}

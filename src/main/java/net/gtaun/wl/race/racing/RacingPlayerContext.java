@@ -4,9 +4,14 @@ import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.player.AbstractPlayerContext;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
+import net.gtaun.wl.race.script.ScriptExecutor;
+import net.gtaun.wl.race.script.ScriptExecutorFactory;
 
 public class RacingPlayerContext extends AbstractPlayerContext
 {
+	private ScriptExecutor scriptExecutor;
+	
+	
 	public RacingPlayerContext(Shoebill shoebill, EventManager rootEventManager, Player player)
 	{
 		super(shoebill, rootEventManager, player);
@@ -15,6 +20,7 @@ public class RacingPlayerContext extends AbstractPlayerContext
 	@Override
 	protected void onInit()
 	{
+		scriptExecutor = ScriptExecutorFactory.createCheckpointScriptExecutor(player);
 		
 	}
 	
@@ -22,5 +28,10 @@ public class RacingPlayerContext extends AbstractPlayerContext
 	protected void onDestroy()
 	{
 		
+	}
+	
+	public ScriptExecutor getScriptExecutor()
+	{
+		return scriptExecutor;
 	}
 }

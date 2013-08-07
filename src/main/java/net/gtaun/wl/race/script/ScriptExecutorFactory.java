@@ -7,13 +7,12 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import net.gtaun.shoebill.object.Player;
-import net.gtaun.shoebill.object.Vehicle;
 
 public final class ScriptExecutorFactory
 {
-	public static ScriptExecutor createCheckpointScriptExecutor(Player player, Vehicle vehicle)
+	public static ScriptExecutor createCheckpointScriptExecutor(Player player)
 	{
-		final ScriptEngine engine = createCheckpointScriptEngine(player, vehicle);
+		final ScriptEngine engine = createCheckpointScriptEngine(player);
 		return new ScriptExecutor()
 		{
 			@Override
@@ -32,13 +31,13 @@ public final class ScriptExecutorFactory
 		};
 	}
 	
-	private static ScriptEngine createCheckpointScriptEngine(Player player, Vehicle vehicle)
+	private static ScriptEngine createCheckpointScriptEngine(Player player)
 	{
 		ScriptEngine engine = createEngine();
 		
 		Bindings bindings = engine.createBindings();
-		bindings.put("player", new ScriptPlayerBinding(player));
-		bindings.put("vehicle", new ScriptVehicleBinding(vehicle));
+		bindings.put("player", new PlayerBinding(player));
+		bindings.put("vehicle", new PlayerVehicleBinding(player));
 		
 		engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
 		return engine;
