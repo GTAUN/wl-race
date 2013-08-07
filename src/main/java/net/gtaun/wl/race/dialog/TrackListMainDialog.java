@@ -36,6 +36,8 @@ public class TrackListMainDialog extends AbstractListDialog
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
+				List<Track> tracks = trackManager.getAllTracks();
+				new TrackListDialog(player, shoebill, eventManager, TrackListMainDialog.this, raceService, tracks).show();
 			}
 		});
 		
@@ -50,6 +52,8 @@ public class TrackListMainDialog extends AbstractListDialog
 				{
 					public void onClickOk(String inputText)
 					{
+						player.playSound(1083, player.getLocation());
+						
 						List<Track> tracks = trackManager.searchTrackByAuthor(inputText);
 						new TrackListDialog(player, shoebill, eventManager, TrackListMainDialog.this, raceService, tracks).show();
 					}
@@ -68,6 +72,8 @@ public class TrackListMainDialog extends AbstractListDialog
 				{
 					public void onClickOk(String inputText)
 					{
+						player.playSound(1083, player.getLocation());
+						
 						List<Track> tracks = trackManager.searchTrackByName(inputText);
 						new TrackListDialog(player, shoebill, eventManager, TrackListMainDialog.this, raceService, tracks).show();
 					}

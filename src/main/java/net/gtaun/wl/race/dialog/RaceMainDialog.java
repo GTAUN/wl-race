@@ -13,6 +13,8 @@
 
 package net.gtaun.wl.race.dialog;
 
+import java.util.List;
+
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.exception.AlreadyExistException;
@@ -26,9 +28,9 @@ import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackManagerImpl;
 
-public class RaceDialog extends AbstractListDialog
+public class RaceMainDialog extends AbstractListDialog
 {
-	public RaceDialog
+	public RaceMainDialog
 	(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService)
 	{
 		super(player, shoebill, eventManager, parentDialog);
@@ -56,7 +58,7 @@ public class RaceDialog extends AbstractListDialog
 				player.playSound(1083, player.getLocation());
 				
 				Track track = raceService.getEditingTrack(player);
-				new TrackEditDialog(player, shoebill, eventManager, RaceDialog.this, raceService, track).show();
+				new TrackEditDialog(player, shoebill, eventManager, RaceMainDialog.this, raceService, track).show();
 			}
 		});
 
@@ -66,7 +68,7 @@ public class RaceDialog extends AbstractListDialog
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
-				new TrackListMainDialog(player, shoebill, eventManager, RaceDialog.this, raceService).show();
+				new TrackListMainDialog(player, shoebill, eventManager, RaceMainDialog.this, raceService).show();
 			}
 		});
 
@@ -85,6 +87,9 @@ public class RaceDialog extends AbstractListDialog
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
+				
+				List<Track> tracks = trackManager.searchTrackByAuthor(player.getName());
+				new TrackListDialog(player, shoebill, eventManager, RaceMainDialog.this, raceService, tracks).show();
 			}
 		});
 
@@ -104,7 +109,7 @@ public class RaceDialog extends AbstractListDialog
 				
 				String caption = String.format("%1$s: 创建新赛道", "赛车系统");
 				String message = "请您输入预想的赛道名:";
-				new TrackNamingDialog(player, shoebill, rootEventManager, caption, message, RaceDialog.this)
+				new TrackNamingDialog(player, shoebill, rootEventManager, caption, message, RaceMainDialog.this)
 				{
 					@Override
 					protected void onNaming(String name)
@@ -113,7 +118,7 @@ public class RaceDialog extends AbstractListDialog
 						{
 							Track track = trackManager.createTrack(player, name);
 							raceService.editTrack(player, track);
-							new TrackEditDialog(player, shoebill, eventManager, RaceDialog.this, raceService, track).show();
+							new TrackEditDialog(player, shoebill, eventManager, RaceMainDialog.this, raceService, track).show();
 						}
 						catch (AlreadyExistException e)
 						{
@@ -173,7 +178,7 @@ public class RaceDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				String caption = String.format("%1$s: %2$s", "车管", "帮助信息");
-				new MsgboxDialog(player, shoebill, eventManager, RaceDialog.this, caption, "偷懒中，暂无帮助信息……").show();
+				new MsgboxDialog(player, shoebill, eventManager, RaceMainDialog.this, caption, "偷懒中，暂无帮助信息……").show();
 			}
 		});
 		
@@ -203,7 +208,7 @@ public class RaceDialog extends AbstractListDialog
 					"本组件禁止在任何商业或盈利性服务器上使用。\n";
 				String message = String.format(format, desc.getVersion(), desc.getBuildNumber(), desc.getBuildDate());
 				
-				new MsgboxDialog(player, shoebill, eventManager, RaceDialog.this, caption, message).show();
+				new MsgboxDialog(player, shoebill, eventManager, RaceMainDialog.this, caption, message).show();
 			}
 		});
 	}

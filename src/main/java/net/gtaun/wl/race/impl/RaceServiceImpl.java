@@ -34,7 +34,7 @@ import net.gtaun.util.event.EventManager.HandlerPriority;
 import net.gtaun.util.event.ManagedEventManager;
 import net.gtaun.wl.race.RacePlugin;
 import net.gtaun.wl.race.RaceService;
-import net.gtaun.wl.race.dialog.RaceDialog;
+import net.gtaun.wl.race.dialog.RaceMainDialog;
 import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackManagerImpl;
@@ -184,7 +184,7 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 			
 			if (operation.equals(commandOperation))
 			{
-				new RaceDialog(player, shoebill, rootEventManager, null, RaceServiceImpl.this).show();
+				new RaceMainDialog(player, shoebill, rootEventManager, null, RaceServiceImpl.this).show();
 				event.setProcessed();
 				return;
 			}
