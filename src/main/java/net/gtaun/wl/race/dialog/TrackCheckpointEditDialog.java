@@ -110,8 +110,12 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			@Override
 			public void onItemSelect()
 			{
+				player.playSound(1083, player.getLocation());
+				
 				if (checkpoint.getType() != RaceCheckpointType.NORMAL) checkpoint.setType(RaceCheckpointType.NORMAL);
 				else checkpoint.setType(RaceCheckpointType.AIR);
+				
+				show();
 			}
 			
 			@Override

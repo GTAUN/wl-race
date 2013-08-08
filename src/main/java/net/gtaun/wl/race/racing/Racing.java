@@ -199,7 +199,7 @@ public class Racing extends AbstractShoebillContext
 			
 			if (next == null)
 			{
-				players.remove(player);
+				leave(player);
 				finishedPlayers.add(player);
 			}
 		}
