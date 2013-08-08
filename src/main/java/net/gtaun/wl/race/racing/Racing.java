@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 
 import javax.script.ScriptException;
 
@@ -21,8 +20,8 @@ import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
 import net.gtaun.wl.race.script.ScriptExecutor;
 import net.gtaun.wl.race.track.Track;
-import net.gtaun.wl.race.track.Track.TrackRaceCheckpoint;
 import net.gtaun.wl.race.track.TrackCheckpoint;
+import net.gtaun.wl.race.track.TrackCheckpoint.TrackRaceCheckpoint;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -41,12 +40,10 @@ public class Racing extends AbstractShoebillContext
 	private final Track track;
 	private final Player sponsor;
 	
-	private final SortedSet<TrackRaceCheckpoint> checkpoints;
-	
 	private List<Player> players;
 	private List<Player> finishedPlayers;
 	
-	private Map<Player, RacingPlayerContext> playerContexts;
+	private Map<Player, RacingPlayerContextImpl> playerContexts;
 	
 	private String name;
 	private RacingStatus status;
@@ -58,8 +55,6 @@ public class Racing extends AbstractShoebillContext
 		this.manager = racingManager;
 		this.track = track;
 		this.sponsor = sponsor;
-		
-		checkpoints = track.generateRaceCheckpoints();
 		
 		players = new ArrayList<>();
 		finishedPlayers = new ArrayList<>();
@@ -80,7 +75,7 @@ public class Racing extends AbstractShoebillContext
 	protected void onDestroy()
 	{
 		manager.destroyRacing(this);
-		for (RacingPlayerContext ctx : playerContexts.values()) ctx.destroy();
+		for (RacingPlayerContextImpl ctx : playerContexts.values()) ctx.destroy();
 		playerContexts.clear();
 	}
 	
@@ -125,7 +120,7 @@ public class Racing extends AbstractShoebillContext
 	{
 		manager.leaveRacing(this, player);
 		
-		RacingPlayerContext context = playerContexts.get(player);
+		RacingPlayerContextImpl context = playerContexts.get(player);
 		if (context != null)
 		{
 			context.destroy();
@@ -137,21 +132,22 @@ public class Racing extends AbstractShoebillContext
 	public void begin()
 	{
 		if (status != RacingStatus.WAITING) return;
-		if (checkpoints.size() == 0) return;
+		if (track.getCheckpoints().size() == 0) return;
 		
 		status = RacingStatus.RACING;
 		init();
 		
-		RaceCheckpoint first = checkpoints.first();
+		TrackCheckpoint first = track.getCheckpoints().get(0);
+		TrackRaceCheckpoint firstRaceCheckpoint = first.getRaceCheckpoint();
 		for (Player player : players) 
 		{
-			RacingPlayerContext context = new RacingPlayerContext(shoebill, rootEventManager, player);
+			RacingPlayerContextImpl context = new RacingPlayerContextImpl(shoebill, rootEventManager, player, this, first);
 			context.init();
 			
 			playerContexts.put(player, context);
 			
 			player.playSound(1057, player.getLocation());
-			player.setRaceCheckpoint(first);
+			player.setRaceCheckpoint(firstRaceCheckpoint);
 		}
 	}
 	
@@ -171,14 +167,13 @@ public class Racing extends AbstractShoebillContext
 			if (!playerContexts.containsKey(player)) return;
 
 			TrackRaceCheckpoint checkpoint = (TrackRaceCheckpoint) event.getCheckpoint();
-			player.playSound(1038, player.getLocation());
+			TrackCheckpoint trackCheckpoint = checkpoint.getTrackCheckpoint();
+			RacingPlayerContextImpl context = playerContexts.get(player);
+			ScriptExecutor executor = context.getScriptExecutor();
 			
-			TrackCheckpoint trackCheckpoint = checkpoint.trackCheckpoint;
 			String script = trackCheckpoint.getScript();
 			if (!StringUtils.isBlank(script))
 			{
-				ScriptExecutor executor = playerContexts.get(player).getScriptExecutor();
-				
 				try
 				{
 					executor.execute(script);
@@ -196,6 +191,9 @@ public class Racing extends AbstractShoebillContext
 			
 			RaceCheckpoint next = checkpoint.getNext();
 			player.setRaceCheckpoint(next);
+			
+			context.onPassCheckpoint(trackCheckpoint);
+			player.playSound(1038, player.getLocation());
 			
 			if (next == null)
 			{
