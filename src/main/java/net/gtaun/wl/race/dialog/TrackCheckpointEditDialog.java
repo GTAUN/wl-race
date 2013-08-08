@@ -184,7 +184,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				
-				String title = String.format("检查点 %1$d", checkpoint.getNumber());
+				String title = String.format("检查点 %1$d", checkpoint.getNumber()+1);
 				String code = checkpoint.getScript();
 				new CodeEditorDialog(player, shoebill, eventManager, TrackCheckpointEditDialog.this, title, code)
 				{
