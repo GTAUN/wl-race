@@ -2,8 +2,6 @@ package net.gtaun.wl.race.dialog;
 
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.object.Player;
@@ -21,8 +19,7 @@ public class TrackListDialog extends AbstractPageListDialog
 		
 		for (final Track track : tracks)
 		{
-			String desc = StringUtils.abbreviate(track.getDesc(), 8);
-			String item = String.format("赛道: %1$s	作者: %2$s	描述: %3$s	检查点数: %4$d	状态: %5$s", track.getName(), track.getAuthorUniqueId(), desc, track.getCheckpoints().size(), track.getStatus());
+			String item = String.format("赛道: %1$s	作者: %2$s	检查点数: %3$d	状态: %4$s", track.getName(), track.getAuthorUniqueId(), track.getCheckpoints().size(), track.getStatus());
 			dialogListItems.add(new DialogListItem(item)
 			{
 				@Override
