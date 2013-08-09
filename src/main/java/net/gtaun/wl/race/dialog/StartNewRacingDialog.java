@@ -145,7 +145,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("发起比赛")
+		dialogListItems.add(new DialogListItem("发起新比赛")
 		{
 			@Override
 			public boolean isEnabled()
@@ -154,13 +154,47 @@ public class StartNewRacingDialog extends AbstractListDialog
 				return true;
 			}
 			
+			private void startNewRacing(Location location)
+			{
+				Racing racing = racingManager.createRacing(track, player);
+				racing.setName(racingName);
+				
+				player.setLocation(location);
+			}
+			
 			@Override
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
 				
-				Racing racing = racingManager.createRacing(track, player);
-				racing.setName(racingName);
+				List<TrackCheckpoint> checkpoints = track.getCheckpoints();
+				if (checkpoints.isEmpty()) return;
+				
+				final Location startLoc = checkpoints.get(0).getLocation();
+				
+				if (racingManager.isPlayerInRacing(player))
+				{
+					final Racing racing = racingManager.getPlayerRacing(player);
+					String text = String.format("当前正在参加 %1$s 比赛，您确定要退出并举行新比赛吗？", racing.getName());
+					new MsgboxDialog(player, shoebill, eventManager, StartNewRacingDialog.this, "开始新比赛", text)
+					{
+						@Override
+						protected void onClickOk()
+						{
+							player.playSound(1083, player.getLocation());
+							racing.leave(player);
+							startNewRacing(startLoc);
+						}
+						
+						@Override
+						protected void onCancel(DialogCancelType type)
+						{
+							player.playSound(1083, player.getLocation());
+							showParentDialog();
+						}
+					}.show();
+				}
+				else startNewRacing(startLoc);
 			}
 		});
 	}
