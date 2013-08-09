@@ -13,8 +13,6 @@
 
 package net.gtaun.wl.race.dialog;
 
-import java.util.List;
-
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.exception.AlreadyExistException;
@@ -25,6 +23,8 @@ import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
 import net.gtaun.wl.common.dialog.MsgboxDialog;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
+import net.gtaun.wl.race.racing.Racing;
+import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackManagerImpl;
 
@@ -35,7 +35,34 @@ public class RaceMainDialog extends AbstractListDialog
 	{
 		super(player, shoebill, eventManager, parentDialog);
 		this.caption = "赛车系统";
+		
 		final TrackManagerImpl trackManager = raceService.getTrackManager();
+		final RacingManagerImpl racingManager = raceService.getRacingManager();
+
+		dialogListItems.add(new DialogListItem()
+		{
+			@Override
+			public boolean isEnabled()
+			{
+				return racingManager.isPlayerInRacing(player);
+			}
+			
+			@Override
+			public String toItemString()
+			{
+				Racing racing = racingManager.getPlayerRacing(player);
+				return String.format("参与中的比赛: %1$s", racing.getName());
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				
+				Racing racing = racingManager.getPlayerRacing(player);
+				new RacingDialog(player, shoebill, eventManager, RaceMainDialog.this, raceService, racing).show();
+			}
+		});
 
 		dialogListItems.add(new DialogListItem()
 		{
@@ -78,18 +105,6 @@ public class RaceMainDialog extends AbstractListDialog
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
-			}
-		});
-
-		dialogListItems.add(new DialogListItem("我的赛道 ...")
-		{
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				
-				List<Track> tracks = trackManager.searchTrackByAuthor(player.getName());
-				new TrackListDialog(player, shoebill, eventManager, RaceMainDialog.this, raceService, tracks).show();
 			}
 		});
 

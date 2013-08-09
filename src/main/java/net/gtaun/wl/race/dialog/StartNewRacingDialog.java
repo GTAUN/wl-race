@@ -117,7 +117,9 @@ public class StartNewRacingDialog extends AbstractListDialog
 				List<TrackCheckpoint> checkpoints = track.getCheckpoints();
 				if (checkpoints.isEmpty()) return;
 				
-				final Location startLoc = checkpoints.get(0).getLocation();
+				Location startLoc = checkpoints.get(0).getLocation();
+				final Location location = new Location(startLoc);
+				location.setZ(location.getZ() + 2.0f);
 				
 				if (racingManager.isPlayerInRacing(player))
 				{
@@ -130,7 +132,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 						{
 							player.playSound(1083, player.getLocation());
 							racing.leave(player);
-							startNewRacing(startLoc);
+							startNewRacing(location);
 						}
 						
 						@Override
@@ -141,7 +143,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 						}
 					}.show();
 				}
-				else startNewRacing(startLoc);
+				else startNewRacing(location);
 			}
 		});
 		
