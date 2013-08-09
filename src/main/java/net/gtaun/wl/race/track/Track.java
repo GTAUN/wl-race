@@ -21,6 +21,7 @@ public class Track
 	{
 		EDITING,
 		COMPLETED,
+		RANKING,
 	}
 	
 	public enum ScriptType
@@ -107,6 +108,11 @@ public class Track
 	public TrackStatus getStatus()
 	{
 		return status;
+	}
+	
+	public void setStatus(TrackStatus status)
+	{
+		this.status = status;
 	}
 	
 	public String getScript(ScriptType type)

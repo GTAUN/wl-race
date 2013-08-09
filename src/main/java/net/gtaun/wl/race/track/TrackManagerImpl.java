@@ -77,6 +77,12 @@ public class TrackManagerImpl implements TrackManager, Saveable
 	{
 		return tracks.get(name);
 	}
+
+	@Override
+	public void deleteTrack(Track track)
+	{
+		if (track == getTrack(track.getName())) tracks.remove(track.getName());
+	}
 	
 	@Override
 	public List<Track> searchTrackByName(String text)

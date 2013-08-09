@@ -5,8 +5,10 @@ import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
+import net.gtaun.wl.common.dialog.MsgboxDialog;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
+import net.gtaun.wl.race.track.Track.TrackStatus;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -80,25 +82,44 @@ public class TrackDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem()
+		dialogListItems.add(new DialogListItem("编辑赛道")
 		{
 			@Override
 			public boolean isEnabled()
 			{
+				if (track.getStatus() == TrackStatus.RANKING) return false;
 				return player.getName().equals(track.getAuthorUniqueId());
-			}
-			
-			@Override
-			public String toItemString()
-			{
-				return "编辑赛道";
 			}
 			
 			@Override
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
-				raceService.editTrack(player, track);
+				
+				if (track.getStatus() == TrackStatus.COMPLETED)
+				{
+					String format =
+							"尝试再次编辑赛道将会清空当前所有的比赛成绩信息。\n" +
+							"这将会影响到其他玩家的感受，请您务必谨慎操作。\n\n" +
+							"您确定要再次编辑赛道 %1$s 吗？";
+					String message = String.format(format, track.getName());
+					new MsgboxDialog(player, shoebill, eventManager, TrackDialog.this, "再次编辑赛道确认", message)
+					{
+						protected void onClickOk()
+						{
+							player.playSound(1083, player.getLocation());
+							raceService.editTrack(player, track);
+						}
+					}.show();
+				}
+				else if (track.getStatus() == TrackStatus.RANKING)
+				{
+					show();
+				}
+				else
+				{
+					raceService.editTrack(player, track);
+				}
 			}
 		});
 	}

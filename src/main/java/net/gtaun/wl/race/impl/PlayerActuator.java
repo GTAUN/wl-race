@@ -6,6 +6,7 @@ import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.race.track.Track;
+import net.gtaun.wl.race.track.Track.TrackStatus;
 import net.gtaun.wl.race.track.TrackEditor;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +66,9 @@ public class PlayerActuator extends AbstractPlayerContext
 		{
 			if (trackEditor != null) return;
 
+			if (track.getStatus() == TrackStatus.RANKING) throw new UnsupportedOperationException();
+			track.setStatus(TrackStatus.EDITING);
+			
 			trackEditor = new TrackEditor(shoebill, rootEventManager, player, raceService, track);
 			trackEditor.init();
 		}

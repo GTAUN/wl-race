@@ -12,6 +12,8 @@ public interface TrackManager
 	
 	Track createTrack(Player player, String name) throws AlreadyExistException, IllegalArgumentException;
 	Track getTrack(String name);
+	
+	void deleteTrack(Track track);
 
 	List<Track> searchTrackByName(String text);
 	List<Track> searchTrackByAuthor(String uniqueId);

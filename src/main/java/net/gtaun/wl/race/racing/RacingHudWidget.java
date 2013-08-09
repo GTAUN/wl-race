@@ -20,6 +20,7 @@ import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.player.AbstractPlayerContext;
 import net.gtaun.shoebill.constant.TextDrawAlign;
 import net.gtaun.shoebill.constant.TextDrawFont;
+import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.object.PlayerTextdraw;
 import net.gtaun.shoebill.object.Timer;
@@ -37,6 +38,9 @@ public class RacingHudWidget extends AbstractPlayerContext
 	private PlayerTextdraw checkpointNumber;
 	private PlayerTextdraw rankingNumber;
 	private PlayerTextdraw otherInfo;
+
+	private PlayerTextdraw progressBarBg;
+	private PlayerTextdraw progressBarPlayer;
 	
 	
 	public RacingHudWidget(Shoebill shoebill, EventManager rootEventManager, Player player, RacingPlayerContext racingPlayerContext)
@@ -71,6 +75,14 @@ public class RacingHudWidget extends AbstractPlayerContext
 		otherInfo.setShadowSize(1);
 		otherInfo.show();
 		
+		progressBarBg = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240, 10, 200);
+		progressBarBg.setBoxColor(new Color(0, 0, 0, 128));
+		progressBarBg.show();
+		
+		progressBarPlayer = TextDrawUtils.createPlayerTextBG(factory, player, 2, 300, 15, 5);
+		progressBarPlayer.setBoxColor(new Color(255, 0, 0, 128));
+		progressBarPlayer.show();
+		
 		timer = factory.createTimer(100);
 		timer.setCallback(new TimerCallback()
 		{
@@ -85,6 +97,8 @@ public class RacingHudWidget extends AbstractPlayerContext
 		addDestroyable(otherInfo);
 		addDestroyable(rankingNumber);
 		addDestroyable(checkpointNumber);
+		addDestroyable(progressBarBg);
+		addDestroyable(progressBarPlayer);
 		addDestroyable(timer);
 		
 		update();
@@ -112,7 +126,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 		rankingNumber.setText(rankingStr);
 		
 		
-		float completionPercent = racingPlayerContext.getCompletionPercent() * 100.0f;
+		float completionPercent = racingPlayerContext.getCompletionPercent();
 		
 		Date now = new Date();
 		long time = now.getTime() - racing.getStartTime().getTime();
@@ -123,7 +137,15 @@ public class RacingHudWidget extends AbstractPlayerContext
 		String formatedTime = String.format("%1$02d:%2$02d.%3$03d", minutes, seconds, milliseconds);
 		
 		final String otherInfoformat = "Completed: ~b~~h~%3$1.1f%%~w~ - Time: %4$s~n~Racing: ~y~~h~%1$s~w~ - Track: ~g~~h~%2$s~w~";
-		otherInfo.setText(String.format(otherInfoformat, racing.getName(), track.getName(), completionPercent, formatedTime));
+		otherInfo.setText(String.format(otherInfoformat, racing.getName(), track.getName(), completionPercent * 100.0f, formatedTime));
+		
+		
+		SampObjectFactory factory = shoebill.getSampObjectFactory();
+			
+		progressBarPlayer.destroy();
+		progressBarPlayer = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+175*(1.0f-completionPercent), 15, 5);
+		progressBarPlayer.setBoxColor(new Color(255, 0, 0, 128));
+		progressBarPlayer.show();
 	}
 }
 

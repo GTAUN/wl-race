@@ -9,8 +9,10 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
+import net.gtaun.wl.common.dialog.MsgboxDialog;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
+import net.gtaun.wl.race.track.Track.TrackStatus;
 import net.gtaun.wl.race.track.TrackCheckpoint;
 import net.gtaun.wl.race.track.TrackManagerImpl;
 
@@ -96,7 +98,7 @@ public class TrackEditDialog extends AbstractListDialog
 				
 				String caption = String.format("%1$s: 编辑赛道描述: %2$s", "赛车系统", track.getName());
 				String message = String.format(messageFormat, track.getName(), track.getDesc());
-				new AbstractInputDialog(player, shoebill, rootEventManager, caption, message, TrackEditDialog.this)
+				new AbstractInputDialog(player, shoebill, rootEventManager, TrackEditDialog.this, caption, message)
 				{
 					public void onClickOk(String inputText)
 					{
@@ -141,6 +143,81 @@ public class TrackEditDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				raceService.stopEditingTrack(player);
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem("完成赛道编辑")
+		{
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				
+				String format =
+					"赛道在编辑完成以后，将开始统计比赛成绩信息。\n" +
+					"尝试再次编辑赛道将会清空当前所有的比赛成绩。\n" +
+					"被管理员通过审核(Ranking)的赛道，将无法再次编辑。\n\n" +
+					"您确定要完成赛道 %1$s 吗？";
+				String message = String.format(format, track.getName());
+				new MsgboxDialog(player, shoebill, rootEventManager, TrackEditDialog.this, "完成赛道确认", message)
+				{
+					protected void onClickOk()
+					{
+						player.playSound(1083, player.getLocation());
+						
+						raceService.stopEditingTrack(player);
+						track.setStatus(TrackStatus.COMPLETED);
+						
+						TrackEditDialog.this.showParentDialog();
+					}
+				}.show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem("删除赛道")
+		{
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				
+				String format =
+					"警告！删除赛道将无法还原，所有的比赛记录也都将会消除。\n" +
+					"请您务必谨慎操作，有任何疑问，请先联系管理员解决。\n\n" +
+					"请您再次输入赛道名 %1$s 以确认删除操作：";
+				String message = String.format(format, track.getName());
+				new AbstractInputDialog(player, shoebill, rootEventManager, TrackEditDialog.this, "！！！删除赛道！！！", message)
+				{
+					public void onClickOk(String inputText)
+					{
+						player.playSound(1083, player.getLocation());
+						if (!track.equals(inputText))
+						{
+							String format = "已取消删除赛道 %1$s 。";
+							String message = String.format(format, track.getName());
+							new MsgboxDialog(player, shoebill, rootEventManager, parentDialog, "取消删除赛道", message)
+							{
+								protected void onClickOk()
+								{
+									onClickCancel();
+								}
+							}.show();
+						}
+						
+						TrackManagerImpl trackManager = raceService.getTrackManager();
+						trackManager.deleteTrack(track);
+						
+						String format = "赛道 %1$s 已经成功删除。";
+						String message = String.format(format, track.getName());
+						new MsgboxDialog(player, shoebill, rootEventManager, parentDialog, "删除赛道成功", message)
+						{
+							protected void onClickOk()
+							{
+								onClickCancel();
+							}
+						}.show();
+					}
+				}.show();
 			}
 		});
 		
