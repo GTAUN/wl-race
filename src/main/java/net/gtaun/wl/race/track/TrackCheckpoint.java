@@ -145,10 +145,17 @@ public class TrackCheckpoint
 		return raceCheckpoint;
 	}
 	
-	public float getDistance()
+	public float getNextDistance()
 	{
 		TrackCheckpoint next = getNext();
 		if (next == null) return 0.0f;
 		return location.distance(next.getLocation());
+	}
+	
+	public float getTotalDistance()
+	{
+		TrackCheckpoint next = getNext();
+		if (next == null) return 0.0f;
+		return location.distance(next.getLocation()) + next.getTotalDistance();
 	}
 }

@@ -1,5 +1,7 @@
 package net.gtaun.wl.race.racing;
 
+import java.util.List;
+
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.player.AbstractPlayerContext;
 import net.gtaun.shoebill.object.Player;
@@ -8,6 +10,7 @@ import net.gtaun.wl.race.script.ScriptExecutor;
 import net.gtaun.wl.race.script.ScriptExecutorFactory;
 import net.gtaun.wl.race.track.TrackCheckpoint;
 import net.gtaun.wl.vehicle.VehicleManagerService;
+import net.gtaun.wl.vehicle.stat.OncePlayerVehicleStatistic;
 
 public class RacingPlayerContextImpl extends AbstractPlayerContext implements RacingPlayerContext
 {
@@ -90,16 +93,23 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	}
 	
 	@Override
-	public float getCompletionPercent()
+	public float getRemainingDistance()
 	{
 		TrackCheckpoint next = currentCheckpoint.getNext();
-		float distance = 0.0f, cpDistance = currentCheckpoint.getDistance();
+		float distance = 0.0f, cpDistance = currentCheckpoint.getNextDistance();
 		
+		float nextTotalDistance = (next != null) ? next.getTotalDistance() : 0.0f;
 		if (next != null) distance = next.getLocation().distance(player.getLocation());
 		if (distance > cpDistance) distance = cpDistance;
 		
-		float nextCheckpointCompleted = 1.0f - (distance / cpDistance);
-		return ((float)getPassedCheckpoints() + nextCheckpointCompleted) / (getTrackCheckpoints() - 1);
+		return nextTotalDistance + distance;
+	}
+	
+	@Override
+	public float getCompletionPercent()
+	{
+		TrackCheckpoint first = racing.getTrack().getCheckpoints().get(0);
+		return 1.0f - (getRemainingDistance() / first.getTotalDistance());
 	}
 	
 	@Override
@@ -124,5 +134,27 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 		}
 		
 		return str;
+	}
+	
+	@Override
+	public float getTimeDiff()
+	{
+		List<RacingPlayerContext> rankedList = racing.getRacingRankedList();
+		int index = rankedList.indexOf(this);
+		if (index <= 0) return 0.0f;
+		
+		float speed;
+		VehicleManagerService service = shoebill.getServiceStore().getService(VehicleManagerService.class);
+		if (service == null) speed = player.getVelocity().speed3d() * 50;
+		else
+		{
+			OncePlayerVehicleStatistic stat = service.getPlayerCurrentOnceStatistic(player);
+			speed = (float) (stat.getDriveOdometer() / stat.getDriveSecondCount());
+		}
+		
+		RacingPlayerContext prev = rankedList.get(index-1);
+		float distanceDiff = getRemainingDistance() - prev.getRemainingDistance();
+		
+		return distanceDiff / speed;
 	}
 }

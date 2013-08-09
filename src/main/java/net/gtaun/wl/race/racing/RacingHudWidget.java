@@ -37,6 +37,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 
 	private PlayerTextdraw checkpointNumber;
 	private PlayerTextdraw rankingNumber;
+	private PlayerTextdraw timeDiffDraw;
 	private PlayerTextdraw otherInfo;
 
 	private PlayerTextdraw progressBarBg;
@@ -58,7 +59,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 		checkpointNumber.setAlignment(TextDrawAlign.LEFT);
 		checkpointNumber.setFont(TextDrawFont.FONT2);
 		checkpointNumber.setLetterSize(0.75f, 2.4f);
-		checkpointNumber.setShadowSize(2);
+		checkpointNumber.setShadowSize(1);
 		checkpointNumber.show();
 
 		rankingNumber = TextDrawUtils.createPlayerText(factory, player, 635, 360, "-");
@@ -67,6 +68,12 @@ public class RacingHudWidget extends AbstractPlayerContext
 		rankingNumber.setLetterSize(1.2f, 3.75f);
 		rankingNumber.setShadowSize(2);
 		rankingNumber.show();
+		
+		timeDiffDraw = TextDrawUtils.createPlayerText(factory, player, 320, 440, "-");
+		timeDiffDraw.setAlignment(TextDrawAlign.CENTER);
+		timeDiffDraw.setFont(TextDrawFont.PRICEDOWN);
+		timeDiffDraw.setLetterSize(1.2f, 3.75f);
+		timeDiffDraw.setShadowSize(2);
 		
 		otherInfo = TextDrawUtils.createPlayerText(factory, player, 0, 460, "-");
 		otherInfo.setAlignment(TextDrawAlign.LEFT);
@@ -97,6 +104,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 		addDestroyable(otherInfo);
 		addDestroyable(rankingNumber);
 		addDestroyable(checkpointNumber);
+		addDestroyable(timeDiffDraw);
 		addDestroyable(progressBarBg);
 		addDestroyable(timer);
 		
@@ -123,6 +131,27 @@ public class RacingHudWidget extends AbstractPlayerContext
 		
 		String rankingStr = racingPlayerContext.getRankingString();
 		rankingNumber.setText(rankingStr);
+		
+		
+		float timeDiff = racingPlayerContext.getTimeDiff();
+		if (timeDiff != 0.0f)
+		{
+			int diff = (int) (timeDiff * 1000);
+			long milliseconds = diff % 1000;
+			long seconds = (diff / 1000) % 60;
+			long minutes = diff / 1000 / 60;
+			
+			String format = "+%1$02d:%2$02d.%3$03d";
+			if (minutes == 0) format = "+%2$02d.%3$03d";
+			String formatedTime = String.format(format, minutes, seconds, milliseconds);
+			timeDiffDraw.setText(formatedTime);
+			
+			if (!timeDiffDraw.isShowed()) timeDiffDraw.show();
+		}
+		else
+		{
+			if (timeDiffDraw.isShowed()) timeDiffDraw.hide();
+		}
 		
 		
 		float completionPercent = racingPlayerContext.getCompletionPercent();

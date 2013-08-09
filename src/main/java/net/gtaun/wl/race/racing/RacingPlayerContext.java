@@ -14,8 +14,11 @@ public interface RacingPlayerContext
 	int getPassedCheckpoints();
 	int getTrackCheckpoints();
 	
+	float getRemainingDistance();
 	float getCompletionPercent();
 	
 	int getRankingNumber();
 	String getRankingString();
+
+	float getTimeDiff();
 }
