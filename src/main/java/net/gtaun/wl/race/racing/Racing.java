@@ -59,12 +59,13 @@ public class Racing extends AbstractShoebillContext
 	private Timer timer;
 	
 	
-	Racing(Shoebill shoebill, EventManager rootEventManager, RacingManagerImpl racingManager, Track track, Player sponsor)
+	Racing(Shoebill shoebill, EventManager rootEventManager, RacingManagerImpl racingManager, Track track, Player sponsor, String name)
 	{
 		super(shoebill, rootEventManager);
 		this.manager = racingManager;
 		this.track = track;
 		this.sponsor = sponsor;
+		this.name = name;
 		
 		players = new ArrayList<>();
 		finishedPlayers = new ArrayList<>();
@@ -115,10 +116,10 @@ public class Racing extends AbstractShoebillContext
 	
 	public List<Player> getPlayers()
 	{
-		List<Player> players = new ArrayList<>(getRankingPlayers());
-		players.addAll(players);
-		players.addAll(finishedPlayers);
-		return players;
+		List<Player> allPlayers = new ArrayList<>(getRankingPlayers());
+		allPlayers.addAll(players);
+		allPlayers.addAll(finishedPlayers);
+		return allPlayers;
 	}
 	
 	public String getName()
@@ -147,7 +148,7 @@ public class Racing extends AbstractShoebillContext
 		manager.joinRacing(this, player);
 		players.add(player);
 
-		player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已参与 %1$s 比赛，赛道为 %2$s 。", "赛车系统", getName(), track.getName());
+		player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已参与 %2$s 比赛，赛道为 %3$s 。", "赛车系统", getName(), track.getName());
 		for (Player otherPlayer : players)
 		{
 			if (otherPlayer == player) continue;

@@ -62,10 +62,10 @@ public class RacingManagerImpl extends AbstractShoebillContext implements Racing
 	}
 
 	@Override
-	public Racing createRacing(Track track, Player sponsor) throws AlreadyJoinedException
+	public Racing createRacing(Track track, Player sponsor, String name) throws AlreadyJoinedException
 	{
 		if (isPlayerInRacing(sponsor)) throw new AlreadyJoinedException();
-		Racing racing = new Racing(shoebill, rootEventManager, this, track, sponsor);
+		Racing racing = new Racing(shoebill, rootEventManager, this, track, sponsor, name);
 		racings.add(racing);
 		racing.join(sponsor);
 		return racing;

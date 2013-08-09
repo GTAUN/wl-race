@@ -102,9 +102,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 			
 			private void startNewRacing(Location location)
 			{
-				Racing racing = racingManager.createRacing(track, player);
-				racing.setName(racingName);
-				
+				Racing racing = racingManager.createRacing(track, player, racingName);
 				player.setLocation(location);
 				racing.begin();
 			}
@@ -158,9 +156,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 			
 			private void startNewRacing(Location location)
 			{
-				Racing racing = racingManager.createRacing(track, player);
-				racing.setName(racingName);
-				
+				Racing racing = racingManager.createRacing(track, player, racingName);
 				player.setLocation(location);
 				new RacingDialog(player, shoebill, eventManager, null, raceService, racing).show();
 			}

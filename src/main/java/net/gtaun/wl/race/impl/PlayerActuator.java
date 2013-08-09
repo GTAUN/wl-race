@@ -88,6 +88,8 @@ public class PlayerActuator extends AbstractPlayerContext
 			
 			trackEditor = new TrackEditor(shoebill, rootEventManager, player, raceService, track);
 			trackEditor.init();
+			
+			new TrackEditDialog(player, shoebill, eventManager, null, raceService, track).show();
 		}
 	}
 

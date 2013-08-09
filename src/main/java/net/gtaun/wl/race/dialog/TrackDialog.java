@@ -79,7 +79,7 @@ public class TrackDialog extends AbstractListDialog
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
-				new StartNewRacingDialog(player, shoebill, eventManager, parentDialog, raceService, track).show();
+				new StartNewRacingDialog(player, shoebill, eventManager, TrackDialog.this, raceService, track).show();
 			}
 		});
 		

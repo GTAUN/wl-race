@@ -21,7 +21,7 @@ public interface RacingManager
 	List<Racing> getRacings();
 	List<Racing> getRacings(RacingStatus status);
 
-	Racing createRacing(Track track, Player sponsor) throws AlreadyJoinedException;
+	Racing createRacing(Track track, Player sponsor, String name) throws AlreadyJoinedException;
 	
 	boolean isPlayerInRacing(Player player);
 	Racing getPlayerRacing(Player player);
