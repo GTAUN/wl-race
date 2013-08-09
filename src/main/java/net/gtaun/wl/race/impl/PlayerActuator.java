@@ -10,9 +10,13 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.object.PlayerKeyState;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
+import net.gtaun.wl.race.dialog.RacingDialog;
 import net.gtaun.wl.race.dialog.RacingListDialog;
 import net.gtaun.wl.race.dialog.TrackCheckpointEditDialog;
 import net.gtaun.wl.race.dialog.TrackEditDialog;
+import net.gtaun.wl.race.racing.Racing;
+import net.gtaun.wl.race.racing.Racing.RacingStatus;
+import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackCheckpoint;
 import net.gtaun.wl.race.track.Track.TrackStatus;
@@ -121,6 +125,20 @@ public class PlayerActuator extends AbstractPlayerContext
 			else
 			{
 				if (keyState.getKeys() == PlayerKey.CROUCH.getValue())
+				{
+					long now = System.currentTimeMillis();
+					if (now <= lastHornKeyPressedTime + 1000)
+					{
+						RacingManagerImpl racingManager = raceService.getRacingManager();
+						Racing racing = racingManager.getPlayerRacing(player);
+						if (racing != null && racing.getStatus() == RacingStatus.WAITING)
+						{
+							new RacingDialog(player, shoebill, eventManager, null, raceService, racing).show();
+						}
+					}
+					lastHornKeyPressedTime = System.currentTimeMillis();
+				}
+				else if (keyState.getKeys() == PlayerKey.ANALOG_DOWN.getValue())
 				{
 					long now = System.currentTimeMillis();
 					if (now <= lastAnalogDownKeyPressedTime + 1000)
