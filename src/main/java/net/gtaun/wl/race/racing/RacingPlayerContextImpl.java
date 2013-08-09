@@ -60,6 +60,12 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	}
 
 	@Override
+	public Racing getRacing()
+	{
+		return racing;
+	}
+
+	@Override
 	public ScriptExecutor getScriptExecutor()
 	{
 		return scriptExecutor;

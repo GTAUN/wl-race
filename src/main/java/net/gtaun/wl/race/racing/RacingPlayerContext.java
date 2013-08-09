@@ -4,6 +4,7 @@ import net.gtaun.wl.race.script.ScriptExecutor;
 
 public interface RacingPlayerContext
 {
+	Racing getRacing();
 	ScriptExecutor getScriptExecutor();
 	
 	boolean isCompleted();

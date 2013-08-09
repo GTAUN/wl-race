@@ -2,6 +2,7 @@ package net.gtaun.wl.race.racing;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,8 @@ public class Racing extends AbstractShoebillContext
 	
 	private String name;
 	private RacingStatus status;
+	
+	private Date startTime;
 	
 	
 	Racing(Shoebill shoebill, EventManager rootEventManager, RacingManagerImpl racingManager, Track track, Player sponsor)
@@ -109,6 +112,11 @@ public class Racing extends AbstractShoebillContext
 		return status;
 	}
 	
+	public Date getStartTime()
+	{
+		return startTime;
+	}
+	
 	public void join(Player player)
 	{
 		if (manager.isPlayerInRacing(player)) return;
@@ -133,6 +141,8 @@ public class Racing extends AbstractShoebillContext
 	{
 		if (status != RacingStatus.WAITING) return;
 		if (track.getCheckpoints().size() == 0) return;
+		
+		startTime = new Date();
 		
 		status = RacingStatus.RACING;
 		init();
