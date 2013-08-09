@@ -35,6 +35,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 	private Timer timer;
 
 	private PlayerTextdraw checkpointNumber;
+	private PlayerTextdraw rankingNumber;
 	private PlayerTextdraw otherInfo;
 	
 	
@@ -55,6 +56,13 @@ public class RacingHudWidget extends AbstractPlayerContext
 		checkpointNumber.setLetterSize(0.75f, 2.4f);
 		checkpointNumber.setShadowSize(2);
 		checkpointNumber.show();
+
+		rankingNumber = TextDrawUtils.createPlayerText(factory, player, 635, 360, "-");
+		rankingNumber.setAlignment(TextDrawAlign.RIGHT);
+		rankingNumber.setFont(TextDrawFont.FONT2);
+		rankingNumber.setLetterSize(1.2f, 3.75f);
+		rankingNumber.setShadowSize(2);
+		rankingNumber.show();
 		
 		otherInfo = TextDrawUtils.createPlayerText(factory, player, 0, 460, "-");
 		otherInfo.setAlignment(TextDrawAlign.LEFT);
@@ -75,6 +83,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 		timer.start();
 
 		addDestroyable(otherInfo);
+		addDestroyable(rankingNumber);
 		addDestroyable(checkpointNumber);
 		addDestroyable(timer);
 		
@@ -95,10 +104,15 @@ public class RacingHudWidget extends AbstractPlayerContext
 		final String checkpointNumberformat = "%1$d/%2$d";
 		checkpointNumber.setText(String.format(checkpointNumberformat, passedCheckpoints + 1, checkpoints - 1));
 
-		float completionPercent = racingPlayerContext.getCompletionPercent() * 100.0f;
-		
+
 		Racing racing = racingPlayerContext.getRacing();
 		Track track = racing.getTrack();
+		
+		String rankingStr = racingPlayerContext.getRankingString();
+		rankingNumber.setText(rankingStr);
+		
+		
+		float completionPercent = racingPlayerContext.getCompletionPercent() * 100.0f;
 		
 		Date now = new Date();
 		long time = now.getTime() - racing.getStartTime().getTime();

@@ -2,6 +2,7 @@ package net.gtaun.wl.race.racing;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Map;
 
 import javax.script.ScriptException;
 
+import net.gtaun.shoebill.SampObjectFactory;
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.AbstractShoebillContext;
 import net.gtaun.shoebill.data.Color;
@@ -17,6 +19,8 @@ import net.gtaun.shoebill.event.PlayerEventHandler;
 import net.gtaun.shoebill.event.checkpoint.RaceCheckpointEnterEvent;
 import net.gtaun.shoebill.event.checkpoint.RaceCheckpointLeaveEvent;
 import net.gtaun.shoebill.object.Player;
+import net.gtaun.shoebill.object.Timer;
+import net.gtaun.shoebill.object.Timer.TimerCallback;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
 import net.gtaun.wl.race.script.ScriptExecutor;
@@ -50,6 +54,9 @@ public class Racing extends AbstractShoebillContext
 	private RacingStatus status;
 	
 	private Date startTime;
+	private List<RacingPlayerContext> racingRankedList;
+	
+	private Timer timer;
 	
 	
 	Racing(Shoebill shoebill, EventManager rootEventManager, RacingManagerImpl racingManager, Track track, Player sponsor)
@@ -72,6 +79,20 @@ public class Racing extends AbstractShoebillContext
 	{
 		eventManager.registerHandler(RaceCheckpointEnterEvent.class, playerEventHandler, HandlerPriority.NORMAL);
 		eventManager.registerHandler(RaceCheckpointLeaveEvent.class, playerEventHandler, HandlerPriority.NORMAL);
+		
+		SampObjectFactory factory = shoebill.getSampObjectFactory();
+		timer = factory.createTimer(1000, new TimerCallback()
+		{
+			@Override
+			public void onTick(int factualInterval)
+			{
+				updateRacingRankedList();
+			}
+		});
+		timer.start();
+		addDestroyable(timer);
+		
+		updateRacingRankedList();
 	}
 
 	@Override
@@ -159,6 +180,8 @@ public class Racing extends AbstractShoebillContext
 			player.playSound(1057, player.getLocation());
 			player.setRaceCheckpoint(firstRaceCheckpoint);
 		}
+		
+		updateRacingRankedList();
 	}
 	
 	public void end()
@@ -167,6 +190,39 @@ public class Racing extends AbstractShoebillContext
 		status = RacingStatus.ENDED;
 		
 		destroy();
+	}
+	
+	public List<RacingPlayerContext> getRacingRankedList()
+	{
+		return racingRankedList;
+	}
+
+	public int getRacingRankingNumber(RacingPlayerContext context)
+	{
+		int index = racingRankedList.indexOf(context);
+		if (index == -1) return finishedPlayers.indexOf(context.getPlayer()) + 1;
+		return index + 1 + finishedPlayers.size();
+	}
+	
+	public int getRankingPlayers()
+	{
+		return playerContexts.size() + finishedPlayers.size();
+	}
+	
+	private void updateRacingRankedList()
+	{
+		List<RacingPlayerContext> contexts = new ArrayList<>(playerContexts.size());
+		contexts.addAll(playerContexts.values());
+		Collections.sort(contexts, new Comparator<RacingPlayerContext>()
+		{
+			@Override
+			public int compare(RacingPlayerContext o1, RacingPlayerContext o2)
+			{
+				return (int)((o2.getCompletionPercent() - o1.getCompletionPercent())*1000.0f);
+			}
+		});
+		
+		racingRankedList = Collections.unmodifiableList(contexts);
 	}
 	
 	private PlayerEventHandler playerEventHandler = new PlayerEventHandler()

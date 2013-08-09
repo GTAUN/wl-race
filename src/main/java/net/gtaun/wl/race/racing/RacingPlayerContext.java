@@ -1,9 +1,11 @@
 package net.gtaun.wl.race.racing;
 
+import net.gtaun.shoebill.object.Player;
 import net.gtaun.wl.race.script.ScriptExecutor;
 
 public interface RacingPlayerContext
 {
+	Player getPlayer();
 	Racing getRacing();
 	ScriptExecutor getScriptExecutor();
 	
@@ -13,4 +15,7 @@ public interface RacingPlayerContext
 	int getTrackCheckpoints();
 	
 	float getCompletionPercent();
+	
+	int getRankingNumber();
+	String getRankingString();
 }

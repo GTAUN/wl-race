@@ -101,4 +101,28 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 		float nextCheckpointCompleted = 1.0f - (distance / cpDistance);
 		return ((float)getPassedCheckpoints() + nextCheckpointCompleted) / (getTrackCheckpoints() - 1);
 	}
+	
+	@Override
+	public int getRankingNumber()
+	{
+		return racing.getRacingRankingNumber(this);
+	}
+	
+	@Override
+	public String getRankingString()
+	{
+		int num = getRankingNumber();
+		String str;
+		
+		switch (num)
+		{
+		case 0:		str = "N/A";		break;
+		case 1:		str = "1st";		break;
+		case 2:		str = "2nd";		break;
+		case 3:		str = "3rd";		break;
+		default:	str = num + "th";	break;
+		}
+		
+		return str;
+	}
 }
