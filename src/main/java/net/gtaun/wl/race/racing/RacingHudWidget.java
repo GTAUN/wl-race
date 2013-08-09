@@ -184,7 +184,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 		{
 			float percent = rankedList.get(i).getCompletionPercent();
 			
-			PlayerTextdraw draw = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+185*(1.0f-percent), 15, 5);
+			PlayerTextdraw draw = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+185*(1.0f-percent), 15, 4);
 			draw.setBoxColor(new Color(player.getColor().getValue()<<8|0x7F));
 			draw.show();
 			

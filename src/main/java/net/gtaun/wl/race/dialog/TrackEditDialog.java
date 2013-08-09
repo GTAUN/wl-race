@@ -156,6 +156,13 @@ public class TrackEditDialog extends AbstractListDialog
 		dialogListItems.add(new DialogListItem("完成赛道编辑")
 		{
 			@Override
+			public boolean isEnabled()
+			{
+				if (track.getCheckpoints().size() < 2) return false;
+				return true;
+			}
+			
+			@Override
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());

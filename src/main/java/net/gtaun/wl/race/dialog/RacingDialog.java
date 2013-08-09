@@ -176,6 +176,7 @@ public class RacingDialog extends AbstractListDialog
 					{
 						player.playSound(1083, player.getLocation());
 						racing.leave(player);
+						RacingDialog.this.showParentDialog();
 					}
 				}.show();
 			}

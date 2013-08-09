@@ -73,8 +73,32 @@ public class TrackDialog extends AbstractListDialog
 			}
 		});
 		
+		dialogListItems.add(new DialogListItem("测试本赛道")
+		{
+			@Override
+			public boolean isEnabled()
+			{
+				if (track.getCheckpoints().isEmpty()) return false;
+				return track.getStatus() == TrackStatus.EDITING;
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				new StartNewRacingDialog(player, shoebill, eventManager, TrackDialog.this, raceService, track).show();
+			}
+		});
+		
 		dialogListItems.add(new DialogListItem("发起新比赛")
 		{
+			@Override
+			public boolean isEnabled()
+			{
+				if (track.getCheckpoints().isEmpty()) return false;
+				return track.getStatus() != TrackStatus.EDITING;
+			}
+			
 			@Override
 			public void onItemSelect()
 			{
