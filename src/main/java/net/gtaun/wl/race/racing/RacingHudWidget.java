@@ -13,7 +13,9 @@
 
 package net.gtaun.wl.race.racing;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import net.gtaun.shoebill.SampObjectFactory;
 import net.gtaun.shoebill.Shoebill;
@@ -41,13 +43,15 @@ public class RacingHudWidget extends AbstractPlayerContext
 	private PlayerTextdraw otherInfo;
 
 	private PlayerTextdraw progressBarBg;
-	private PlayerTextdraw progressBarPlayer;
+	private List<PlayerTextdraw> progressBarPlayers;
+	//private PlayerTextdraw progressBarPlayer;
 	
 	
 	public RacingHudWidget(Shoebill shoebill, EventManager rootEventManager, Player player, RacingPlayerContext racingPlayerContext)
 	{
 		super(shoebill, rootEventManager, player);
 		this.racingPlayerContext = racingPlayerContext;
+		progressBarPlayers = new ArrayList<>();
 	}
 
 	@Override
@@ -86,9 +90,9 @@ public class RacingHudWidget extends AbstractPlayerContext
 		progressBarBg.setBoxColor(new Color(0, 0, 0, 128));
 		progressBarBg.show();
 		
-		progressBarPlayer = TextDrawUtils.createPlayerTextBG(factory, player, 2, 300, 15, 5);
-		progressBarPlayer.setBoxColor(new Color(255, 0, 0, 128));
-		progressBarPlayer.show();
+		//progressBarPlayer = TextDrawUtils.createPlayerTextBG(factory, player, 2, 300, 15, 5);
+		//progressBarPlayer.setBoxColor(new Color(255, 0, 0, 128));
+		//progressBarPlayer.show();
 		
 		timer = factory.createTimer(100);
 		timer.setCallback(new TimerCallback()
@@ -114,7 +118,9 @@ public class RacingHudWidget extends AbstractPlayerContext
 	@Override
 	protected void onDestroy()
 	{
-		progressBarPlayer.destroy();
+		for (PlayerTextdraw textdraw : progressBarPlayers) textdraw.destroy();
+		progressBarPlayers.clear();
+		//progressBarPlayer.destroy();
 	}
 	
 	private void update()
@@ -169,11 +175,26 @@ public class RacingHudWidget extends AbstractPlayerContext
 		
 		
 		SampObjectFactory factory = shoebill.getSampObjectFactory();
+		
+		for (PlayerTextdraw textdraw : progressBarPlayers) textdraw.destroy();
+		progressBarPlayers.clear();
+		
+		List<RacingPlayerContext> rankedList = racing.getRacingRankedList();
+		for (int i=0; i<rankedList.size(); i++)
+		{
+			float percent = rankedList.get(i).getCompletionPercent();
 			
-		progressBarPlayer.destroy();
-		progressBarPlayer = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+185*(1.0f-completionPercent), 15, 5);
-		progressBarPlayer.setBoxColor(new Color(255, 0, 0, 128));
-		progressBarPlayer.show();
+			PlayerTextdraw draw = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+185*(1.0f-percent), 15, 5);
+			draw.setBoxColor(new Color(player.getColor().getValue()<<8|0x7F));
+			draw.show();
+			
+			progressBarPlayers.add(draw);
+		}
+		
+//		progressBarPlayer.destroy();
+//		progressBarPlayer = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+185*(1.0f-completionPercent), 15, 5);
+//		progressBarPlayer.setBoxColor(new Color(255, 0, 0, 128));
+//		progressBarPlayer.show();
 	}
 }
 
