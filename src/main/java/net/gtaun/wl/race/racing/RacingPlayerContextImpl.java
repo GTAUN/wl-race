@@ -7,6 +7,7 @@ import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.race.script.ScriptExecutor;
 import net.gtaun.wl.race.script.ScriptExecutorFactory;
 import net.gtaun.wl.race.track.TrackCheckpoint;
+import net.gtaun.wl.vehicle.VehicleManagerService;
 
 public class RacingPlayerContextImpl extends AbstractPlayerContext implements RacingPlayerContext
 {
@@ -33,12 +34,24 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 		hudWidget = new RacingHudWidget(shoebill, rootEventManager, player, this);
 		hudWidget.init();
 		addDestroyable(hudWidget);
+		
+		VehicleManagerService service = shoebill.getServiceStore().getService(VehicleManagerService.class);
+		if (service != null)
+		{
+			service.startRacingStatistic(player);
+		}
 	}
 	
 	@Override
 	protected void onDestroy()
 	{
 		scriptExecutor = null;
+		
+		VehicleManagerService service = shoebill.getServiceStore().getService(VehicleManagerService.class);
+		if (service != null)
+		{
+			service.endRacingStatistic(player);
+		}
 	}
 	
 	void onPassCheckpoint(TrackCheckpoint checkpoint)
