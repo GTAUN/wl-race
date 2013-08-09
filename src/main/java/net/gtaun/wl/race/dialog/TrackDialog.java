@@ -20,6 +20,7 @@ public class TrackDialog extends AbstractListDialog
 	public TrackDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, final AbstractDialog parentDialog, final RaceServiceImpl raceService, final Track track)
 	{
 		super(player, shoebill, eventManager, parentDialog);
+		this.caption = String.format("%1$s: 查看赛道 %2$s 的信息", "赛车系统", track.getName());
 		this.track = track;
 		
 		dialogListItems.add(new DialogListItem()

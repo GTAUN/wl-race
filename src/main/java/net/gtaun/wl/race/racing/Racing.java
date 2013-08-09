@@ -115,7 +115,10 @@ public class Racing extends AbstractShoebillContext
 	
 	public List<Player> getPlayers()
 	{
-		return Collections.unmodifiableList(players);
+		List<Player> players = new ArrayList<>(getRankingPlayers());
+		players.addAll(players);
+		players.addAll(finishedPlayers);
+		return players;
 	}
 	
 	public String getName()
@@ -143,6 +146,13 @@ public class Racing extends AbstractShoebillContext
 		if (manager.isPlayerInRacing(player)) return;
 		manager.joinRacing(this, player);
 		players.add(player);
+
+		player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已参与 %1$s 比赛，赛道为 %2$s 。", "赛车系统", getName(), track.getName());
+		for (Player otherPlayer : players)
+		{
+			if (otherPlayer == player) continue;
+			otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 已参与 %3$s 比赛。", "赛车系统", player.getName(), getName());
+		}
 	}
 	
 	public void leave(Player player)
@@ -156,6 +166,25 @@ public class Racing extends AbstractShoebillContext
 			playerContexts.remove(player);
 		}
 		players.remove(player);
+
+		if (finishedPlayers.contains(player))
+		{
+			player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已完成 %2$s 比赛。", "赛车系统", getName());
+			for (Player otherPlayer : players)
+			{
+				if (otherPlayer == player) continue;
+				otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 已完成 %3$s 比赛。", "赛车系统", player.getName(), getName());
+			}
+		}
+		else
+		{
+			player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已离开 %2$s 比赛。", "赛车系统", getName());
+			for (Player otherPlayer : players)
+			{
+				if (otherPlayer == player) continue;
+				otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 已退出 %3$s 比赛。", "赛车系统", player.getName(), getName());
+			}
+		}
 	}
 	
 	public void begin()
@@ -263,8 +292,8 @@ public class Racing extends AbstractShoebillContext
 			
 			if (next == null)
 			{
-				leave(player);
 				finishedPlayers.add(player);
+				leave(player);
 			}
 		}
 		

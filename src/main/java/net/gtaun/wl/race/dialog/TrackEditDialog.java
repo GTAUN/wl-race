@@ -50,7 +50,7 @@ public class TrackEditDialog extends AbstractListDialog
 				player.playSound(1083, player.getLocation());
 				
 				String caption = String.format("%1$s: 编辑赛道名: %2$s", "赛车系统", track.getName());
-				String message = String.format("原始赛道名 \"%1$s\" ，请输入新的赛道名: ", track.getName());
+				String message = String.format("原始赛道名 %1$s ，请输入新的赛道名: ", track.getName());
 				new TrackNamingDialog(player, shoebill, rootEventManager, caption, message, TrackEditDialog.this)
 				{
 					protected void onNaming(String name)
