@@ -48,7 +48,7 @@ public class TrackListMainDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				
-				new AbstractInputDialog(player, shoebill, eventManager, "赛车系统: 按作者搜索赛道", "请输入作者名字:", TrackListMainDialog.this)
+				new AbstractInputDialog(player, shoebill, eventManager, TrackListMainDialog.this, "赛车系统: 按作者搜索赛道", "请输入作者名字:")
 				{
 					public void onClickOk(String inputText)
 					{
@@ -68,7 +68,7 @@ public class TrackListMainDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				
-				new AbstractInputDialog(player, shoebill, eventManager, "赛车系统: 按名字搜索赛道", "请输入搜索关键字，多个关键字请用空格隔开:", TrackListMainDialog.this)
+				new AbstractInputDialog(player, shoebill, eventManager, TrackListMainDialog.this, "赛车系统: 按名字搜索赛道", "请输入搜索关键字，多个关键字请用空格隔开:")
 				{
 					public void onClickOk(String inputText)
 					{

@@ -11,7 +11,7 @@ public abstract class TrackNamingDialog extends AbstractInputDialog
 {
 	public TrackNamingDialog(Player player, Shoebill shoebill, EventManager rootEventManager, String caption, String message, AbstractDialog parentDialog)
 	{
-		super(player, shoebill, rootEventManager, caption, message, parentDialog);
+		super(player, shoebill, rootEventManager, parentDialog, caption, message);
 	}
 	
 	public void onClickOk(String inputText)

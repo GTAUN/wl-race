@@ -52,7 +52,7 @@ public abstract class CodeEditorDialog extends AbstractPageListDialog
 					
 					final String caption = String.format("代码编辑器: 编辑第 %1$d 行代码", lineNum);
 					final String message = String.format("您正在编辑第 %1$d 行代码，原始代码为:\n\n%2$s\n\n输入 {0000FF}INSERT{A9C4E4} 可以在本行上面插入代码；\n输入 {FF0000}DELETE{A9C4E4} 可以删除本行代码。\n\n请输入新的代码，每行最长 144 字节:", lineNum, line);
-					new AbstractInputDialog(player, shoebill, rootEventManager, caption, message, CodeEditorDialog.this)
+					new AbstractInputDialog(player, shoebill, rootEventManager, CodeEditorDialog.this, caption, message)
 					{
 						@Override
 						public void onClickOk(String inputText)
@@ -109,7 +109,7 @@ public abstract class CodeEditorDialog extends AbstractPageListDialog
 	{
 		final String caption = String.format("代码编辑器: 添加第 %1$d 行代码", line);
 		final String message = String.format("请您输入第 %1$s 行的新代码，每行最长 144 字节:", line);
-		new AbstractInputDialog(player, shoebill, rootEventManager, caption, message, dialog)
+		new AbstractInputDialog(player, shoebill, rootEventManager, dialog, caption, message)
 		{
 			@Override
 			public void onClickOk(String inputText)

@@ -57,7 +57,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 				
 				String caption = String.format("%1$s: %2$s: 编辑比赛名称", "赛车系统", racingTypeStr);
 				String message = "请输入新的比赛名称:";
-				new AbstractInputDialog(player, shoebill, eventManager, caption, message, StartNewRacingDialog.this)
+				new AbstractInputDialog(player, shoebill, eventManager, StartNewRacingDialog.this, caption, message)
 				{
 					public void onClickOk(String inputText)
 					{
