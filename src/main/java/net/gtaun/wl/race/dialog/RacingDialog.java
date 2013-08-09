@@ -158,6 +158,7 @@ public class RacingDialog extends AbstractListDialog
 			public boolean isEnabled()
 			{
 				if (racingManager.getPlayerRacing(player) != racing) return false;
+				if (racing.getStatus() == RacingStatus.WAITING && racing.getSponsor() == player) return false;
 				return true;
 			}
 			
@@ -175,6 +176,35 @@ public class RacingDialog extends AbstractListDialog
 					{
 						player.playSound(1083, player.getLocation());
 						racing.leave(player);
+					}
+				}.show();
+			}
+		});
+
+		dialogListItems.add(new DialogListItem("取消比赛")
+		{
+			@Override
+			public boolean isEnabled()
+			{
+				if (racingManager.getPlayerRacing(player) != racing) return false;
+				if (racing.getStatus() != RacingStatus.WAITING || racing.getSponsor() != player) return false;
+				return true;
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				if (racingManager.getPlayerRacing(player) != racing) return ;
+				
+				String text = String.format("您确定要取消 %1$s 比赛吗？", racing.getName());
+				new MsgboxDialog(player, shoebill, eventManager, RacingDialog.this, "取消比赛", text)
+				{
+					@Override
+					protected void onClickOk()
+					{
+						player.playSound(1083, player.getLocation());
+						racing.cancel();
 					}
 				}.show();
 			}
