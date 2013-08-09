@@ -149,6 +149,9 @@ public class Racing extends AbstractShoebillContext
 		manager.joinRacing(this, player);
 		players.add(player);
 
+		TrackCheckpoint first = track.getCheckpoints().get(0);
+		player.setRaceCheckpoint(first.getRaceCheckpoint());
+
 		player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已参与 %2$s 比赛，赛道为 %3$s 。", "赛车系统", getName(), track.getName());
 		for (Player otherPlayer : getPlayers())
 		{
@@ -285,6 +288,7 @@ public class Racing extends AbstractShoebillContext
 		{
 			Player player = event.getPlayer();
 			if (!playerContexts.containsKey(player)) return;
+			if (status == RacingStatus.WAITING) return;
 
 			TrackRaceCheckpoint checkpoint = (TrackRaceCheckpoint) event.getCheckpoint();
 			TrackCheckpoint trackCheckpoint = checkpoint.getTrackCheckpoint();
