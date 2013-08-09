@@ -25,7 +25,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 	private String racingName;
 	
 	
-	public StartNewRacingDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, RaceServiceImpl raceService, final Track track)
+	public StartNewRacingDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService, final Track track)
 	{
 		super(player, shoebill, eventManager, parentDialog);
 
@@ -87,7 +87,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
-				show();
+				new TrackDialog(player, shoebill, eventManager, StartNewRacingDialog.this, raceService, track).show();
 			}
 		});
 		
@@ -162,6 +162,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 				racing.setName(racingName);
 				
 				player.setLocation(location);
+				new RacingDialog(player, shoebill, eventManager, null, raceService, racing).show();
 			}
 			
 			@Override

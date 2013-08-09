@@ -18,12 +18,22 @@ import net.gtaun.wl.race.track.TrackCheckpoint;
 
 public class RacingDialog extends AbstractListDialog
 {
+	private final RaceServiceImpl raceService;
+	private final Racing racing;
+	
+	
 	public RacingDialog
 	(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService, final Racing racing)
 	{
 		super(player, shoebill, eventManager, parentDialog);
+		this.raceService = raceService;
+		this.racing = racing;
 		this.caption = String.format("%1$s: 查看比赛 %2$s 的信息", "赛车系统", racing.getName());
-		
+	}
+	
+	@Override
+	public void show()
+	{
 		final Track track = racing.getTrack();
 		final RacingManagerImpl racingManager = raceService.getRacingManager();
 
@@ -122,6 +132,25 @@ public class RacingDialog extends AbstractListDialog
 			}
 		});
 		
+		dialogListItems.add(new DialogListItem("开始比赛")
+		{
+			@Override
+			public boolean isEnabled()
+			{
+				if (racing.getStatus() != RacingStatus.WAITING) return false;
+				if (racingManager.getPlayerRacing(player) != racing) return false;
+				if (racing.getSponsor() != player) return false;
+				return true;
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				racing.begin();
+			}
+		});
+		
 		dialogListItems.add(new DialogListItem("退出比赛")
 		{
 			@Override
@@ -149,5 +178,48 @@ public class RacingDialog extends AbstractListDialog
 				}.show();
 			}
 		});
+		
+		dialogListItems.add(new DialogListItem()
+		{
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				show();
+			}
+		});
+
+		List<Player> players = racing.getPlayers();
+		for (final Player joinedPlayer : players)
+		{
+			String item = String.format("参赛者: %1$s", joinedPlayer.getName());
+			dialogListItems.add(new DialogListItem(item)
+			{
+				@Override
+				public void onItemSelect()
+				{
+					player.playSound(1083, player.getLocation());
+					if (player != racing.getSponsor() || player == joinedPlayer)
+					{
+						show();
+					}
+					else
+					{
+						String text = String.format("您确定要踢出参赛者 %1$s 吗？", joinedPlayer.getName());
+						new MsgboxDialog(player, shoebill, rootEventManager, RacingDialog.this, "踢出参赛者", text)
+						{
+							protected void onClickOk()
+							{
+								player.playSound(1083, player.getLocation());
+								racing.kick(joinedPlayer);
+								show();
+							}
+						}.show();
+					}
+				}
+			});
+		}
+		
+		super.show();
 	}
 }

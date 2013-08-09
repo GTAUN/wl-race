@@ -186,6 +186,18 @@ public class Racing extends AbstractShoebillContext
 			}
 		}
 	}
+
+	public void kick(Player player)
+	{
+		player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已被踢出 %2$s 比赛。", "赛车系统", getName());
+		for (Player otherPlayer : players)
+		{
+			if (otherPlayer == player) continue;
+			otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 已被踢出 %3$s 比赛。", "赛车系统", player.getName(), getName());
+		}
+		
+		leave(player);
+	}
 	
 	public void begin()
 	{
