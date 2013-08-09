@@ -37,6 +37,7 @@ public class RacingDialog extends AbstractListDialog
 		final Track track = racing.getTrack();
 		final RacingManagerImpl racingManager = raceService.getRacingManager();
 
+		dialogListItems.clear();
 		dialogListItems.add(new DialogListItem()
 		{
 			@Override
