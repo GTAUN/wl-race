@@ -144,4 +144,11 @@ public class TrackCheckpoint
 	{
 		return raceCheckpoint;
 	}
+	
+	public float getDistance()
+	{
+		TrackCheckpoint next = getNext();
+		if (next == null) return 0.0f;
+		return location.distance(next.getLocation());
+	}
 }

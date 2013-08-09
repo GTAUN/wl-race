@@ -15,6 +15,8 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	private ScriptExecutor scriptExecutor;
 	private TrackCheckpoint currentCheckpoint;
 	
+	private RacingHudWidget hudWidget;
+	
 	
 	public RacingPlayerContextImpl(Shoebill shoebill, EventManager rootEventManager, Player player, Racing racing, TrackCheckpoint startCheckpoint)
 	{
@@ -28,6 +30,9 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	{
 		scriptExecutor = ScriptExecutorFactory.createCheckpointScriptExecutor(player);
 		
+		hudWidget = new RacingHudWidget(shoebill, rootEventManager, player, this);
+		hudWidget.init();
+		addDestroyable(hudWidget);
 	}
 	
 	@Override
@@ -68,7 +73,13 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	@Override
 	public float getCompletionPercent()
 	{
-		// TODO Auto-generated method stub
-		return 0;
+		TrackCheckpoint next = currentCheckpoint.getNext();
+		float distance = 0.0f, cpDistance = currentCheckpoint.getDistance();
+		
+		if (next != null) distance = next.getLocation().distance(player.getLocation());
+		if (distance > cpDistance) distance = cpDistance;
+		
+		float nextCheckpointCompleted = 1.0f - (distance / cpDistance);
+		return ((float)getPassedCheckpoints() + nextCheckpointCompleted) / (getTrackCheckpoints() - 1);
 	}
 }
