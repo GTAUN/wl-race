@@ -98,7 +98,6 @@ public class RacingHudWidget extends AbstractPlayerContext
 		addDestroyable(rankingNumber);
 		addDestroyable(checkpointNumber);
 		addDestroyable(progressBarBg);
-		addDestroyable(progressBarPlayer);
 		addDestroyable(timer);
 		
 		update();
@@ -107,7 +106,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 	@Override
 	protected void onDestroy()
 	{
-		
+		progressBarPlayer.destroy();
 	}
 	
 	private void update()
@@ -143,7 +142,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 		SampObjectFactory factory = shoebill.getSampObjectFactory();
 			
 		progressBarPlayer.destroy();
-		progressBarPlayer = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+175*(1.0f-completionPercent), 15, 5);
+		progressBarPlayer = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+185*(1.0f-completionPercent), 15, 5);
 		progressBarPlayer.setBoxColor(new Color(255, 0, 0, 128));
 		progressBarPlayer.show();
 	}

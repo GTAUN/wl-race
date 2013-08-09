@@ -145,7 +145,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("发起新比赛")
+		dialogListItems.add(new DialogListItem("发起比赛")
 		{
 			@Override
 			public boolean isEnabled()

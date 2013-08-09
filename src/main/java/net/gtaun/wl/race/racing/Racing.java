@@ -116,7 +116,7 @@ public class Racing extends AbstractShoebillContext
 	
 	public List<Player> getPlayers()
 	{
-		List<Player> allPlayers = new ArrayList<>(getRankingPlayers());
+		List<Player> allPlayers = new ArrayList<>(getPlayerNumber());
 		allPlayers.addAll(players);
 		allPlayers.addAll(finishedPlayers);
 		return allPlayers;
@@ -186,6 +186,8 @@ public class Racing extends AbstractShoebillContext
 				otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 已退出 %3$s 比赛。", "赛车系统", player.getName(), getName());
 			}
 		}
+		
+		if (players.size() == 0) end();
 	}
 
 	public void kick(Player player)
@@ -231,6 +233,7 @@ public class Racing extends AbstractShoebillContext
 		if (status != RacingStatus.RACING) return;
 		status = RacingStatus.ENDED;
 		
+		manager.destroyRacing(this);
 		destroy();
 	}
 	
@@ -246,9 +249,9 @@ public class Racing extends AbstractShoebillContext
 		return index + 1 + finishedPlayers.size();
 	}
 	
-	public int getRankingPlayers()
+	public int getPlayerNumber()
 	{
-		return playerContexts.size() + finishedPlayers.size();
+		return players.size() + finishedPlayers.size();
 	}
 	
 	private void updateRacingRankedList()
