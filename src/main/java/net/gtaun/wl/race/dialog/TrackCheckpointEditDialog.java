@@ -107,14 +107,8 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 		dialogListItems.add(new DialogListItemRadio("类型:")
 		{
 			{
-				addItem(new RadioItem("赛车")
+				addItem(new RadioItem("赛车", Color.RED)
 				{
-					@Override
-					public Color getCheckedColor()
-					{
-						return Color.RED;
-					}
-					
 					@Override
 					public void onSelected()
 					{
@@ -122,14 +116,8 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 					}
 				});
 				
-				addItem(new RadioItem("飞行")
+				addItem(new RadioItem("飞行", Color.BLUE)
 				{
-					@Override
-					public Color getCheckedColor()
-					{
-						return Color.BLUE;
-					}
-					
 					@Override
 					public void onSelected()
 					{
