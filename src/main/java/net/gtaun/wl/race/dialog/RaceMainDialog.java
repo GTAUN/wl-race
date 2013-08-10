@@ -108,6 +108,16 @@ public class RaceMainDialog extends AbstractListDialog
 			}
 		});
 
+		dialogListItems.add(new DialogListItem("当前比赛列表 ...")
+		{
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				new RacingListDialog(player, shoebill, eventManager, RaceMainDialog.this, raceService).show();
+			}
+		});
+
 		dialogListItems.add(new DialogListItem("创建新赛道")
 		{
 			@Override

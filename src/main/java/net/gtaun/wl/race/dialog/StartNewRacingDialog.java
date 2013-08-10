@@ -156,9 +156,8 @@ public class StartNewRacingDialog extends AbstractListDialog
 			
 			private void startNewRacing(Location location)
 			{
-				Racing racing = racingManager.createRacing(track, player, racingName);
+				racingManager.createRacing(track, player, racingName);
 				player.setLocation(location);
-				new RacingDialog(player, shoebill, eventManager, null, raceService, racing).show();
 			}
 			
 			@Override

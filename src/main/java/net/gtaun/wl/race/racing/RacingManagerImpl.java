@@ -1,6 +1,7 @@
 package net.gtaun.wl.race.racing;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,6 +11,7 @@ import java.util.Map.Entry;
 
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.AbstractShoebillContext;
+import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.event.PlayerEventHandler;
 import net.gtaun.shoebill.event.player.PlayerDisconnectEvent;
 import net.gtaun.shoebill.object.Player;
@@ -68,6 +70,15 @@ public class RacingManagerImpl extends AbstractShoebillContext implements Racing
 		Racing racing = new Racing(shoebill, rootEventManager, this, track, sponsor, name);
 		racings.add(racing);
 		racing.join(sponsor);
+		sponsor.sendMessage(Color.LIGHTBLUE, "%1$s: 在等待比赛开始的时候，在车上按两下喇叭 (H键或Caps Lock键) 可以呼出比赛菜单。", "赛车系统");
+		
+		Collection<Player> players = shoebill.getSampObjectStore().getPlayers();
+		for (Player player : players)
+		{
+			if (player == sponsor) continue;
+			sponsor.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 举办了比赛 %3$s (赛道 %4$s)，请在车上按下两下 End 键可以参加比赛。", "赛车系统", sponsor.getName(), racing.getName(), track.getName());
+		}
+			
 		return racing;
 	}
 	

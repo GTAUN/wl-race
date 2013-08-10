@@ -23,6 +23,7 @@ import net.gtaun.shoebill.common.player.AbstractPlayerContext;
 import net.gtaun.shoebill.constant.TextDrawAlign;
 import net.gtaun.shoebill.constant.TextDrawFont;
 import net.gtaun.shoebill.data.Color;
+import net.gtaun.shoebill.exception.CreationFailedException;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.object.PlayerTextdraw;
 import net.gtaun.shoebill.object.Timer;
@@ -43,14 +44,14 @@ public class RacingHudWidget extends AbstractPlayerContext
 	private PlayerTextdraw otherInfo;
 
 	private PlayerTextdraw progressBarBg;
-	private List<PlayerTextdraw> progressBarPlayers;
+	private List<PlayerTextdraw> progressBarTextdraws;
 	
 	
 	public RacingHudWidget(Shoebill shoebill, EventManager rootEventManager, Player player, RacingPlayerContext racingPlayerContext)
 	{
 		super(shoebill, rootEventManager, player);
 		this.racingPlayerContext = racingPlayerContext;
-		progressBarPlayers = new ArrayList<>();
+		progressBarTextdraws = new ArrayList<>();
 	}
 
 	@Override
@@ -117,8 +118,8 @@ public class RacingHudWidget extends AbstractPlayerContext
 	@Override
 	protected void onDestroy()
 	{
-		for (PlayerTextdraw textdraw : progressBarPlayers) textdraw.destroy();
-		progressBarPlayers.clear();
+		for (PlayerTextdraw textdraw : progressBarTextdraws) textdraw.destroy();
+		progressBarTextdraws.clear();
 	}
 	
 	private void update()
@@ -174,8 +175,8 @@ public class RacingHudWidget extends AbstractPlayerContext
 		
 		SampObjectFactory factory = shoebill.getSampObjectFactory();
 		
-		for (PlayerTextdraw textdraw : progressBarPlayers) textdraw.destroy();
-		progressBarPlayers.clear();
+		for (PlayerTextdraw textdraw : progressBarTextdraws) textdraw.destroy();
+		progressBarTextdraws.clear();
 		
 		List<RacingPlayerContext> rankedList = racing.getRacingRankedList();
 		for (int i=0; i<rankedList.size(); i++)
@@ -183,20 +184,33 @@ public class RacingHudWidget extends AbstractPlayerContext
 			RacingPlayerContext context = rankedList.get(i);
 			float percent = context.getCompletionPercent();
 			
-			PlayerTextdraw draw = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+188*(1.0f-percent), 15, 4);
-			draw.setBoxColor(new Color(context.getPlayer().getColor().getValue()<<8|0x7F));
-			draw.show();
-			progressBarPlayers.add(draw);
+			try
+			{
+				PlayerTextdraw draw = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+188*(1.0f-percent), 15, 4);
+				draw.setBoxColor(new Color(context.getPlayer().getColor().getValue() & 0xFFFFFF00 | 0x7F));
+				draw.show();
+				progressBarTextdraws.add(draw);
+			}
+			catch (CreationFailedException e)
+			{
+				System.err.println("PlayerTextdraw CreationFailed.");
+			}
 			
-			PlayerTextdraw text = TextDrawUtils.createPlayerText(factory, player, 18, 240+188*(1.0f-percent)-4, context.getPlayer().getName());
-			text.setAlignment(TextDrawAlign.LEFT);
-			text.setFont(TextDrawFont.FONT2);
-			text.setLetterSize(0.25f, 0.8f);
-			text.setShadowSize(1);
-			text.show();
-			progressBarPlayers.add(text);
+			try
+			{
+				PlayerTextdraw text = TextDrawUtils.createPlayerText(factory, player, 18, 240+188*(1.0f-percent)-4, context.getPlayer().getName());
+				text.setAlignment(TextDrawAlign.LEFT);
+				text.setFont(TextDrawFont.FONT2);
+				text.setLetterSize(0.25f, 0.8f);
+				text.setShadowSize(1);
+				text.show();
+				progressBarTextdraws.add(text);
+			}
+			catch (Exception e)
+			{
+				System.err.println("PlayerTextdraw CreationFailed.");
+			}
 		}
-		
 	}
 }
 
