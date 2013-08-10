@@ -11,6 +11,7 @@ public interface TrackManager
 	void renameTrack(Track track, String name) throws AlreadyExistException, IllegalArgumentException;
 	
 	Track createTrack(Player player, String name) throws AlreadyExistException, IllegalArgumentException;
+	Track createTrack(String author, String name) throws AlreadyExistException, IllegalArgumentException;
 	Track getTrack(String name);
 	
 	void deleteTrack(Track track);

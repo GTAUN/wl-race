@@ -71,6 +71,17 @@ public class TrackManagerImpl implements TrackManager, Saveable
 		tracks.put(track.getName(), track);
 		return track;
 	}
+
+	@Override
+	public Track createTrack(String author, String name) throws AlreadyExistException, IllegalArgumentException
+	{
+		if (!TrackUtil.isVaildName(name)) throw new IllegalArgumentException();
+		if (tracks.containsKey(name)) throw new AlreadyExistException();
+		
+		Track track = new Track(this, name, author);
+		tracks.put(track.getName(), track);
+		return track;
+	}
 	
 	@Override
 	public Track getTrack(String name)

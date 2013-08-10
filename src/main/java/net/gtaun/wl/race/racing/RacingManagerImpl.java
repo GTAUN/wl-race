@@ -76,7 +76,7 @@ public class RacingManagerImpl extends AbstractShoebillContext implements Racing
 		for (Player player : players)
 		{
 			if (player == sponsor) continue;
-			sponsor.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 举办了比赛 %3$s (赛道 %4$s)，请在车上按下两下 End 键可以参加比赛。", "赛车系统", sponsor.getName(), racing.getName(), track.getName());
+			player.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 举办了比赛 %3$s (赛道 %4$s)，请在车上按下两下 End 键可以参加比赛。", "赛车系统", sponsor.getName(), racing.getName(), track.getName());
 		}
 			
 		return racing;

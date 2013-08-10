@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.gtaun.shoebill.data.Location;
+
 import org.bson.types.ObjectId;
 
 import com.google.code.morphia.annotations.Entity;
@@ -75,7 +77,7 @@ public class Track
 		for (TrackCheckpoint checkpoint : checkpoints) checkpoint.setTrack(this);
 	}
 	
-	public void setTrackManager(TrackManagerImpl trackManager)
+	void setTrackManager(TrackManagerImpl trackManager)
 	{
 		this.trackManager = trackManager;
 	}
@@ -130,9 +132,11 @@ public class Track
 		return Collections.unmodifiableList(checkpoints);
 	}
 	
-	public void addCheckpoint(TrackCheckpoint checkpoint)
+	public TrackCheckpoint createCheckpoint(Location location)
 	{
+		TrackCheckpoint checkpoint = new TrackCheckpoint(this, location);
 		checkpoints.add(checkpoint);
+		return checkpoint;
 	}
 	
 	public void removeChechpoint(TrackCheckpoint checkpoint)

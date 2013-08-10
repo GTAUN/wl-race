@@ -13,6 +13,7 @@
 
 package net.gtaun.wl.race.impl;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,6 +36,7 @@ import net.gtaun.util.event.ManagedEventManager;
 import net.gtaun.wl.race.RacePlugin;
 import net.gtaun.wl.race.RaceService;
 import net.gtaun.wl.race.dialog.RaceMainDialog;
+import net.gtaun.wl.race.importer.SraceImporter;
 import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackManagerImpl;
@@ -86,6 +88,8 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	
 	protected void onInit()
 	{
+		new SraceImporter(trackManager).importTracks(new File(plugin.getDataDir(), "import/srace/tracks"));
+		
 		eventManager.registerHandler(PlayerCommandEvent.class, playerEventHandler, HandlerPriority.NORMAL);
 		
 		PlayerLifecycleObjectFactory<PlayerActuator> objectFactory = new PlayerLifecycleObjectFactory<PlayerActuator>()

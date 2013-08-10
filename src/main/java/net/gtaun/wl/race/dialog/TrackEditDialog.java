@@ -121,7 +121,7 @@ public class TrackEditDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				
-				TrackCheckpoint checkpoint = new TrackCheckpoint(track, player.getLocation());
+				TrackCheckpoint checkpoint = track.createCheckpoint(player.getLocation());
 				new TrackCheckpointEditDialog(player, shoebill, eventManager, null, checkpoint).show();
 			}
 		});

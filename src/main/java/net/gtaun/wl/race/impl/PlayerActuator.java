@@ -120,7 +120,7 @@ public class PlayerActuator extends AbstractPlayerContext
 				}
 				else if (keyState.isKeyPressed(PlayerKey.ANALOG_DOWN))
 				{
-					TrackCheckpoint checkpoint = new TrackCheckpoint(editingTrack, player.getLocation());
+					TrackCheckpoint checkpoint = editingTrack.createCheckpoint(player.getLocation());
 					new TrackCheckpointEditDialog(player, shoebill, eventManager, null, checkpoint).show();
 				}
 			}

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -99,10 +100,18 @@ public class Racing extends AbstractShoebillContext
 	@Override
 	protected void onDestroy()
 	{
-		manager.destroyRacing(this);
-		for (Player player : players) leave(player);
+		for (Iterator<Player> it = players.iterator(); it.hasNext(); )
+		{
+			Player player = it.next();
+			it.remove();
+			leave(player);
+		}
+		players.clear();
+		
 		for (RacingPlayerContextImpl ctx : playerContexts.values()) ctx.destroy();
 		playerContexts.clear();
+		
+		manager.destroyRacing(this);
 	}
 	
 	public Track getTrack()
@@ -173,16 +182,7 @@ public class Racing extends AbstractShoebillContext
 		}
 		players.remove(player);
 
-		if (finishedPlayers.contains(player))
-		{
-			player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已完成 %2$s 比赛。", "赛车系统", getName());
-			for (Player otherPlayer : getPlayers())
-			{
-				if (otherPlayer == player) continue;
-				otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 已完成 %3$s 比赛。", "赛车系统", player.getName(), getName());
-			}
-		}
-		else
+		if (!finishedPlayers.contains(player) && status != RacingStatus.ENDED)
 		{
 			player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已离开 %2$s 比赛。", "赛车系统", getName());
 			for (Player otherPlayer : getPlayers())
@@ -209,11 +209,12 @@ public class Racing extends AbstractShoebillContext
 	
 	public void cancel()
 	{
-		end();
 		for (Player otherPlayer : getPlayers())
 		{
 			otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: 比赛 %2$s 已被取消。", "赛车系统", getName());
 		}
+		
+		end();
 	}
 	
 	public void begin()
@@ -323,6 +324,13 @@ public class Racing extends AbstractShoebillContext
 			{
 				finishedPlayers.add(player);
 				leave(player);
+
+				player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已完成 %2$s 比赛。", "赛车系统", getName());
+				for (Player otherPlayer : getPlayers())
+				{
+					if (otherPlayer == player) continue;
+					otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 已完成 %3$s 比赛。", "赛车系统", player.getName(), getName());
+				}
 			}
 		}
 		

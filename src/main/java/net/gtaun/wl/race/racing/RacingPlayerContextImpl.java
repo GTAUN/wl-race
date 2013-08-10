@@ -155,6 +155,7 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 		RacingPlayerContext prev = rankedList.get(index-1);
 		float distanceDiff = getRemainingDistance() - prev.getRemainingDistance();
 		
-		return distanceDiff / speed;
+		float diff = distanceDiff / speed;
+		return diff >= 0.0f ? diff : 0.0f;
 	}
 }

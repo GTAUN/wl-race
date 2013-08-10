@@ -58,12 +58,12 @@ public class TrackCheckpoint
 	private String script;
 	
 
-	public TrackCheckpoint()
+	private TrackCheckpoint()
 	{
 		raceCheckpoint = new TrackRaceCheckpoint();
 	}
 
-	public TrackCheckpoint(Track track, Location location)
+	TrackCheckpoint(Track track, Location location)
 	{
 		this();
 		this.track = track;
@@ -77,7 +77,7 @@ public class TrackCheckpoint
 		return track;
 	}
 	
-	public void setTrack(Track track)
+	void setTrack(Track track)
 	{
 		this.track = track;
 	}

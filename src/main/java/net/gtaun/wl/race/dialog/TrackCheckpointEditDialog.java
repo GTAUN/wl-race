@@ -31,7 +31,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 		
 		if (track.getCheckpoints().contains(checkpoint) == false) player.setLocation(checkpoint.getLocation());
 
-		dialogListItems.add(new DialogListItem("保存")
+		dialogListItems.add(new DialogListItem("完成")
 		{
 			@Override
 			public boolean isEnabled()
@@ -43,7 +43,6 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
-				track.addCheckpoint(checkpoint);
 				showParentDialog();
 			}
 		});

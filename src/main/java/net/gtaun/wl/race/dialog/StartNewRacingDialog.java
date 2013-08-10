@@ -147,13 +147,6 @@ public class StartNewRacingDialog extends AbstractListDialog
 		
 		dialogListItems.add(new DialogListItem("发起比赛")
 		{
-			@Override
-			public boolean isEnabled()
-			{
-				if (track.getStatus() != TrackStatus.COMPLETED) return false;
-				return true;
-			}
-			
 			private void startNewRacing(Location location)
 			{
 				racingManager.createRacing(track, player, racingName);

@@ -113,6 +113,7 @@ public class TrackDialog extends AbstractListDialog
 			public boolean isEnabled()
 			{
 				if (track.getStatus() == TrackStatus.RANKING) return false;
+				if (player.isAdmin()) return true;
 				return player.getName().equals(track.getAuthorUniqueId());
 			}
 			

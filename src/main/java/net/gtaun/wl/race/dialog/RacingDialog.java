@@ -133,25 +133,6 @@ public class RacingDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("开始比赛")
-		{
-			@Override
-			public boolean isEnabled()
-			{
-				if (racing.getStatus() != RacingStatus.WAITING) return false;
-				if (racingManager.getPlayerRacing(player) != racing) return false;
-				if (racing.getSponsor() != player) return false;
-				return true;
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				racing.begin();
-			}
-		});
-		
 		dialogListItems.add(new DialogListItem("退出比赛")
 		{
 			@Override
@@ -209,6 +190,25 @@ public class RacingDialog extends AbstractListDialog
 						RacingDialog.this.showParentDialog();
 					}
 				}.show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem("开始比赛")
+		{
+			@Override
+			public boolean isEnabled()
+			{
+				if (racing.getStatus() != RacingStatus.WAITING) return false;
+				if (racingManager.getPlayerRacing(player) != racing) return false;
+				if (racing.getSponsor() != player) return false;
+				return true;
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				racing.begin();
 			}
 		});
 		
