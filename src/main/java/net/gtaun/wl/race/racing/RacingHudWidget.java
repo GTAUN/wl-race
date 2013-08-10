@@ -44,7 +44,6 @@ public class RacingHudWidget extends AbstractPlayerContext
 
 	private PlayerTextdraw progressBarBg;
 	private List<PlayerTextdraw> progressBarPlayers;
-	//private PlayerTextdraw progressBarPlayer;
 	
 	
 	public RacingHudWidget(Shoebill shoebill, EventManager rootEventManager, Player player, RacingPlayerContext racingPlayerContext)
@@ -120,7 +119,6 @@ public class RacingHudWidget extends AbstractPlayerContext
 	{
 		for (PlayerTextdraw textdraw : progressBarPlayers) textdraw.destroy();
 		progressBarPlayers.clear();
-		//progressBarPlayer.destroy();
 	}
 	
 	private void update()
@@ -182,19 +180,23 @@ public class RacingHudWidget extends AbstractPlayerContext
 		List<RacingPlayerContext> rankedList = racing.getRacingRankedList();
 		for (int i=0; i<rankedList.size(); i++)
 		{
-			float percent = rankedList.get(i).getCompletionPercent();
+			RacingPlayerContext context = rankedList.get(i);
+			float percent = context.getCompletionPercent();
 			
-			PlayerTextdraw draw = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+185*(1.0f-percent), 15, 4);
-			draw.setBoxColor(new Color(player.getColor().getValue()<<8|0x7F));
+			PlayerTextdraw draw = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+188*(1.0f-percent), 15, 4);
+			draw.setBoxColor(new Color(context.getPlayer().getColor().getValue()<<8|0x7F));
 			draw.show();
-			
 			progressBarPlayers.add(draw);
+			
+			PlayerTextdraw text = TextDrawUtils.createPlayerText(factory, player, 18, 240+188*(1.0f-percent)-4, context.getPlayer().getName());
+			text.setAlignment(TextDrawAlign.LEFT);
+			text.setFont(TextDrawFont.FONT2);
+			text.setLetterSize(0.25f, 0.8f);
+			text.setShadowSize(1);
+			text.show();
+			progressBarPlayers.add(text);
 		}
 		
-//		progressBarPlayer.destroy();
-//		progressBarPlayer = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+185*(1.0f-completionPercent), 15, 5);
-//		progressBarPlayer.setBoxColor(new Color(255, 0, 0, 128));
-//		progressBarPlayer.show();
 	}
 }
 

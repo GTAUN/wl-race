@@ -209,7 +209,7 @@ public class TrackEditDialog extends AbstractListDialog
 						{
 							String format = "已取消删除赛道 %1$s 。";
 							String message = String.format(format, track.getName());
-							new MsgboxDialog(player, shoebill, rootEventManager, parentDialog, "取消删除赛道", message)
+							new MsgboxDialog(player, shoebill, rootEventManager, TrackEditDialog.this, "取消删除赛道", message)
 							{
 								protected void onClickOk()
 								{
@@ -218,12 +218,14 @@ public class TrackEditDialog extends AbstractListDialog
 							}.show();
 						}
 						
+						raceService.stopEditingTrack(player);
+						
 						TrackManagerImpl trackManager = raceService.getTrackManager();
 						trackManager.deleteTrack(track);
 						
 						String format = "赛道 %1$s 已经成功删除。";
 						String message = String.format(format, track.getName());
-						new MsgboxDialog(player, shoebill, rootEventManager, parentDialog, "删除赛道成功", message)
+						new MsgboxDialog(player, shoebill, rootEventManager, null, "删除赛道成功", message)
 						{
 							protected void onClickOk()
 							{

@@ -244,7 +244,7 @@ public class Racing extends AbstractShoebillContext
 	
 	public void end()
 	{
-		if (status != RacingStatus.RACING) return;
+		if (status == RacingStatus.ENDED) return;
 		status = RacingStatus.ENDED;
 		destroy();
 	}
