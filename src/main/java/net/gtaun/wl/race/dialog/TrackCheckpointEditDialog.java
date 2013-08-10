@@ -23,7 +23,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 	private final Track track;
 	
 	
-	public TrackCheckpointEditDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final TrackCheckpoint checkpoint)
+	public TrackCheckpointEditDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, final AbstractDialog parentDialog, final TrackCheckpoint checkpoint)
 	{
 		super(player, shoebill, eventManager, parentDialog);
 		this.checkpoint = checkpoint;
@@ -36,7 +36,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			@Override
 			public boolean isEnabled()
 			{
-				return track.getCheckpoints().contains(checkpoint) == false;
+				return parentDialog instanceof TrackEditDialog == false;
 			}
 			
 			@Override
@@ -104,23 +104,51 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItemSwitch("类型:", "赛车检查点", "飞行检查点")
+		dialogListItems.add(new DialogListItemRadio("类型:")
 		{
-			@Override
-			public void onItemSelect()
 			{
-				player.playSound(1083, player.getLocation());
+				addItem(new RadioItem("赛车")
+				{
+					@Override
+					public Color getCheckedColor()
+					{
+						return Color.RED;
+					}
+					
+					@Override
+					public void onSelected()
+					{
+						checkpoint.setType(RaceCheckpointType.NORMAL);
+					}
+				});
 				
-				if (checkpoint.getType() != RaceCheckpointType.NORMAL) checkpoint.setType(RaceCheckpointType.NORMAL);
-				else checkpoint.setType(RaceCheckpointType.AIR);
-				
-				show();
+				addItem(new RadioItem("飞行")
+				{
+					@Override
+					public Color getCheckedColor()
+					{
+						return Color.BLUE;
+					}
+					
+					@Override
+					public void onSelected()
+					{
+						checkpoint.setType(RaceCheckpointType.AIR);
+					}
+				});
 			}
 			
 			@Override
-			public boolean isSwitched()
+			public int getSelected()
 			{
-				return checkpoint.getType() == RaceCheckpointType.NORMAL;
+				return checkpoint.getType() == RaceCheckpointType.NORMAL ? 0 : 1;
+			}
+			
+			@Override
+			public void onItemSelect(RadioItem item)
+			{
+				player.playSound(1083, player.getLocation());
+				show();
 			}
 		});
 
