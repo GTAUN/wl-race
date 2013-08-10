@@ -23,10 +23,11 @@ public abstract class Importer
 			try
 			{
 				importTrack(file);
+				file.delete();
 			}
 			catch (Throwable e)
 			{
-				System.out.println("Cannot import this file.");
+				System.out.println("Import file \"" + file.getName() + "\" Failed.");
 			}
 		}
 	}
