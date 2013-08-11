@@ -199,7 +199,8 @@ public class Racing extends AbstractShoebillContext
 			}
 		}
 		
-		if (players.size() == 0) end();
+		if (player == sponsor && status == RacingStatus.WAITING) end();
+		else if (players.size() == 0) end();
 	}
 
 	public void kick(Player player)
