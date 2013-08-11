@@ -62,7 +62,71 @@ public class TrackDialog extends AbstractListDialog
 			{
 				String desc = track.getDesc();
 				if (StringUtils.isBlank(desc)) desc = "空";
-				return String.format("描述: %1$s", desc);
+				return String.format("描述: %1$s", StringUtils.abbreviate(desc, 60));
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem()
+		{
+			@Override
+			public String toItemString()
+			{
+				return String.format("状态: %1$s", track.getStatus());
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem()
+		{
+			@Override
+			public String toItemString()
+			{
+				return String.format("检查点数: %1$d", track.getCheckpoints().size());
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem()
+		{
+			@Override
+			public String toItemString()
+			{
+				return String.format("总长度: %1$1.2fKM", track.getLength()/1000.0f);
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem()
+		{
+			@Override
+			public String toItemString()
+			{
+				return String.format("当前距离: %1$1.2fKM", player.getLocation().distance(track.getStartLocation())/1000.0f);
 			}
 			
 			@Override

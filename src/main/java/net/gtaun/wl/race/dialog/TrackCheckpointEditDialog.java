@@ -133,7 +133,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			}
 			
 			@Override
-			public void onItemSelect(RadioItem item)
+			public void onItemSelect(RadioItem item, int index)
 			{
 				player.playSound(1083, player.getLocation());
 				show();

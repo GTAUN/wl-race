@@ -90,10 +90,6 @@ public class RacingHudWidget extends AbstractPlayerContext
 		progressBarBg.setBoxColor(new Color(0, 0, 0, 128));
 		progressBarBg.show();
 		
-		//progressBarPlayer = TextDrawUtils.createPlayerTextBG(factory, player, 2, 300, 15, 5);
-		//progressBarPlayer.setBoxColor(new Color(255, 0, 0, 128));
-		//progressBarPlayer.show();
-		
 		timer = factory.createTimer(100);
 		timer.setCallback(new TimerCallback()
 		{
@@ -186,7 +182,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 			
 			try
 			{
-				PlayerTextdraw draw = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+188*(1.0f-percent), 15, 4);
+				PlayerTextdraw draw = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+189*(1.0f-percent), 15, 4);
 				draw.setBoxColor(new Color(context.getPlayer().getColor().getValue() & 0xFFFFFF00 | 0x7F));
 				draw.show();
 				progressBarTextdraws.add(draw);
@@ -198,7 +194,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 			
 			try
 			{
-				PlayerTextdraw text = TextDrawUtils.createPlayerText(factory, player, 18, 240+188*(1.0f-percent)-4, context.getPlayer().getName());
+				PlayerTextdraw text = TextDrawUtils.createPlayerText(factory, player, 18, 240+189*(1.0f-percent)-4, context.getPlayer().getName());
 				text.setAlignment(TextDrawAlign.LEFT);
 				text.setFont(TextDrawFont.FONT2);
 				text.setLetterSize(0.25f, 0.8f);

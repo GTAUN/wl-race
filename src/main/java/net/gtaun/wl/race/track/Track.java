@@ -132,6 +132,18 @@ public class Track
 		return Collections.unmodifiableList(checkpoints);
 	}
 	
+	public float getLength()
+	{
+		if (checkpoints.isEmpty()) return 0.0f;
+		return checkpoints.get(0).getTotalDistance();
+	}
+	
+	public Location getStartLocation()
+	{
+		if (checkpoints.isEmpty()) return new Location();
+		return checkpoints.get(0).getLocation();
+	}
+	
 	public TrackCheckpoint createCheckpoint(Location location)
 	{
 		TrackCheckpoint checkpoint = new TrackCheckpoint(this, location);

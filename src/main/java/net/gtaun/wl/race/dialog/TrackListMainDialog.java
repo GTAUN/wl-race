@@ -30,7 +30,7 @@ public class TrackListMainDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("列出所有赛道 (按人气排序) ...")
+		dialogListItems.add(new DialogListItem("列出所有赛道 ...")
 		{
 			@Override
 			public void onItemSelect()
