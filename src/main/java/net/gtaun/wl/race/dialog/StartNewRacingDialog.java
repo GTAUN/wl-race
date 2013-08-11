@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
-import net.gtaun.shoebill.data.Location;
 import net.gtaun.shoebill.event.dialog.DialogCancelEvent.DialogCancelType;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
@@ -17,6 +16,7 @@ import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.Track.TrackStatus;
 import net.gtaun.wl.race.track.TrackCheckpoint;
+import net.gtaun.wl.race.util.RacingUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,7 +33,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 		final String racingTypeStr = (track.getStatus() == TrackStatus.EDITING) ? "测试编辑中的赛道" : "发起新比赛";
 		
 		this.caption = String.format("%1$s: %2$s", "赛车系统", racingTypeStr);
-		this.racingName = player.getName() + "'s Racing";
+		this.racingName = RacingUtil.getDefaultName(player, track);
 
 		dialogListItems.add(new DialogListItem()
 		{
@@ -100,10 +100,10 @@ public class StartNewRacingDialog extends AbstractListDialog
 				return track.getStatus() == TrackStatus.EDITING;
 			}
 			
-			private void startNewRacing(Location location)
+			private void startNewRacing()
 			{
 				Racing racing = racingManager.createRacing(track, player, racingName);
-				player.setLocation(location);
+				racing.teleToStartingPoint(player);
 				racing.beginCountdown();
 			}
 			
@@ -115,10 +115,6 @@ public class StartNewRacingDialog extends AbstractListDialog
 				List<TrackCheckpoint> checkpoints = track.getCheckpoints();
 				if (checkpoints.isEmpty()) return;
 				
-				Location startLoc = checkpoints.get(0).getLocation();
-				final Location location = new Location(startLoc);
-				location.setZ(location.getZ() + 2.0f);
-				
 				if (racingManager.isPlayerInRacing(player))
 				{
 					final Racing racing = racingManager.getPlayerRacing(player);
@@ -130,7 +126,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 						{
 							player.playSound(1083, player.getLocation());
 							racing.leave(player);
-							startNewRacing(location);
+							startNewRacing();
 						}
 						
 						@Override
@@ -141,16 +137,16 @@ public class StartNewRacingDialog extends AbstractListDialog
 						}
 					}.show();
 				}
-				else startNewRacing(location);
+				else startNewRacing();
 			}
 		});
 		
 		dialogListItems.add(new DialogListItem("发起比赛")
 		{
-			private void startNewRacing(Location location)
+			private void startNewRacing()
 			{
-				racingManager.createRacing(track, player, racingName);
-				player.setLocation(location);
+				Racing racing = racingManager.createRacing(track, player, racingName);
+				racing.teleToStartingPoint(player);
 			}
 			
 			@Override
@@ -158,11 +154,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				
-				List<TrackCheckpoint> checkpoints = track.getCheckpoints();
-				if (checkpoints.isEmpty()) return;
-				
-				final Location startLoc = checkpoints.get(0).getLocation();
-				
+				if (track.getCheckpoints().isEmpty()) return;
 				if (racingManager.isPlayerInRacing(player))
 				{
 					final Racing racing = racingManager.getPlayerRacing(player);
@@ -174,7 +166,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 						{
 							player.playSound(1083, player.getLocation());
 							racing.leave(player);
-							startNewRacing(startLoc);
+							startNewRacing();
 						}
 						
 						@Override
@@ -185,7 +177,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 						}
 					}.show();
 				}
-				else startNewRacing(startLoc);
+				else startNewRacing();
 			}
 		});
 	}

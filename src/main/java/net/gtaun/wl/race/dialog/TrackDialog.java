@@ -2,13 +2,17 @@ package net.gtaun.wl.race.dialog;
 
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
+import net.gtaun.shoebill.event.dialog.DialogCancelEvent.DialogCancelType;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
 import net.gtaun.wl.common.dialog.MsgboxDialog;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
+import net.gtaun.wl.race.racing.Racing;
+import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.Track.TrackStatus;
+import net.gtaun.wl.race.util.RacingUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,6 +26,8 @@ public class TrackDialog extends AbstractListDialog
 		super(player, shoebill, eventManager, parentDialog);
 		this.caption = String.format("%1$s: 查看赛道 %2$s 的信息", "赛车系统", track.getName());
 		this.track = track;
+		
+		final RacingManagerImpl racingManager = raceService.getRacingManager();
 		
 		dialogListItems.add(new DialogListItem()
 		{
@@ -168,6 +174,52 @@ public class TrackDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				new StartNewRacingDialog(player, shoebill, eventManager, TrackDialog.this, raceService, track).show();
+			}
+		});
+
+		dialogListItems.add(new DialogListItem("快速发起比赛")
+		{
+			@Override
+			public boolean isEnabled()
+			{
+				if (track.getCheckpoints().isEmpty()) return false;
+				return track.getStatus() != TrackStatus.EDITING;
+			}
+			
+			private void startNewRacing()
+			{
+				Racing racing = racingManager.createRacing(track, player, RacingUtil.getDefaultName(player, track));
+				racing.teleToStartingPoint(player);
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				
+				if (racingManager.isPlayerInRacing(player))
+				{
+					final Racing racing = racingManager.getPlayerRacing(player);
+					String text = String.format("当前正在参加 %1$s 比赛，您确定要退出并举行新比赛吗？", racing.getName());
+					new MsgboxDialog(player, shoebill, eventManager, TrackDialog.this, "开始新比赛", text)
+					{
+						@Override
+						protected void onClickOk()
+						{
+							player.playSound(1083, player.getLocation());
+							racing.leave(player);
+							startNewRacing();
+						}
+						
+						@Override
+						protected void onCancel(DialogCancelType type)
+						{
+							player.playSound(1083, player.getLocation());
+							showParentDialog();
+						}
+					}.show();
+				}
+				else startNewRacing();
 			}
 		});
 		

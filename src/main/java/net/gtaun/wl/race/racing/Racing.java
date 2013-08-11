@@ -15,6 +15,7 @@ import net.gtaun.shoebill.SampObjectFactory;
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.AbstractShoebillContext;
 import net.gtaun.shoebill.data.Color;
+import net.gtaun.shoebill.data.Location;
 import net.gtaun.shoebill.data.RaceCheckpoint;
 import net.gtaun.shoebill.event.PlayerEventHandler;
 import net.gtaun.shoebill.event.checkpoint.RaceCheckpointEnterEvent;
@@ -290,6 +291,13 @@ public class Racing extends AbstractShoebillContext
 		if (status == RacingStatus.ENDED) return;
 		status = RacingStatus.ENDED;
 		destroy();
+	}
+	
+	public void teleToStartingPoint(Player player)
+	{
+		Location location = new Location(track.getStartLocation());
+		location.setZ(location.getZ() + 2.0f);
+		player.setLocation(location);
 	}
 	
 	public List<RacingPlayerContext> getRacingRankedList()
