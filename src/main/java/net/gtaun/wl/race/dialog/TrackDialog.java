@@ -110,7 +110,7 @@ public class TrackDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("总长度: %1$1.2fKM", track.getLength()/1000.0f);
+				return String.format("总长度: %1$1.2f公里", track.getLength()/1000.0f);
 			}
 			
 			@Override
@@ -126,7 +126,7 @@ public class TrackDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("当前距离: %1$1.2fKM", player.getLocation().distance(track.getStartLocation())/1000.0f);
+				return String.format("当前距离: %1$1.1f米", player.getLocation().distance(track.getStartLocation()));
 			}
 			
 			@Override

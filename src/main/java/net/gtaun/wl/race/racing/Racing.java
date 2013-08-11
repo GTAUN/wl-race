@@ -165,12 +165,14 @@ public class Racing extends AbstractShoebillContext
 		TrackCheckpoint first = track.getCheckpoints().get(0);
 		player.setRaceCheckpoint(first.getRaceCheckpoint());
 
-		player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已参与 %2$s 比赛，赛道为 %3$s 。", "赛车系统", getName(), track.getName());
+		player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已参与 %2$s 比赛 (赛道 %3$s)。", "赛车系统", getName(), track.getName());
 		for (Player otherPlayer : getPlayers())
 		{
 			if (otherPlayer == player) continue;
 			otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 已参与 %3$s 比赛。", "赛车系统", player.getName(), getName());
 		}
+		
+		player.sendMessage(Color.LIGHTBLUE, "%1$s: 在参与比赛的时候，只需按两下喇叭 (H键或Caps Lock键) 即可快速呼出比赛菜单。", "赛车系统");
 	}
 	
 	public void leave(Player player)

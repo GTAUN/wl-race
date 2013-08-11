@@ -108,7 +108,7 @@ public class TrackListDialog extends AbstractPageListDialog
 			String trackName = track.getName();
 			String author = track.getAuthorUniqueId();
 			
-			String item = String.format("赛道: %1$s	{7F7F7F}by %2$s - 长度 %3$1.1fKM, 点数 %4$d",
+			String item = String.format("赛道: %1$s	{7F7F7F}by %2$s - 长度 %3$1.1f公里, 点数 %4$d",
 				StringUtils.abbreviate(trackName, 23) + StringUtils.repeat('\t', (23-trackName.length())/8),
 				author, track.getLength()/1000.0f, track.getCheckpoints().size());
 			

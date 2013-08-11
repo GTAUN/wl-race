@@ -15,11 +15,10 @@ import net.gtaun.wl.race.dialog.RacingListDialog;
 import net.gtaun.wl.race.dialog.TrackCheckpointEditDialog;
 import net.gtaun.wl.race.dialog.TrackEditDialog;
 import net.gtaun.wl.race.racing.Racing;
-import net.gtaun.wl.race.racing.Racing.RacingStatus;
 import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
-import net.gtaun.wl.race.track.TrackCheckpoint;
 import net.gtaun.wl.race.track.Track.TrackStatus;
+import net.gtaun.wl.race.track.TrackCheckpoint;
 import net.gtaun.wl.race.track.TrackEditor;
 
 import org.apache.commons.lang3.StringUtils;
@@ -135,7 +134,7 @@ public class PlayerActuator extends AbstractPlayerContext
 					{
 						RacingManagerImpl racingManager = raceService.getRacingManager();
 						Racing racing = racingManager.getPlayerRacing(player);
-						if (racing != null && racing.getStatus() == RacingStatus.WAITING)
+						if (racing != null)
 						{
 							new RacingDialog(player, shoebill, eventManager, null, raceService, racing).show();
 						}
