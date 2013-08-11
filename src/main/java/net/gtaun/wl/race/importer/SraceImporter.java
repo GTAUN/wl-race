@@ -14,9 +14,16 @@ import org.ini4j.Profile.Section;
 
 public class SraceImporter extends Importer
 {
-	public SraceImporter(TrackManager trackManager)
+	public SraceImporter(TrackManager trackManager, File baseDir)
 	{
-		super(trackManager);
+		super(trackManager, baseDir);
+	}
+
+	@Override
+	public void importAll()
+	{
+		File trackDir = new File(baseDir, "tracks");
+		if (trackDir.exists() && trackDir.isDirectory()) importTracks(trackDir);
 	}
 	
 	@Override

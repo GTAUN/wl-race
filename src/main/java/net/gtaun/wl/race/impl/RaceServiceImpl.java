@@ -88,7 +88,7 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	
 	protected void onInit()
 	{
-		new SraceImporter(trackManager).importTracks(new File(plugin.getDataDir(), "import/srace/tracks"));
+		new SraceImporter(trackManager, new File(plugin.getDataDir(), "import/srace")).importAll();
 		
 		eventManager.registerHandler(PlayerCommandEvent.class, playerEventHandler, HandlerPriority.NORMAL);
 		

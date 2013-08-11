@@ -7,12 +7,16 @@ import net.gtaun.wl.race.TrackManager;
 public abstract class Importer
 {
 	protected final TrackManager trackManager;
+	protected final File baseDir;
 	
 	
-	protected Importer(TrackManager trackManager)
+	protected Importer(TrackManager trackManager, File baseDir)
 	{
-		this.trackManager = trackManager;	
+		this.trackManager = trackManager;
+		this.baseDir = baseDir;
 	}
+	
+	public abstract void importAll() throws Throwable;
 	
 	public void importTracks(File dir)
 	{
