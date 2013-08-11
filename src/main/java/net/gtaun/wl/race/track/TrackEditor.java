@@ -86,10 +86,10 @@ public class TrackEditor extends AbstractPlayerContext
 				if (icon == null) icon = player.getMapIcon().createIcon();
 				else lastMapIcons.remove(checkpoint);
 				
-				final int fadeOutDistance = 1000;
-				int alpha = (int) checkpoint.getLocation().distance(player.getLocation());
-				if (alpha > fadeOutDistance) alpha = fadeOutDistance;
-				alpha = 255 * alpha / fadeOutDistance;
+				final float fadeOutDistance = 1000.0f;
+				float distance = checkpoint.getLocation().distance(player.getLocation());
+				if (distance > fadeOutDistance) distance = fadeOutDistance;
+				int alpha = (int) (255 * distance / fadeOutDistance);
 				
 				Color subColor = new Color(Color.GREEN);
 				subColor.setA(128);

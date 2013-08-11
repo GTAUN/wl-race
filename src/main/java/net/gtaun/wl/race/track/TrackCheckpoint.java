@@ -132,6 +132,14 @@ public class TrackCheckpoint
 		return track.getCheckpoints().indexOf(this);
 	}
 	
+	public TrackCheckpoint getPrev()
+	{
+		int index = getNumber() - 1;
+		if (index < 0) return null;
+		List<TrackCheckpoint> checkpoints = track.getCheckpoints();
+		return checkpoints.get(index);
+	}
+	
 	public TrackCheckpoint getNext()
 	{
 		int index = getNumber() + 1;
@@ -157,5 +165,15 @@ public class TrackCheckpoint
 		TrackCheckpoint next = getNext();
 		if (next == null) return 0.0f;
 		return location.distance(next.getLocation()) + next.getTotalDistance();
+	}
+	
+	public float getDistance(TrackCheckpoint checkpoint)
+	{
+		float distance = 0.0f;
+		for (TrackCheckpoint cp = this; checkpoint != cp && cp != null; cp = cp.getNext())
+		{
+			distance += cp.getNextDistance();
+		}
+		return distance;
 	}
 }
