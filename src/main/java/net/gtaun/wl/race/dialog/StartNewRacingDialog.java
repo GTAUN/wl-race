@@ -104,7 +104,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 			{
 				Racing racing = racingManager.createRacing(track, player, racingName);
 				player.setLocation(location);
-				racing.begin();
+				racing.beginCountdown();
 			}
 			
 			@Override

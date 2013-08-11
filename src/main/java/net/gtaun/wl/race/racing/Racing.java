@@ -36,6 +36,7 @@ public class Racing extends AbstractShoebillContext
 	public enum RacingStatus
 	{
 		WAITING,
+		COUNTING,
 		RACING,
 		ENDED,
 	}
@@ -58,6 +59,9 @@ public class Racing extends AbstractShoebillContext
 	private List<RacingPlayerContext> racingRankedList;
 	
 	private Timer timer;
+	
+	private Timer countTimer;
+	private int countdown;
 	
 	
 	Racing(Shoebill shoebill, EventManager rootEventManager, RacingManagerImpl racingManager, Track track, Player sponsor, String name)
@@ -217,10 +221,45 @@ public class Racing extends AbstractShoebillContext
 		end();
 	}
 	
+	public void beginCountdown()
+	{
+		if (status != RacingStatus.WAITING) throw new IllegalStateException();
+		
+		countTimer = shoebill.getSampObjectFactory().createTimer(1000, 5, new TimerCallback()
+		{
+			@Override
+			public void onTick(int factualInterval)
+			{
+				for (Player player : players)
+				{
+					player.sendGameText(2000, 6, "- %1$d -", countdown);
+					player.playSound(1056, player.getLocation());
+					countdown--;
+				}
+			}
+			
+			@Override
+			public void onStart()
+			{
+				status = RacingStatus.COUNTING;
+				countdown = 5;
+				onTick(0);
+			}
+			
+			@Override
+			public void onStop()
+			{
+				countTimer = null;
+				begin();
+			}
+		});
+		countTimer.start();
+	}
+	
 	public void begin()
 	{
-		if (status != RacingStatus.WAITING) return;
-		if (track.getCheckpoints().size() == 0) return;
+		if (status != RacingStatus.WAITING && status != RacingStatus.COUNTING) throw new IllegalStateException();
+		if (track.getCheckpoints().size() == 0) throw new IllegalStateException();
 		
 		startTime = new Date();
 		
@@ -238,6 +277,7 @@ public class Racing extends AbstractShoebillContext
 			
 			player.playSound(1057, player.getLocation());
 			player.setRaceCheckpoint(firstRaceCheckpoint);
+			player.sendGameText(1000, 6, "- ~r~GO! -");
 		}
 		
 		updateRacingRankedList();
@@ -318,7 +358,7 @@ public class Racing extends AbstractShoebillContext
 			player.setRaceCheckpoint(next);
 			
 			context.onPassCheckpoint(trackCheckpoint);
-			player.playSound(1038, player.getLocation());
+			player.playSound(1138, player.getLocation());
 			
 			if (next == null)
 			{

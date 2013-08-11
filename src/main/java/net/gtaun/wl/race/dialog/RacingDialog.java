@@ -208,7 +208,7 @@ public class RacingDialog extends AbstractListDialog
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
-				racing.begin();
+				racing.beginCountdown();
 			}
 		});
 		
