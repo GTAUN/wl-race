@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import net.gtaun.shoebill.common.Saveable;
 import net.gtaun.shoebill.exception.AlreadyExistException;
 import net.gtaun.shoebill.object.Player;
@@ -103,7 +105,8 @@ public class TrackManagerImpl implements TrackManager, Saveable
 		List<Track> list = new ArrayList<>();
 		for (Track track : tracks.values())
 		{
-			for (String word : keywords) if (!track.getName().contains(word)) continue;
+			String name = track.getName();
+			for (String word : keywords) if (!StringUtils.containsIgnoreCase(name, word)) continue;
 			list.add(track);
 		}
 		
@@ -114,7 +117,10 @@ public class TrackManagerImpl implements TrackManager, Saveable
 	public List<Track> searchTrackByAuthor(String uniqueId)
 	{
 		List<Track> list = new ArrayList<>();
-		for (Track track : tracks.values()) if (track.getAuthorUniqueId().equals(uniqueId)) list.add(track);
+		for (Track track : tracks.values())
+		{
+			if (track.getAuthorUniqueId().equalsIgnoreCase(uniqueId)) list.add(track);
+		}
 		return list;
 	}
 	
