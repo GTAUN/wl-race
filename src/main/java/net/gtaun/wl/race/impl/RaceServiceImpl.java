@@ -113,6 +113,8 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 			}
 		});
 		addDestroyable(timer);
+		
+		racingManager.init();
 	}
 
 	protected void onDestroy()
