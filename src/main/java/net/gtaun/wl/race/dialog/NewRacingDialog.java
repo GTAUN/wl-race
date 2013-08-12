@@ -1,31 +1,26 @@
 package net.gtaun.wl.race.dialog;
 
-import java.util.List;
-
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
-import net.gtaun.shoebill.event.dialog.DialogCancelEvent.DialogCancelType;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
-import net.gtaun.wl.common.dialog.MsgboxDialog;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing;
 import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.Track.TrackStatus;
-import net.gtaun.wl.race.track.TrackCheckpoint;
 import net.gtaun.wl.race.util.RacingUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class StartNewRacingDialog extends AbstractListDialog
+public class NewRacingDialog extends AbstractListDialog
 {
 	private String racingName;
 	
 	
-	public StartNewRacingDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService, final Track track)
+	public NewRacingDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService, final Track track)
 	{
 		super(player, shoebill, eventManager, parentDialog);
 
@@ -57,7 +52,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 				
 				String caption = String.format("%1$s: %2$s: 编辑比赛名称", "赛车系统", racingTypeStr);
 				String message = "请输入新的比赛名称:";
-				new AbstractInputDialog(player, shoebill, eventManager, StartNewRacingDialog.this, caption, message)
+				new AbstractInputDialog(player, shoebill, eventManager, NewRacingDialog.this, caption, message)
 				{
 					public void onClickOk(String inputText)
 					{
@@ -87,57 +82,7 @@ public class StartNewRacingDialog extends AbstractListDialog
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
-				new TrackDialog(player, shoebill, eventManager, StartNewRacingDialog.this, raceService, track).show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem("开始测试赛道")
-		{
-			@Override
-			public boolean isEnabled()
-			{
-				if (track.getCheckpoints().isEmpty()) return false;
-				return track.getStatus() == TrackStatus.EDITING;
-			}
-			
-			private void startNewRacing()
-			{
-				Racing racing = racingManager.createRacing(track, player, racingName);
-				racing.teleToStartingPoint(player);
-				racing.beginCountdown();
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				
-				List<TrackCheckpoint> checkpoints = track.getCheckpoints();
-				if (checkpoints.isEmpty()) return;
-				
-				if (racingManager.isPlayerInRacing(player))
-				{
-					final Racing racing = racingManager.getPlayerRacing(player);
-					String text = String.format("当前正在参加 %1$s 比赛，您确定要退出并举行新比赛吗？", racing.getName());
-					new MsgboxDialog(player, shoebill, eventManager, StartNewRacingDialog.this, "开始新比赛", text)
-					{
-						@Override
-						protected void onClickOk()
-						{
-							player.playSound(1083, player.getLocation());
-							racing.leave(player);
-							startNewRacing();
-						}
-						
-						@Override
-						protected void onCancel(DialogCancelType type)
-						{
-							player.playSound(1083, player.getLocation());
-							showParentDialog();
-						}
-					}.show();
-				}
-				else startNewRacing();
+				new TrackDialog(player, shoebill, eventManager, NewRacingDialog.this, raceService, track).show();
 			}
 		});
 		
@@ -158,22 +103,12 @@ public class StartNewRacingDialog extends AbstractListDialog
 				if (racingManager.isPlayerInRacing(player))
 				{
 					final Racing racing = racingManager.getPlayerRacing(player);
-					String text = String.format("当前正在参加 %1$s 比赛，您确定要退出并举行新比赛吗？", racing.getName());
-					new MsgboxDialog(player, shoebill, eventManager, StartNewRacingDialog.this, "开始新比赛", text)
+					new NewRacingConfirmDialog(player, shoebill, rootEventManager, NewRacingDialog.this, raceService, racing)
 					{
 						@Override
-						protected void onClickOk()
+						protected void startRacing()
 						{
-							player.playSound(1083, player.getLocation());
-							racing.leave(player);
 							startNewRacing();
-						}
-						
-						@Override
-						protected void onCancel(DialogCancelType type)
-						{
-							player.playSound(1083, player.getLocation());
-							showParentDialog();
 						}
 					}.show();
 				}

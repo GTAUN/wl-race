@@ -11,10 +11,13 @@ import net.gtaun.wl.common.dialog.AbstractInputDialog;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
 import net.gtaun.wl.common.dialog.MsgboxDialog;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
+import net.gtaun.wl.race.racing.Racing;
+import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.Track.TrackStatus;
 import net.gtaun.wl.race.track.TrackCheckpoint;
 import net.gtaun.wl.race.track.TrackManagerImpl;
+import net.gtaun.wl.race.util.RacingUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,6 +38,8 @@ public class TrackEditDialog extends AbstractListDialog
 	@Override
 	public void show()
 	{
+		final RacingManagerImpl racingManager = raceService.getRacingManager();
+		
 		dialogListItems.clear();
 		dialogListItems.add(new DialogListItem()
 		{
@@ -126,20 +131,52 @@ public class TrackEditDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("测试本赛道")
+		dialogListItems.add(new DialogListItem("删除赛道")
 		{
-			@Override
-			public boolean isEnabled()
-			{
-				if (track.getCheckpoints().isEmpty()) return false;
-				return true;
-			}
-			
 			@Override
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
-				new StartNewRacingDialog(player, shoebill, eventManager, TrackEditDialog.this, raceService, track).show();
+				
+				String format =
+					"警告！删除赛道将无法还原，所有的比赛记录也都将会消除。\n" +
+					"请您务必谨慎操作，有任何疑问，请先联系管理员解决。\n\n" +
+					"请您再次输入赛道名 %1$s 以确认删除操作：";
+				String message = String.format(format, track.getName());
+				new AbstractInputDialog(player, shoebill, rootEventManager, TrackEditDialog.this, "！！！删除赛道！！！", message)
+				{
+					public void onClickOk(String inputText)
+					{
+						player.playSound(1083, player.getLocation());
+						if (!track.equals(inputText))
+						{
+							String format = "已取消删除赛道 %1$s 。";
+							String message = String.format(format, track.getName());
+							new MsgboxDialog(player, shoebill, rootEventManager, TrackEditDialog.this, "取消删除赛道", message)
+							{
+								protected void onClickOk()
+								{
+									onClickCancel();
+								}
+							}.show();
+						}
+						
+						raceService.stopEditingTrack(player);
+						
+						TrackManagerImpl trackManager = raceService.getTrackManager();
+						trackManager.deleteTrack(track);
+						
+						String format = "赛道 %1$s 已经成功删除。";
+						String message = String.format(format, track.getName());
+						new MsgboxDialog(player, shoebill, rootEventManager, null, "删除赛道成功", message)
+						{
+							protected void onClickOk()
+							{
+								onClickCancel();
+							}
+						}.show();
+					}
+				}.show();
 			}
 		});
 		
@@ -188,52 +225,43 @@ public class TrackEditDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("删除赛道")
+		dialogListItems.add(new DialogListItem("测试本赛道")
 		{
+			@Override
+			public boolean isEnabled()
+			{
+				if (track.getCheckpoints().isEmpty()) return false;
+				return true;
+			}
+			
+			private void startNewRacing()
+			{
+				Racing racing = racingManager.createRacing(track, player, RacingUtil.getDefaultName(player, track));
+				racing.teleToStartingPoint(player);
+				racing.beginCountdown();
+			}
+			
 			@Override
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
 				
-				String format =
-					"警告！删除赛道将无法还原，所有的比赛记录也都将会消除。\n" +
-					"请您务必谨慎操作，有任何疑问，请先联系管理员解决。\n\n" +
-					"请您再次输入赛道名 %1$s 以确认删除操作：";
-				String message = String.format(format, track.getName());
-				new AbstractInputDialog(player, shoebill, rootEventManager, TrackEditDialog.this, "！！！删除赛道！！！", message)
+				List<TrackCheckpoint> checkpoints = track.getCheckpoints();
+				if (checkpoints.isEmpty()) return;
+				
+				if (racingManager.isPlayerInRacing(player))
 				{
-					public void onClickOk(String inputText)
+					final Racing racing = racingManager.getPlayerRacing(player);
+					new NewRacingConfirmDialog(player, shoebill, rootEventManager, TrackEditDialog.this, raceService, racing)
 					{
-						player.playSound(1083, player.getLocation());
-						if (!track.equals(inputText))
+						@Override
+						protected void startRacing()
 						{
-							String format = "已取消删除赛道 %1$s 。";
-							String message = String.format(format, track.getName());
-							new MsgboxDialog(player, shoebill, rootEventManager, TrackEditDialog.this, "取消删除赛道", message)
-							{
-								protected void onClickOk()
-								{
-									onClickCancel();
-								}
-							}.show();
+							startNewRacing();
 						}
-						
-						raceService.stopEditingTrack(player);
-						
-						TrackManagerImpl trackManager = raceService.getTrackManager();
-						trackManager.deleteTrack(track);
-						
-						String format = "赛道 %1$s 已经成功删除。";
-						String message = String.format(format, track.getName());
-						new MsgboxDialog(player, shoebill, rootEventManager, null, "删除赛道成功", message)
-						{
-							protected void onClickOk()
-							{
-								onClickCancel();
-							}
-						}.show();
-					}
-				}.show();
+					}.show();
+				}
+				else startNewRacing();
 			}
 		});
 		
