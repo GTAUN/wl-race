@@ -224,10 +224,10 @@ public class RaceMainDialog extends AbstractListDialog
 					"编译时间: %3$s\n\n" +
 					"开发: mk124\n" +
 					"功能设计: mk124\n" +
-					"设计顾问: 52_PLA(aka. Yin.J), [ITC]1314, [ITC]KTS\n" +
+					"设计顾问: 52_PLA(aka. Yin.J), [ITC]1314, [ITC]KTS, snwang1996\n" +
 					"数据采集: mk124, 52_PLA\n" +
-					"测试: 52_PLA, [ITC]1314, [ITC]KTS, SMALL_KR\n" +
-					"感谢: vvg, yezhizhu, Luck, Waunny\n\n" +
+					"测试: 52_PLA, [ITC]1314, [ITC]KTS, SMALL_KR, snwang1996\n" +
+					"感谢: 原未来世界制作团队成员(yezhizhu, vvg, fangye), Luck, Waunny\n\n" +
 					"本组件是新未来世界项目的一部分。\n" +
 					"本组件使用 GPL v2 许可证开放源代码。\n" +
 					"本组件禁止在任何商业或盈利性服务器上使用。\n";

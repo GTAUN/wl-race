@@ -238,8 +238,8 @@ public class Racing extends AbstractShoebillContext
 				{
 					player.sendGameText(2000, 6, "- %1$d -", countdown);
 					player.playSound(1056, player.getLocation());
-					countdown--;
 				}
+				countdown--;
 			}
 			
 			@Override
