@@ -140,7 +140,7 @@ public class Track
 	
 	public Location getStartLocation()
 	{
-		if (checkpoints.isEmpty()) return null;
+		if (checkpoints.isEmpty()) return new Location();
 		return checkpoints.get(0).getLocation();
 	}
 	

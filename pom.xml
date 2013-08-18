@@ -102,6 +102,14 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.mozilla</groupId>
+			<artifactId>rhino</artifactId>
+			<version>1.7R4</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>org.ini4j</groupId>
 			<artifactId>ini4j</artifactId>
 			<version>0.5.2</version>

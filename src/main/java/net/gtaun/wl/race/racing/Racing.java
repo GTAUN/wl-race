@@ -9,8 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.script.ScriptException;
-
 import net.gtaun.shoebill.SampObjectFactory;
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.AbstractShoebillContext;
@@ -25,7 +23,10 @@ import net.gtaun.shoebill.object.Timer;
 import net.gtaun.shoebill.object.Timer.TimerCallback;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
+import net.gtaun.wl.race.script.ScriptException;
 import net.gtaun.wl.race.script.ScriptExecutor;
+import net.gtaun.wl.race.script.ScriptInstructionCountLimitException;
+import net.gtaun.wl.race.script.ScriptTimeoutException;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackCheckpoint;
 import net.gtaun.wl.race.track.TrackCheckpoint.TrackRaceCheckpoint;
@@ -356,12 +357,25 @@ public class Racing extends AbstractShoebillContext
 				}
 				catch (ScriptException e)
 				{
+					String detail = e.getMessage();
 					int lineNum = e.getLineNumber();
 					int colNum = e.getColumnNumber();
-					String line = StringUtils.split(script, '\n') [lineNum-1];
-					if (colNum != -1) line = line.substring(0, colNum) + "<ERROR>" + line.substring(colNum, line.length());
-					player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$d): 脚本运行到第 %4$d 行时候发生错误。", "赛车系统", track.getName(), trackCheckpoint.getNumber(), lineNum);
-					player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$d): 错误代码: %4$s 。", "赛车系统", track.getName(), trackCheckpoint.getNumber(), line);
+					String line = e.getLineSource();
+					
+					player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$d): 脚本运行到第 %4$d 行时候发生错误 %5$s 。", "赛车系统", track.getName(), trackCheckpoint.getNumber(), lineNum, detail);
+					if (line != null)
+					{
+						if (colNum != -1) line = line.substring(0, colNum) + "<ERROR>" + line.substring(colNum, line.length());
+						player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$d): 错误代码: %4$s 。", "赛车系统", track.getName(), trackCheckpoint.getNumber(), line);
+					}
+				}
+				catch (ScriptTimeoutException e)
+				{
+					player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$d): 脚本运行时间超过规定时长，终止运行。", "赛车系统", track.getName(), trackCheckpoint.getNumber());
+				}
+				catch (ScriptInstructionCountLimitException e)
+				{
+					player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$d): 脚本超过限制指令数，终止运行。", "赛车系统", track.getName(), trackCheckpoint.getNumber());
 				}
 			}
 			
