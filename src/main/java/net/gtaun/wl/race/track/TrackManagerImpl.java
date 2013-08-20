@@ -94,7 +94,11 @@ public class TrackManagerImpl implements TrackManager, Saveable
 	@Override
 	public void deleteTrack(Track track)
 	{
-		if (track == getTrack(track.getName())) tracks.remove(track.getName());
+		if (track == getTrack(track.getName()))
+		{
+			datastore.delete(track);
+			tracks.remove(track.getName());
+		}
 	}
 	
 	@Override
