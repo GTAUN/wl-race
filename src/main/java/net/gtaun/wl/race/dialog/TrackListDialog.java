@@ -29,6 +29,8 @@ public class TrackListDialog extends AbstractPageListDialog
 	private final List<Comparator<Track>> trackComparators;
 	private Comparator<Track> trackComparator;
 	
+	private List<Track> filteredTracks;
+	
 	
 	public TrackListDialog
 	(Player player, Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, RaceServiceImpl raceService, List<Track> tracks)
@@ -48,12 +50,13 @@ public class TrackListDialog extends AbstractPageListDialog
 		trackComparators.add(TrackUtil.COMPARATOR_LENGTH_LONGTOSHORT);
 		trackComparators.add(TrackUtil.COMPARATOR_LENGTH_SHORTTOLONG);
 		trackComparator = trackComparators.get(0);
+
+		update();
 	}
 	
-	@Override
-	public void show()
+	private void update()
 	{
-		List<Track> filteredTracks = TrackUtil.filterTracks(tracks, statusFilter);
+		filteredTracks = TrackUtil.filterTracks(tracks, statusFilter);
 		Collections.sort(filteredTracks, trackComparator);
 		
 		dialogListItems.clear();
@@ -76,6 +79,7 @@ public class TrackListDialog extends AbstractPageListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				statusFilter = statusFilters.get(index);
+				update();
 				show();
 			}
 		});
@@ -99,6 +103,7 @@ public class TrackListDialog extends AbstractPageListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				trackComparator = trackComparators.get(index);
+				update();
 				show();
 			}
 		});
@@ -122,7 +127,11 @@ public class TrackListDialog extends AbstractPageListDialog
 				}
 			});
 		}
-		
+	}
+	
+	@Override
+	public void show()
+	{
 		super.show();
 	}
 }
