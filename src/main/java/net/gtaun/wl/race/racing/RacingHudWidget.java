@@ -35,8 +35,9 @@ import net.gtaun.wl.race.track.Track;
 public class RacingHudWidget extends AbstractPlayerContext
 {
 	private final RacingPlayerContext racingPlayerContext;
-	
+
 	private Timer timer;
+	private Timer progressBarTimer;
 
 	private PlayerTextdraw checkpointNumber;
 	private PlayerTextdraw rankingNumber;
@@ -89,7 +90,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 		progressBarBg = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240, 10, 200);
 		progressBarBg.setBoxColor(new Color(0, 0, 0, 128));
 		progressBarBg.show();
-		
+
 		timer = factory.createTimer(100);
 		timer.setCallback(new TimerCallback()
 		{
@@ -100,6 +101,17 @@ public class RacingHudWidget extends AbstractPlayerContext
 			}
 		});
 		timer.start();
+		
+		progressBarTimer = factory.createTimer(500);
+		progressBarTimer.setCallback(new TimerCallback()
+		{
+			@Override
+			public void onTick(int factualInterval)
+			{
+				updateProgressBar();
+			}
+		});
+		progressBarTimer.start();
 
 		addDestroyable(otherInfo);
 		addDestroyable(rankingNumber);
@@ -107,6 +119,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 		addDestroyable(timeDiffDraw);
 		addDestroyable(progressBarBg);
 		addDestroyable(timer);
+		addDestroyable(progressBarTimer);
 		
 		update();
 	}
@@ -167,8 +180,11 @@ public class RacingHudWidget extends AbstractPlayerContext
 		
 		final String otherInfoformat = "Completed: ~b~~h~%3$1.1f%%~w~ - Time: %4$s~n~Racing: ~y~~h~%1$s~w~ - Track: ~g~~h~%2$s~w~";
 		otherInfo.setText(String.format(otherInfoformat, racing.getName(), track.getName(), completionPercent * 100.0f, formatedTime));
-		
-		
+	}
+	
+	private void updateProgressBar()
+	{
+		Racing racing = racingPlayerContext.getRacing();
 		SampObjectFactory factory = shoebill.getSampObjectFactory();
 		
 		for (PlayerTextdraw textdraw : progressBarTextdraws) textdraw.destroy();
