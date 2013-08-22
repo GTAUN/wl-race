@@ -29,7 +29,7 @@ import net.gtaun.wl.race.track.Track.TrackStatus;
 
 import org.apache.commons.lang3.StringUtils;
 
-public final class TrackUtil
+public final class TrackUtils
 {
 	public static final int NAME_MIN_LENGTH = 3;
 	public static final int NAME_MAX_LENGTH = 40;
@@ -125,7 +125,7 @@ public final class TrackUtil
 		}
 	};
 	
-	private TrackUtil()
+	private TrackUtils()
 	{
 		
 	}

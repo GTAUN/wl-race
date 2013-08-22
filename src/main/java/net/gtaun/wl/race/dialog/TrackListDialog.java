@@ -34,7 +34,7 @@ import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractPageListDialog;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
-import net.gtaun.wl.race.util.TrackUtil;
+import net.gtaun.wl.race.util.TrackUtils;
 
 public class TrackListDialog extends AbstractPageListDialog
 {
@@ -58,15 +58,15 @@ public class TrackListDialog extends AbstractPageListDialog
 		this.tracks = tracks;
 		
 		statusFilters = new ArrayList<>();
-		statusFilters.add(TrackUtil.FILTER_COMPLETED);
-		statusFilters.add(TrackUtil.FILTER_RANKING);
-		statusFilters.add(TrackUtil.FILTER_EDITING);
+		statusFilters.add(TrackUtils.FILTER_COMPLETED);
+		statusFilters.add(TrackUtils.FILTER_RANKING);
+		statusFilters.add(TrackUtils.FILTER_EDITING);
 		statusFilter = statusFilters.get(0);
 		
 		trackComparators = new ArrayList<>();
-		trackComparators.add(TrackUtil.createNearestComparator(player.getLocation()));
-		trackComparators.add(TrackUtil.COMPARATOR_LENGTH_LONGTOSHORT);
-		trackComparators.add(TrackUtil.COMPARATOR_LENGTH_SHORTTOLONG);
+		trackComparators.add(TrackUtils.createNearestComparator(player.getLocation()));
+		trackComparators.add(TrackUtils.COMPARATOR_LENGTH_LONGTOSHORT);
+		trackComparators.add(TrackUtils.COMPARATOR_LENGTH_SHORTTOLONG);
 		trackComparator = trackComparators.get(0);
 
 		update();
@@ -74,7 +74,7 @@ public class TrackListDialog extends AbstractPageListDialog
 	
 	private void update()
 	{
-		filteredTracks = TrackUtil.filterTracks(tracks, statusFilter);
+		filteredTracks = TrackUtils.filterTracks(tracks, statusFilter);
 		Collections.sort(filteredTracks, trackComparator);
 		
 		dialogListItems.clear();

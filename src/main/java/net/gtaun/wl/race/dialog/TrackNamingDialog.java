@@ -23,7 +23,7 @@ import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
-import net.gtaun.wl.race.util.TrackUtil;
+import net.gtaun.wl.race.util.TrackUtils;
 
 public abstract class TrackNamingDialog extends AbstractInputDialog
 {
@@ -36,10 +36,10 @@ public abstract class TrackNamingDialog extends AbstractInputDialog
 	{
 		player.playSound(1083, player.getLocation());
 		
-		String name = TrackUtil.filterName(inputText);
-		if (TrackUtil.isVaildName(name) == false)
+		String name = TrackUtils.filterName(inputText);
+		if (TrackUtils.isVaildName(name) == false)
 		{
-			append = String.format("{FF0000}* 赛道名长度要求为 %1$d ~ %2$d 个字，请重新输入。", TrackUtil.NAME_MIN_LENGTH, TrackUtil.NAME_MAX_LENGTH);
+			append = String.format("{FF0000}* 赛道名长度要求为 %1$d ~ %2$d 个字，请重新输入。", TrackUtils.NAME_MIN_LENGTH, TrackUtils.NAME_MAX_LENGTH);
 			show();
 			return;
 		}

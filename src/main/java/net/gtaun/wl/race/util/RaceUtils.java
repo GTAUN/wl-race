@@ -19,16 +19,15 @@
 package net.gtaun.wl.race.util;
 
 import net.gtaun.shoebill.object.Player;
-import net.gtaun.wl.race.track.Track;
 
-public final class RacingUtil
+public final class RaceUtils
 {
-	public static String getDefaultName(Player player, Track track)
+	public static String getPlayerUniqueId(Player player)
 	{
-		return player.getName() + "'s Racing";
+		return player.getName();
 	}
 	
-	private RacingUtil()
+	private RaceUtils()
 	{
 		
 	}

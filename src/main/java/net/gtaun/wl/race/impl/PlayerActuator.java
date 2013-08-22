@@ -38,6 +38,7 @@ import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.Track.TrackStatus;
 import net.gtaun.wl.race.track.TrackCheckpoint;
 import net.gtaun.wl.race.track.TrackEditor;
+import net.gtaun.wl.race.util.PlayerKeyUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -148,7 +149,7 @@ public class PlayerActuator extends AbstractPlayerContext
 				if (keyState.getKeys() == PlayerKey.CROUCH.getValue())
 				{
 					long now = System.currentTimeMillis();
-					if (now <= lastHornKeyPressedTime + 1000)
+					if (now <= lastHornKeyPressedTime + PlayerKeyUtils.getDoublePressKeyTimeDiff(player))
 					{
 						RacingManagerImpl racingManager = raceService.getRacingManager();
 						Racing racing = racingManager.getPlayerRacing(player);
@@ -162,7 +163,7 @@ public class PlayerActuator extends AbstractPlayerContext
 				else if (keyState.getKeys() == PlayerKey.ANALOG_DOWN.getValue())
 				{
 					long now = System.currentTimeMillis();
-					if (now <= lastAnalogDownKeyPressedTime + 1000)
+					if (now <= lastAnalogDownKeyPressedTime + PlayerKeyUtils.getDoublePressKeyTimeDiff(player))
 					{
 						new RacingListDialog(player, shoebill, eventManager, null, raceService).show();
 					}

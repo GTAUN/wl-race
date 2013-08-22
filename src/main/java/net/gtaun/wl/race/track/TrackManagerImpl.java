@@ -29,8 +29,8 @@ import net.gtaun.shoebill.common.Saveable;
 import net.gtaun.shoebill.exception.AlreadyExistException;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.wl.race.TrackManager;
-import net.gtaun.wl.race.util.RaceUtil;
-import net.gtaun.wl.race.util.TrackUtil;
+import net.gtaun.wl.race.util.RaceUtils;
+import net.gtaun.wl.race.util.TrackUtils;
 
 import com.google.code.morphia.Datastore;
 
@@ -73,7 +73,7 @@ public class TrackManagerImpl implements TrackManager, Saveable
 	@Override
 	public void renameTrack(Track track, String name) throws AlreadyExistException, IllegalArgumentException
 	{
-		if (!TrackUtil.isVaildName(name)) throw new IllegalArgumentException();
+		if (!TrackUtils.isVaildName(name)) throw new IllegalArgumentException();
 		if (tracks.containsKey(name)) throw new AlreadyExistException();
 		
 		tracks.remove(track.getName());
@@ -84,10 +84,10 @@ public class TrackManagerImpl implements TrackManager, Saveable
 	@Override
 	public Track createTrack(Player player, String name) throws AlreadyExistException, IllegalArgumentException
 	{
-		if (!TrackUtil.isVaildName(name)) throw new IllegalArgumentException();
+		if (!TrackUtils.isVaildName(name)) throw new IllegalArgumentException();
 		if (tracks.containsKey(name)) throw new AlreadyExistException();
 		
-		Track track = new Track(this, name, RaceUtil.getPlayerUniqueId(player));
+		Track track = new Track(this, name, RaceUtils.getPlayerUniqueId(player));
 		tracks.put(track.getName(), track);
 		return track;
 	}
@@ -95,7 +95,7 @@ public class TrackManagerImpl implements TrackManager, Saveable
 	@Override
 	public Track createTrack(String author, String name) throws AlreadyExistException, IllegalArgumentException
 	{
-		if (!TrackUtil.isVaildName(name)) throw new IllegalArgumentException();
+		if (!TrackUtils.isVaildName(name)) throw new IllegalArgumentException();
 		if (tracks.containsKey(name)) throw new AlreadyExistException();
 		
 		Track track = new Track(this, name, author);

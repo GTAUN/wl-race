@@ -35,7 +35,7 @@ import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.Track.TrackStatus;
 import net.gtaun.wl.race.track.TrackCheckpoint;
 import net.gtaun.wl.race.track.TrackManagerImpl;
-import net.gtaun.wl.race.util.RacingUtil;
+import net.gtaun.wl.race.util.RacingUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -254,7 +254,7 @@ public class TrackEditDialog extends AbstractListDialog
 			
 			private void startNewRacing()
 			{
-				Racing racing = racingManager.createRacing(track, player, RacingUtil.getDefaultName(player, track));
+				Racing racing = racingManager.createRacing(track, player, RacingUtils.getDefaultName(player, track));
 				racing.teleToStartingPoint(player);
 				racing.beginCountdown();
 			}

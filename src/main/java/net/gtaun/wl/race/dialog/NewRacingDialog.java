@@ -29,7 +29,7 @@ import net.gtaun.wl.race.racing.Racing;
 import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.Track.TrackStatus;
-import net.gtaun.wl.race.util.RacingUtil;
+import net.gtaun.wl.race.util.RacingUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,7 +46,7 @@ public class NewRacingDialog extends AbstractListDialog
 		final String racingTypeStr = (track.getStatus() == TrackStatus.EDITING) ? "测试编辑中的赛道" : "发起新比赛";
 		
 		this.caption = String.format("%1$s: %2$s", "赛车系统", racingTypeStr);
-		this.racingName = RacingUtil.getDefaultName(player, track);
+		this.racingName = RacingUtils.getDefaultName(player, track);
 
 		dialogListItems.add(new DialogListItem()
 		{
