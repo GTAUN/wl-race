@@ -19,6 +19,10 @@ public class RacingSetting
 	public RacingSetting(Track track)
 	{
 		this.track = track;
+		racingType = RacingType.NORMAL;
+		limit = new RacingLimit();
+		deathRule = DeathRule.WAIT_AND_RETURN;
+		password = "";
 	}
 	
 	public Track getTrack()

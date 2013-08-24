@@ -175,8 +175,6 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 				String msg = String.format("当前大小值为: %1$1.1f\n请输入新大小值:", checkpoint.getSize());
 				new AbstractInputDialog(player, shoebill, eventManager, TrackCheckpointEditDialog.this, "编辑检查点大小", msg)
 				{
-					private String append;
-					
 					public void onClickOk(String inputText)
 					{
 						player.playSound(1083, player.getLocation());
@@ -191,12 +189,6 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 							append = "{FF0000}* 请按照正确的格式输入大小值。";
 							show();
 						}
-					}
-					
-					protected void show(String text)
-					{
-						if (append != null) super.show(this.message + "\n\n" + append);
-						else super.show(text);
 					}
 				}.show();
 			}

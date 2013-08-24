@@ -21,9 +21,19 @@ public class RacingLimit
 		return isAllowAutoRepair;
 	}
 	
+	public void setAllowAutoRepair(boolean isAllowAutoRepair)
+	{
+		this.isAllowAutoRepair = isAllowAutoRepair;
+	}
+	
 	public boolean isAllowInfiniteNitrous()
 	{
 		return isAllowInfiniteNitrous;
+	}
+	
+	public void setAllowInfiniteNitrous(boolean isAllowInfiniteNitrous)
+	{
+		this.isAllowInfiniteNitrous = isAllowInfiniteNitrous;
 	}
 	
 	public boolean isAllowAutoFlip()
@@ -31,8 +41,18 @@ public class RacingLimit
 		return isAllowAutoFlip;
 	}
 	
+	public void setAllowAutoFlip(boolean isAllowAutoFlip)
+	{
+		this.isAllowAutoFlip = isAllowAutoFlip;
+	}
+	
 	public boolean isAllowChangeVehicle()
 	{
 		return isAllowChangeVehicle;
+	}
+	
+	public void setAllowChangeVehicle(boolean isAllowChangeVehicle)
+	{
+		this.isAllowChangeVehicle = isAllowChangeVehicle;
 	}
 }

@@ -137,6 +137,38 @@ public class TrackEditDialog extends AbstractListDialog
 			}
 		});
 		
+		dialogListItems.add(new DialogListItem()
+		{
+			@Override
+			public String toItemString()
+			{
+				return String.format("当前检查点数: %1$d", track.getCheckpoints().size());
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem()
+		{
+			@Override
+			public String toItemString()
+			{
+				return String.format("当前总长度: %1$1.2f公里", track.getLength()/1000.0f);
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				show();
+			}
+		});
+		
 		dialogListItems.add(new DialogListItem("添加当前地点为新检查点")
 		{
 			@Override
@@ -146,6 +178,16 @@ public class TrackEditDialog extends AbstractListDialog
 				
 				TrackCheckpoint checkpoint = track.createCheckpoint(player.getLocation());
 				new TrackCheckpointEditDialog(player, shoebill, eventManager, null, checkpoint).show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem("赛道比赛设置")
+		{
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				new TrackSettingDialog(player, shoebill, rootEventManager, TrackEditDialog.this, track).show();
 			}
 		});
 		

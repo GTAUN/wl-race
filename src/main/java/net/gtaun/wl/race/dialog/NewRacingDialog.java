@@ -128,11 +128,11 @@ public class NewRacingDialog extends AbstractListDialog
 		dialogListItems.add(new DialogListItemRadio("比赛类型:")
 		{
 			{
-				addItem(new RadioItem("普通", Color.CYAN)
+				addItem(new RadioItem("普通", Color.CORNFLOWERBLUE)
 				{
 					@Override public void onSelected()	{ setting.setRacingType(RacingType.NORMAL); }
 				});
-				addItem(new RadioItem("淘汰赛", Color.DEEPPINK)
+				addItem(new RadioItem("淘汰赛", Color.MAGENTA)
 				{
 					@Override public void onSelected()	{ setting.setRacingType(RacingType.KNOCKOUT); }
 				});
@@ -155,11 +155,11 @@ public class NewRacingDialog extends AbstractListDialog
 		dialogListItems.add(new DialogListItemRadio("死亡处理:")
 		{
 			{
-				addItem(new RadioItem("等待并回到检查点", Color.CYAN)
+				addItem(new RadioItem("等待并回到检查点", Color.AQUA)
 				{
 					@Override public void onSelected()	{ setting.setDeathRule(DeathRule.WAIT_AND_RETURN); }
 				});
-				addItem(new RadioItem("淘汰", Color.DEEPPINK)
+				addItem(new RadioItem("淘汰", Color.FUCHSIA)
 				{
 					@Override public void onSelected()	{ setting.setDeathRule(DeathRule.KNOCKOUT); }
 				});
@@ -182,7 +182,7 @@ public class NewRacingDialog extends AbstractListDialog
 		dialogListItems.add(new DialogListItemCheck("限制:")
 		{
 			{
-				addItem(new CheckItem("自动修车", Color.GREEN)
+				addItem(new CheckItem("自动修车", Color.LIME)
 				{
 					@Override public boolean isChecked()	{ return setting.getLimit().isAllowAutoRepair(); }
 				});
