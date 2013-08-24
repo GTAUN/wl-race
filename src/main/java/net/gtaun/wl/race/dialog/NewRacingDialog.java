@@ -20,15 +20,20 @@ package net.gtaun.wl.race.dialog;
 
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
+import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing;
+import net.gtaun.wl.race.racing.Racing.DeathRule;
+import net.gtaun.wl.race.racing.Racing.RacingType;
 import net.gtaun.wl.race.racing.RacingManagerImpl;
+import net.gtaun.wl.race.racing.RacingSetting;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.Track.TrackStatus;
+import net.gtaun.wl.race.track.Track.TrackType;
 import net.gtaun.wl.race.util.RacingUtils;
 
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +41,7 @@ import org.apache.commons.lang3.StringUtils;
 public class NewRacingDialog extends AbstractListDialog
 {
 	private String racingName;
+	private RacingSetting setting;
 	
 	
 	public NewRacingDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService, final Track track)
@@ -47,7 +53,9 @@ public class NewRacingDialog extends AbstractListDialog
 		
 		this.caption = String.format("%1$s: %2$s", "赛车系统", racingTypeStr);
 		this.racingName = RacingUtils.getDefaultName(player, track);
-
+		
+		setting = new RacingSetting(track);
+		
 		dialogListItems.add(new DialogListItem()
 		{
 			@Override
@@ -93,7 +101,8 @@ public class NewRacingDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("赛道: %1$s", track.getName());
+				return String.format("赛道: %1$s (检查点数%2$d, 长度%3$1.1fKM)",
+						track.getName(), track.getCheckpoints().size(), track.getLength()/1000.0f);
 			}
 			
 			@Override
@@ -101,6 +110,134 @@ public class NewRacingDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				new TrackDialog(player, shoebill, eventManager, NewRacingDialog.this, raceService, track).show();
+			}
+		});
+		
+		String trackType = "普通赛道";
+		if (track.getType() == TrackType.CIRCUIT) trackType = String.format("绕圈赛道 (%1$d 圈)", track.getCircultLaps());
+		dialogListItems.add(new DialogListItem(String.format("赛道类型: %1$s", trackType))
+		{
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItemRadio("比赛类型:")
+		{
+			{
+				addItem(new RadioItem("普通", Color.CYAN)
+				{
+					@Override public void onSelected()	{ setting.setRacingType(RacingType.NORMAL); }
+				});
+				addItem(new RadioItem("淘汰赛", Color.DEEPPINK)
+				{
+					@Override public void onSelected()	{ setting.setRacingType(RacingType.KNOCKOUT); }
+				});
+			}
+			
+			@Override
+			public void onItemSelect(RadioItem item, int itemIndex)
+			{
+				player.playSound(1083, player.getLocation());
+				show();
+			}
+			
+			@Override
+			public int getSelected()
+			{
+				return setting.getRacingType().ordinal();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItemRadio("死亡处理:")
+		{
+			{
+				addItem(new RadioItem("等待并回到检查点", Color.CYAN)
+				{
+					@Override public void onSelected()	{ setting.setDeathRule(DeathRule.WAIT_AND_RETURN); }
+				});
+				addItem(new RadioItem("淘汰", Color.DEEPPINK)
+				{
+					@Override public void onSelected()	{ setting.setDeathRule(DeathRule.KNOCKOUT); }
+				});
+			}
+			
+			@Override
+			public void onItemSelect(RadioItem item, int itemIndex)
+			{
+				player.playSound(1083, player.getLocation());
+				show();
+			}
+			
+			@Override
+			public int getSelected()
+			{
+				return setting.getDeathRule().ordinal();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItemCheck("限制:")
+		{
+			{
+				addItem(new CheckItem("自动修车", Color.GREEN)
+				{
+					@Override public boolean isChecked()	{ return setting.getLimit().isAllowAutoRepair(); }
+				});
+				addItem(new CheckItem("无限氮气", Color.RED)
+				{
+					@Override public boolean isChecked()	{ return setting.getLimit().isAllowInfiniteNitrous(); }
+				});
+				addItem(new CheckItem("自动翻车", Color.BLUE)
+				{
+					@Override public boolean isChecked()	{ return setting.getLimit().isAllowAutoFlip(); }
+				});
+				addItem(new CheckItem("更换载具", Color.GOLD)
+				{
+					@Override public boolean isChecked()	{ return setting.getLimit().isAllowChangeVehicle(); }
+				});
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				new RacingLimitDialog(player, shoebill, eventManager, NewRacingDialog.this, track, setting.getLimit()).show();
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem("人数限制: ")
+		{
+			@Override
+			public String toItemString()
+			{
+				int min = track.getSetting().getMinPlayers();
+				int max = setting.getMaxPlayers();
+				if (min != 0 && max != 0) return String.format("%1$d ~ %2$d 人", min, max);
+				return itemString + "不限制";
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				
+			}
+		});
+		
+		dialogListItems.add(new DialogListItem("比赛密码: ")
+		{
+			@Override
+			public String toItemString()
+			{
+				if (StringUtils.isBlank(setting.getPassword())) return itemString + "无";
+				return itemString + setting.getPassword();
+			}
+			
+			@Override
+			public void onItemSelect()
+			{
+				
 			}
 		});
 		

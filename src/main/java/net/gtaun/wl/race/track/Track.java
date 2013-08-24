@@ -44,12 +44,19 @@ public class Track
 		RANKING,
 	}
 	
+	public enum TrackType
+	{
+		NORMAL,
+		CIRCUIT,
+	}
+	
 	public enum ScriptType
 	{
 		JOIN,
 		BEGIN,
 		RANKING,
 		COMPLETE,
+		DAMAGE,
 		QUIT,
 		END,
 	}
@@ -64,14 +71,25 @@ public class Track
 	@Indexed private String name;
 	private String desc;
 	private TrackStatus status;
+	
+	private TrackType type;
+	private int circultLaps;
 
 	private List<TrackCheckpoint> checkpoints;
 	private Map<ScriptType, String> scripts;
 	
+	private TrackSetting setting;
+	
 	
 	protected Track()
 	{
-		
+		this.desc = "";
+		this.status = TrackStatus.EDITING;
+		this.type = TrackType.NORMAL;
+		this.circultLaps = 1;
+		this.checkpoints = new ArrayList<>();
+		this.scripts = new HashMap<>();
+		this.setting = new TrackSetting();
 	}
 	
 	public Track(TrackManagerImpl trackManager, String name, String uniqueId)
@@ -80,10 +98,6 @@ public class Track
 		this.trackManager = trackManager;
 		this.name = name;
 		this.authorUniqueId = uniqueId;
-		this.desc = "";
-		this.status = TrackStatus.EDITING;
-		this.checkpoints = new ArrayList<>();
-		this.scripts = new HashMap<>();
 	}
 	
 	@PostLoad
@@ -135,6 +149,26 @@ public class Track
 		this.status = status;
 	}
 	
+	public TrackType getType()
+	{
+		return type;
+	}
+	
+	public void setType(TrackType type)
+	{
+		this.type = type;
+	}
+	
+	public int getCircultLaps()
+	{
+		return circultLaps;
+	}
+	
+	public void setCircultLaps(int circultLaps)
+	{
+		this.circultLaps = circultLaps;
+	}
+	
 	public String getScript(ScriptType type)
 	{
 		return scripts.get(type);
@@ -143,6 +177,11 @@ public class Track
 	public void setScript(ScriptType type, String script)
 	{
 		scripts.put(type, script);
+	}
+	
+	public TrackSetting getSetting()
+	{
+		return setting;
 	}
 	
 	public List<TrackCheckpoint> getCheckpoints()

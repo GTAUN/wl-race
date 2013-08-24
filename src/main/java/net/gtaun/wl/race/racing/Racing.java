@@ -61,6 +61,18 @@ public class Racing extends AbstractShoebillContext
 		ENDED,
 	}
 	
+	public enum RacingType
+	{
+		NORMAL,
+		KNOCKOUT,
+	}
+	
+	public enum DeathRule
+	{
+		WAIT_AND_RETURN,
+		KNOCKOUT,
+	}
+	
 	
 	private final RacingManagerImpl manager;
 	
