@@ -9,6 +9,7 @@ public class RacingSetting
 	private final Track track;
 	
 	private RacingType racingType;
+	private int departureInterval;
 	private RacingLimit limit;
 	private DeathRule deathRule;
 	
@@ -38,6 +39,16 @@ public class RacingSetting
 	public void setRacingType(RacingType normal)
 	{
 		this.racingType = normal;
+	}
+	
+	public int getDepartureInterval()
+	{
+		return departureInterval;
+	}
+	
+	public void setDepartureInterval(int interval)
+	{
+		this.departureInterval = interval;
 	}
 	
 	public RacingLimit getLimit()

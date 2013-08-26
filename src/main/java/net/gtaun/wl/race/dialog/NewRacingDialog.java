@@ -152,6 +152,25 @@ public class NewRacingDialog extends AbstractListDialog
 			}
 		});
 		
+		dialogListItems.add(new DialogListItem()
+		{
+			@Override
+			public String toItemString()
+			{
+				String format = "发车间隔: %1$s";
+				int interval = setting.getDepartureInterval();
+				if (interval == 0) return String.format(format, "无");
+				return String.format(format, interval);
+			}
+
+			@Override
+			public void onItemSelect()
+			{
+				player.playSound(1083, player.getLocation());
+				new RacingDepartureSettingDialog(player, shoebill, eventManager, NewRacingDialog.this, setting).show();
+			}
+		});
+		
 		dialogListItems.add(new DialogListItemRadio("死亡处理:")
 		{
 			{
