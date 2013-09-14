@@ -88,6 +88,8 @@ public class Racing extends AbstractShoebillContext
 	
 	private List<RacingPlayerContext> racingRankedList;
 	
+	private RacingSetting setting;
+	
 	private Timer timer;
 	
 	private Timer countTimer;
@@ -101,6 +103,8 @@ public class Racing extends AbstractShoebillContext
 		this.track = track;
 		this.sponsor = sponsor;
 		this.name = name;
+		
+		setting = new RacingSetting(track);
 		
 		players = new ArrayList<>();
 		finishedPlayers = new ArrayList<>();
@@ -179,6 +183,16 @@ public class Racing extends AbstractShoebillContext
 	public RacingStatus getStatus()
 	{
 		return status;
+	}
+	
+	public RacingSetting getSetting()
+	{
+		return setting;
+	}
+	
+	public void setSetting(RacingSetting setting)
+	{
+		this.setting = setting;
 	}
 	
 	public void join(Player player)

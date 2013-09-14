@@ -37,6 +37,7 @@ import net.gtaun.util.event.EventManager.HandlerPriority;
 import net.gtaun.wl.race.script.ScriptExecutor;
 import net.gtaun.wl.race.script.ScriptExecutorFactory;
 import net.gtaun.wl.race.track.TrackCheckpoint;
+import net.gtaun.wl.vehicle.PlayerOverrideLimit;
 import net.gtaun.wl.vehicle.VehicleManagerService;
 import net.gtaun.wl.vehicle.stat.OncePlayerVehicleStatistic;
 
@@ -51,14 +52,42 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	private Map<TrackCheckpoint, MapIcon> mapIcons;
 	
 	private Date startTime;
+	private PlayerOverrideLimit vehicleManagerLimit;
 	
 	
-	public RacingPlayerContextImpl(Shoebill shoebill, EventManager rootEventManager, Player player, Racing racing, TrackCheckpoint startCheckpoint)
+	public RacingPlayerContextImpl(Shoebill shoebill, EventManager rootEventManager, Player player, final Racing racing, TrackCheckpoint startCheckpoint)
 	{
 		super(shoebill, rootEventManager, player);
 		this.racing = racing;
 		this.currentCheckpoint = startCheckpoint;
 		this.mapIcons = new HashMap<>();
+		
+		vehicleManagerLimit = new PlayerOverrideLimit()
+		{
+			@Override
+			public boolean isInfiniteNitrous(boolean previous)
+			{
+				return previous && racing.getSetting().getLimit().isAllowInfiniteNitrous();
+			}
+			
+			@Override
+			public boolean isAutoRepair(boolean previous)
+			{
+				return previous && racing.getSetting().getLimit().isAllowAutoRepair();
+			}
+			
+			@Override
+			public boolean isAutoFlip(boolean previous)
+			{
+				return previous && racing.getSetting().getLimit().isAllowAutoFlip();
+			}
+			
+			@Override
+			public boolean isAutoCarryPassengers(boolean previous)
+			{
+				return previous;
+			}
+		};
 	}
 	
 	@Override
@@ -69,12 +98,6 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 		hudWidget = new RacingHudWidget(shoebill, rootEventManager, player, this);
 		hudWidget.init();
 		addDestroyable(hudWidget);
-		
-		VehicleManagerService service = shoebill.getServiceStore().getService(VehicleManagerService.class);
-		if (service != null)
-		{
-			service.startRacingStatistic(player);
-		}
 		
 		eventManager.registerHandler(PlayerUpdateEvent.class, player, playerEventHandler, HandlerPriority.NORMAL);
 	}
@@ -88,6 +111,7 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 		if (service != null)
 		{
 			service.endRacingStatistic(player);
+			service.removeOverrideLimit(player, vehicleManagerLimit);
 		}
 		
 		for (MapIcon icon : mapIcons.values()) icon.destroy();
@@ -103,6 +127,12 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	public void begin()
 	{
 		startTime = new Date();
+		VehicleManagerService service = shoebill.getServiceStore().getService(VehicleManagerService.class);
+		if (service != null)
+		{
+			service.startRacingStatistic(player);
+			service.addOverrideLimit(player, vehicleManagerLimit);
+		}
 	}
 	
 	@Override

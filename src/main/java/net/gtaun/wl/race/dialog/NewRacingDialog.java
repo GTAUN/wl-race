@@ -266,6 +266,7 @@ public class NewRacingDialog extends AbstractListDialog
 			{
 				Racing racing = racingManager.createRacing(track, player, racingName);
 				racing.teleToStartingPoint(player);
+				racing.setSetting(setting);
 			}
 			
 			@Override
