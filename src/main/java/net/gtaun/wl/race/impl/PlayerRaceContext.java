@@ -42,7 +42,7 @@ import net.gtaun.wl.race.util.PlayerKeyUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class PlayerActuator extends AbstractPlayerContext
+public class PlayerRaceContext extends AbstractPlayerContext
 {
 	private final RaceServiceImpl raceService;
 	
@@ -51,7 +51,7 @@ public class PlayerActuator extends AbstractPlayerContext
 	private long lastAnalogDownKeyPressedTime;
 	
 	
-	public PlayerActuator(Shoebill shoebill, EventManager rootEventManager, Player player, RaceServiceImpl raceService)
+	public PlayerRaceContext(Shoebill shoebill, EventManager rootEventManager, Player player, RaceServiceImpl raceService)
 	{
 		super(shoebill, rootEventManager, player);
 		this.raceService = raceService;

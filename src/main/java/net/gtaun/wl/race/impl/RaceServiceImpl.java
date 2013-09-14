@@ -97,15 +97,15 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 		
 		eventManager.registerHandler(PlayerCommandEvent.class, playerEventHandler, HandlerPriority.NORMAL);
 		
-		PlayerLifecycleObjectFactory<PlayerActuator> objectFactory = new PlayerLifecycleObjectFactory<PlayerActuator>()
+		PlayerLifecycleObjectFactory<PlayerRaceContext> objectFactory = new PlayerLifecycleObjectFactory<PlayerRaceContext>()
 		{
 			@Override
-			public PlayerActuator create(Shoebill shoebill, EventManager eventManager, Player player)
+			public PlayerRaceContext create(Shoebill shoebill, EventManager eventManager, Player player)
 			{
-				return new PlayerActuator(shoebill, eventManager, player, RaceServiceImpl.this);
+				return new PlayerRaceContext(shoebill, eventManager, player, RaceServiceImpl.this);
 			}
 		};
-		playerLifecycleHolder.registerClass(PlayerActuator.class, objectFactory);
+		playerLifecycleHolder.registerClass(PlayerRaceContext.class, objectFactory);
 		addDestroyable(playerLifecycleHolder);
 		
 		SampObjectFactory factory = shoebill.getSampObjectFactory();
@@ -148,29 +148,29 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	@Override
 	public void editTrack(Player player, Track track)
 	{
-		PlayerActuator actuator = playerLifecycleHolder.getObject(player, PlayerActuator.class);
-		actuator.setEditingTrack(track);
+		PlayerRaceContext context = playerLifecycleHolder.getObject(player, PlayerRaceContext.class);
+		context.setEditingTrack(track);
 	}
 	
 	@Override
 	public void stopEditingTrack(Player player)
 	{
-		PlayerActuator actuator = playerLifecycleHolder.getObject(player, PlayerActuator.class);
-		actuator.setEditingTrack(null);
+		PlayerRaceContext context = playerLifecycleHolder.getObject(player, PlayerRaceContext.class);
+		context.setEditingTrack(null);
 	}
 	
 	@Override
 	public boolean isEditingTrack(Player player)
 	{
-		PlayerActuator actuator = playerLifecycleHolder.getObject(player, PlayerActuator.class);
-		return actuator.isEditingTrack();
+		PlayerRaceContext context = playerLifecycleHolder.getObject(player, PlayerRaceContext.class);
+		return context.isEditingTrack();
 	}
 	
 	@Override
 	public Track getEditingTrack(Player player)
 	{
-		PlayerActuator actuator = playerLifecycleHolder.getObject(player, PlayerActuator.class);
-		return actuator.getEditingTrack();
+		PlayerRaceContext context = playerLifecycleHolder.getObject(player, PlayerRaceContext.class);
+		return context.getEditingTrack();
 	}
 	
 	private PlayerEventHandler playerEventHandler = new PlayerEventHandler()
