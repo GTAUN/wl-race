@@ -18,6 +18,8 @@
 
 package net.gtaun.wl.race.racing;
 
+import java.util.Date;
+
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.wl.race.script.ScriptExecutor;
 
@@ -27,6 +29,7 @@ public interface RacingPlayerContext
 	Racing getRacing();
 	ScriptExecutor getScriptExecutor();
 	
+	Date getStartTime();
 	boolean isCompleted();
 
 	int getPassedCheckpoints();

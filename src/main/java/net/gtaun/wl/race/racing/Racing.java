@@ -21,7 +21,6 @@ package net.gtaun.wl.race.racing;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -87,7 +86,6 @@ public class Racing extends AbstractShoebillContext
 	private String name;
 	private RacingStatus status;
 	
-	private Date startTime;
 	private List<RacingPlayerContext> racingRankedList;
 	
 	private Timer timer;
@@ -183,11 +181,6 @@ public class Racing extends AbstractShoebillContext
 		return status;
 	}
 	
-	public Date getStartTime()
-	{
-		return startTime;
-	}
-	
 	public void join(Player player)
 	{
 		if (manager.isPlayerInRacing(player)) return;
@@ -204,7 +197,7 @@ public class Racing extends AbstractShoebillContext
 			otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 已参与 %3$s 比赛。", "赛车系统", player.getName(), getName());
 		}
 		
-		player.sendMessage(Color.LIGHTBLUE, "%1$s: 在参与比赛的时候，只需按两下喇叭 (H键或Caps Lock键) 即可快速呼出比赛菜单。", "赛车系统");
+		player.sendMessage(Color.LIGHTBLUE, "%1$s: 在参与比赛的时候，只需按两下喇叭 (默认H键) 即可快速呼出比赛菜单。", "赛车系统");
 	}
 	
 	public void leave(Player player)
@@ -296,22 +289,21 @@ public class Racing extends AbstractShoebillContext
 		if (status != RacingStatus.WAITING && status != RacingStatus.COUNTING) throw new IllegalStateException();
 		if (track.getCheckpoints().size() == 0) throw new IllegalStateException();
 		
-		startTime = new Date();
-		
 		status = RacingStatus.RACING;
 		init();
 		
 		TrackCheckpoint first = track.getCheckpoints().get(0);
-		TrackRaceCheckpoint firstRaceCheckpoint = first.getRaceCheckpoint();
+		TrackRaceCheckpoint firstCheckpoint = first.getRaceCheckpoint();
 		for (Player player : players) 
 		{
 			RacingPlayerContextImpl context = new RacingPlayerContextImpl(shoebill, rootEventManager, player, this, first);
 			context.init();
+			context.begin();
 			
 			playerContexts.put(player, context);
 			
 			player.playSound(1057, player.getLocation());
-			player.setRaceCheckpoint(firstRaceCheckpoint);
+			player.setRaceCheckpoint(firstCheckpoint);
 			player.sendGameText(1000, 6, "- ~r~GO! -");
 		}
 		

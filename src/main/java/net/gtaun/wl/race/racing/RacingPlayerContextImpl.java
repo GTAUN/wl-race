@@ -18,6 +18,7 @@
 
 package net.gtaun.wl.race.racing;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,8 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	
 	private RacingHudWidget hudWidget;
 	private Map<TrackCheckpoint, MapIcon> mapIcons;
+	
+	private Date startTime;
 	
 	
 	public RacingPlayerContextImpl(Shoebill shoebill, EventManager rootEventManager, Player player, Racing racing, TrackCheckpoint startCheckpoint)
@@ -95,6 +98,17 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	{
 		currentCheckpoint = checkpoint;
 		updateMapIcons();
+	}
+	
+	public void begin()
+	{
+		startTime = new Date();
+	}
+	
+	@Override
+	public Date getStartTime()
+	{
+		return startTime;
 	}
 
 	@Override

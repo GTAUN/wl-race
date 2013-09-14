@@ -176,7 +176,9 @@ public class RacingHudWidget extends AbstractPlayerContext
 		float completionPercent = racingPlayerContext.getCompletionPercent();
 		
 		Date now = new Date();
-		long time = now.getTime() - racing.getStartTime().getTime();
+		Date startTime = racingPlayerContext.getStartTime();
+		if (startTime == null) startTime = now;
+		long time = now.getTime() - startTime.getTime();
 		
 		long milliseconds = time % 1000;
 		long seconds = (time / 1000) % 60;
