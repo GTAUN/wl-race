@@ -29,6 +29,7 @@ import java.util.Map;
 import net.gtaun.shoebill.SampObjectFactory;
 import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.AbstractShoebillContext;
+import net.gtaun.shoebill.constant.PlayerState;
 import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.data.Location;
 import net.gtaun.shoebill.data.RaceCheckpoint;
@@ -378,6 +379,7 @@ public class Racing extends AbstractShoebillContext
 			Player player = event.getPlayer();
 			if (!playerContexts.containsKey(player)) return;
 			if (status == RacingStatus.WAITING) return;
+			if (player.getState() != PlayerState.DRIVER) return;
 
 			TrackRaceCheckpoint checkpoint = (TrackRaceCheckpoint) event.getCheckpoint();
 			TrackCheckpoint trackCheckpoint = checkpoint.getTrackCheckpoint();
