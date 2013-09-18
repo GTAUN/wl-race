@@ -40,8 +40,6 @@ import net.gtaun.wl.race.track.TrackCheckpoint;
 import net.gtaun.wl.race.track.TrackEditor;
 import net.gtaun.wl.race.util.PlayerKeyUtils;
 
-import org.apache.commons.lang3.StringUtils;
-
 public class PlayerRaceContext extends AbstractPlayerContext
 {
 	private final RaceServiceImpl raceService;
@@ -61,17 +59,6 @@ public class PlayerRaceContext extends AbstractPlayerContext
 	protected void onInit()
 	{
 		eventManager.registerHandler(PlayerKeyStateChangeEvent.class, player, playerEventHandler, HandlerPriority.NORMAL);
-		
-		String original = "吾等封印已经全数解除 统治世界之日即将到来";
-		String dest = "";
-		int len = original.length();
-		for (int i=0; i<len; i++)
-		{
-			int color = java.awt.Color.HSBtoRGB((float)i/len, 1.0f, 1.0f) << 8 | 0xFF;
-			dest += new Color(color).toEmbeddingString() + original.charAt(i);
-		}
-		
-		for (String s : StringUtils.split(dest, ' ')) player.sendMessage(Color.WHITE, "* " + s + " {FFFFFF}*");
 	}
 
 	@Override
