@@ -23,23 +23,31 @@ import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
+import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.util.TrackUtils;
 
 public abstract class TrackNamingDialog extends AbstractInputDialog
 {
-	public TrackNamingDialog(Player player, Shoebill shoebill, EventManager rootEventManager, String caption, String message, AbstractDialog parentDialog)
+	private RaceServiceImpl raceService;
+	
+	
+	public TrackNamingDialog(Player player, Shoebill shoebill, EventManager rootEventManager, String caption, String message, AbstractDialog parentDialog, RaceServiceImpl raceService)
 	{
 		super(player, shoebill, rootEventManager, parentDialog, caption, message);
+		this.raceService = raceService;
 	}
 	
 	public void onClickOk(String inputText)
 	{
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		
 		player.playSound(1083, player.getLocation());
 		
 		String name = TrackUtils.filterName(inputText);
 		if (TrackUtils.isVaildName(name) == false)
 		{
-			append = String.format("{FF0000}* 赛道名长度要求为 %1$d ~ %2$d 个字，请重新输入。", TrackUtils.NAME_MIN_LENGTH, TrackUtils.NAME_MAX_LENGTH);
+			append = stringSet.format(player, "Dialog.TrackNamingDialog.IllegalLengthAppendMessage", TrackUtils.NAME_MIN_LENGTH, TrackUtils.NAME_MAX_LENGTH);
 			show();
 			return;
 		}

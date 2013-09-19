@@ -6,23 +6,29 @@ import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
+import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.RacingLimit;
 import net.gtaun.wl.race.track.Track;
 
 public class RacingLimitDialog extends AbstractListDialog
 {
-	public RacingLimitDialog(final Player player, Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, Track track, final RacingLimit limit)
+	public RacingLimitDialog(final Player player, Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, RaceServiceImpl raceService, Track track, final RacingLimit limit)
 	{
 		super(player, shoebill, eventManager, parentDialog);
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
 		
-		dialogListItems.add(new DialogListItemRadio("自动修车:")
+		final String allow = stringSet.get(player, "Common.Allow");
+		final String disallow = stringSet.get(player, "Common.Disallow");
+		
+		dialogListItems.add(new DialogListItemRadio(stringSet.get(player, "Racing.Limit.AutoRepair") + ":")
 		{
 			{
-				addItem(new RadioItem("允许", Color.GREEN)
+				addItem(new RadioItem(allow, Color.GREEN)
 				{
 					@Override public void onSelected()	{ limit.setAllowAutoRepair(true); }
 				});
-				addItem(new RadioItem("禁止", Color.RED)
+				addItem(new RadioItem(disallow, Color.RED)
 				{
 					@Override public void onSelected()	{ limit.setAllowAutoRepair(false); }
 				});
@@ -42,14 +48,14 @@ public class RacingLimitDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItemRadio("无限氮气:")
+		dialogListItems.add(new DialogListItemRadio(stringSet.get(player, "Racing.Limit.InfiniteNitrous") + ":")
 		{
 			{
-				addItem(new RadioItem("允许", Color.GREEN)
+				addItem(new RadioItem(allow, Color.GREEN)
 				{
 					@Override public void onSelected()	{ limit.setAllowInfiniteNitrous(true); }
 				});
-				addItem(new RadioItem("禁止", Color.RED)
+				addItem(new RadioItem(disallow, Color.RED)
 				{
 					@Override public void onSelected()	{ limit.setAllowInfiniteNitrous(false); }
 				});
@@ -69,14 +75,14 @@ public class RacingLimitDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItemRadio("自动翻车:")
+		dialogListItems.add(new DialogListItemRadio(stringSet.get(player, "Racing.Limit.AutoFlip") + ":")
 		{
 			{
-				addItem(new RadioItem("允许", Color.GREEN)
+				addItem(new RadioItem(allow, Color.GREEN)
 				{
 					@Override public void onSelected()	{ limit.setAllowAutoFlip(true); }
 				});
-				addItem(new RadioItem("禁止", Color.RED)
+				addItem(new RadioItem(disallow, Color.RED)
 				{
 					@Override public void onSelected()	{ limit.setAllowAutoFlip(false); }
 				});
@@ -96,14 +102,14 @@ public class RacingLimitDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItemRadio("更换车辆:")
+		dialogListItems.add(new DialogListItemRadio(stringSet.get(player, "Racing.Limit.ChangeVehicle") + ":")
 		{
 			{
-				addItem(new RadioItem("允许", Color.GREEN)
+				addItem(new RadioItem(allow, Color.GREEN)
 				{
 					@Override public void onSelected()	{ limit.setAllowChangeVehicle(true); }
 				});
-				addItem(new RadioItem("禁止", Color.RED)
+				addItem(new RadioItem(disallow, Color.RED)
 				{
 					@Override public void onSelected()	{ limit.setAllowChangeVehicle(false); }
 				});
@@ -123,7 +129,7 @@ public class RacingLimitDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("完成")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Common.OK"))
 		{	
 			@Override
 			public void onItemSelect()

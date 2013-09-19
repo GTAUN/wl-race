@@ -25,16 +25,20 @@ import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
+import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.Track.ScriptType;
 
 public class TrackScriptEditDialog extends AbstractListDialog
 {
 	protected TrackScriptEditDialog
-	(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final Track track)
+	(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService, final Track track)
 	{
 		super(player, shoebill, eventManager, parentDialog);
-		this.caption = String.format("%1$s: 编辑赛道事件脚本: %2$s", "赛车系统", track.getName());
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		
+		this.caption = stringSet.format(player, "Dialog.TrackScriptEditDialog.Caption", track.getName());
 		
 		for (final ScriptType type : ScriptType.values())
 		{
@@ -45,7 +49,7 @@ public class TrackScriptEditDialog extends AbstractListDialog
 				{
 					String code = track.getScript(type);
 					int lines = StringUtils.countMatches(code, "\n");
-					return String.format("事件 %1$s 脚本: %2$d 行 (%3$d 个字符)", type.name(), lines, code.length());
+					return stringSet.format(player, "Dialog.TrackScriptEditDialog.Item", type.name(), lines, code.length());
 				}
 				
 				@Override
@@ -53,9 +57,9 @@ public class TrackScriptEditDialog extends AbstractListDialog
 				{
 					player.playSound(1083, player.getLocation());
 					
-					final String title = String.format("事件 %1$s", type.name());
+					final String title = stringSet.format(player, "Dialog.TrackScriptEditDialog.EventFormat", type.name());
 					final String code = track.getScript(type);
-					new CodeEditorDialog(player, shoebill, eventManager, TrackScriptEditDialog.this, title, code)
+					new CodeEditorDialog(player, shoebill, eventManager, TrackScriptEditDialog.this, raceService, title, code)
 					{
 						@Override
 						protected void onComplete(String code)

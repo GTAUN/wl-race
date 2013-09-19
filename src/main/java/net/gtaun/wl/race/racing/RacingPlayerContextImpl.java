@@ -108,7 +108,7 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	{
 		scriptExecutor = ScriptExecutorFactory.createCheckpointScriptExecutor(player);
 		
-		hudWidget = new RacingHudWidget(shoebill, rootEventManager, player, this);
+		hudWidget = new RacingHudWidget(shoebill, rootEventManager, null, player, this);
 		hudWidget.init();
 		addDestroyable(hudWidget);
 		

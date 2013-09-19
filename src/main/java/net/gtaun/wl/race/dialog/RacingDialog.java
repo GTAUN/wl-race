@@ -27,6 +27,7 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
 import net.gtaun.wl.common.dialog.MsgboxDialog;
+import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing;
 import net.gtaun.wl.race.racing.Racing.RacingStatus;
@@ -46,12 +47,16 @@ public class RacingDialog extends AbstractListDialog
 		super(player, shoebill, eventManager, parentDialog);
 		this.raceService = raceService;
 		this.racing = racing;
-		this.caption = String.format("%1$s: 查看比赛 %2$s 的信息", "赛车系统", racing.getName());
+		
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		this.caption = stringSet.format(player, "Dialog.RacingDialog.Caption", racing.getName());
 	}
 	
 	@Override
 	public void show()
 	{
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		
 		final Track track = racing.getTrack();
 		final RacingManagerImpl racingManager = raceService.getRacingManager();
 
@@ -61,7 +66,7 @@ public class RacingDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("比赛名称: %1$s", racing.getName());
+				return stringSet.format(player, "Dialog.RacingDialog.Name", racing.getName());
 			}
 			
 			@Override
@@ -77,7 +82,7 @@ public class RacingDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("赛道: %1$s", track.getName());
+				return stringSet.format(player, "Dialog.RacingDialog.Track", track.getName());
 			}
 			
 			@Override
@@ -93,7 +98,7 @@ public class RacingDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("举办者: %1$s", racing.getSponsor().getName());
+				return stringSet.format(player, "Dialog.RacingDialog.Sponsor", racing.getSponsor().getName());
 			}
 			
 			@Override
@@ -104,7 +109,7 @@ public class RacingDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("参加比赛")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RacingDialog.Join"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -135,8 +140,9 @@ public class RacingDialog extends AbstractListDialog
 				if (racingManager.isPlayerInRacing(player))
 				{
 					final Racing nowRacing = racingManager.getPlayerRacing(player);
-					String text = String.format("当前正在参加 %1$s 比赛，您确定要退出并参加另一个比赛 %1$s 吗？", nowRacing.getName(), racing.getName());
-					new MsgboxDialog(player, shoebill, eventManager, RacingDialog.this, "参加比赛", text)
+					String caption = stringSet.get(player, "Dialog.RacingLeaveAndJoinConfirmDialog.Caption");
+					String text = stringSet.format(player, "Dialog.RacingLeaveAndJoinConfirmDialog.Text", nowRacing.getName(), racing.getName());
+					new MsgboxDialog(player, shoebill, eventManager, RacingDialog.this, caption, text)
 					{
 						@Override
 						protected void onClickOk()
@@ -151,7 +157,7 @@ public class RacingDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("退出比赛")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RacingDialog.Leave"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -167,8 +173,9 @@ public class RacingDialog extends AbstractListDialog
 				player.playSound(1083, player.getLocation());
 				if (racingManager.getPlayerRacing(player) != racing) return ;
 				
-				String text = String.format("当前正在参加 %1$s 比赛，您确定要退出吗？", racing.getName());
-				new MsgboxDialog(player, shoebill, eventManager, RacingDialog.this, "退出比赛", text)
+				String caption = stringSet.get(player, "Dialog.RacingLeaveConfirmDialog.Caption");
+				String text = stringSet.format(player, "Dialog.RacingLeaveConfirmDialog.Text", racing.getName());
+				new MsgboxDialog(player, shoebill, eventManager, RacingDialog.this, caption, text)
 				{
 					@Override
 					protected void onClickOk()
@@ -181,7 +188,7 @@ public class RacingDialog extends AbstractListDialog
 			}
 		});
 
-		dialogListItems.add(new DialogListItem("取消比赛")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RacingDialog.Cancel"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -196,9 +203,10 @@ public class RacingDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				if (racingManager.getPlayerRacing(player) != racing) return ;
-				
-				String text = String.format("您确定要取消 %1$s 比赛吗？", racing.getName());
-				new MsgboxDialog(player, shoebill, eventManager, RacingDialog.this, "取消比赛", text)
+
+				String caption = stringSet.get(player, "Dialog.RacingCancelConfirmDialog.Caption");
+				String text = stringSet.format(player, "Dialog.RacingCancelConfirmDialog.Text", racing.getName());
+				new MsgboxDialog(player, shoebill, eventManager, RacingDialog.this, caption, text)
 				{
 					@Override
 					protected void onClickOk()
@@ -211,7 +219,7 @@ public class RacingDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("开始比赛")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RacingDialog.Start"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -243,7 +251,7 @@ public class RacingDialog extends AbstractListDialog
 		List<Player> players = racing.getPlayers();
 		for (final Player joinedPlayer : players)
 		{
-			String item = String.format("参赛者: %1$s", joinedPlayer.getName());
+			String item = stringSet.format(player, "Dialog.RacingDialog.Player", joinedPlayer.getName());
 			dialogListItems.add(new DialogListItem(item)
 			{
 				@Override
@@ -256,8 +264,9 @@ public class RacingDialog extends AbstractListDialog
 					}
 					else
 					{
-						String text = String.format("您确定要踢出参赛者 %1$s 吗？", joinedPlayer.getName());
-						new MsgboxDialog(player, shoebill, rootEventManager, RacingDialog.this, "踢出参赛者", text)
+						String caption = stringSet.get(player, "Dialog.RacingKickConfirmDialog.Caption");
+						String text = stringSet.format(player, "Dialog.RacingKickConfirmDialog.Text", joinedPlayer.getName());
+						new MsgboxDialog(player, shoebill, rootEventManager, RacingDialog.this, caption, text)
 						{
 							protected void onClickOk()
 							{

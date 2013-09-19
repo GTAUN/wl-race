@@ -37,10 +37,12 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.object.PlayerMapIcon.MapIcon;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
+import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 
 public class TrackEditor extends AbstractPlayerContext
 {
+	private final RaceServiceImpl raceService;
 	private final Track track;
 	
 	private Map<TrackCheckpoint, MapIcon> mapIcons;
@@ -49,6 +51,7 @@ public class TrackEditor extends AbstractPlayerContext
 	public TrackEditor(Shoebill shoebill, EventManager rootEventManager, Player player, RaceServiceImpl raceService, Track track)
 	{
 		super(shoebill, rootEventManager, player);
+		this.raceService = raceService;
 		this.track = track;
 		this.mapIcons = new HashMap<>();
 	}
@@ -57,14 +60,16 @@ public class TrackEditor extends AbstractPlayerContext
 	protected void onInit()
 	{
 		eventManager.registerHandler(PlayerUpdateEvent.class, player, playerEventHandler, HandlerPriority.NORMAL);
-		
-		player.sendMessage(Color.LIGHTBLUE, "%1$s: 你现在正在编辑 %2$s 赛道。", "赛车系统", track.getName());
+
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		player.sendMessage(Color.LIGHTBLUE, stringSet.format(player, "TrackEditor.StartEditingTrackMessage", track.getName()));
 	}
 	
 	@Override
 	protected void onDestroy()
 	{
-		player.sendMessage(Color.LIGHTBLUE, "%1$s: 已停止编辑 %2$s 赛道。", "赛车系统", track.getName());
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		player.sendMessage(Color.LIGHTBLUE, stringSet.format(player, "TrackEditor.EndEditingTrackMessage", track.getName()));
 		
 		for (MapIcon icon : mapIcons.values()) icon.destroy();
 		mapIcons.clear();

@@ -27,6 +27,7 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
 import net.gtaun.wl.common.dialog.MsgboxDialog;
+import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing;
 import net.gtaun.wl.race.racing.RacingManagerImpl;
@@ -39,23 +40,20 @@ import org.apache.commons.lang3.StringUtils;
 
 public class TrackDialog extends AbstractListDialog
 {
-	private final Track track;
-	
-	
 	public TrackDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, final AbstractDialog parentDialog, final RaceServiceImpl raceService, final Track track)
 	{
 		super(player, shoebill, eventManager, parentDialog);
-		this.caption = String.format("%1$s: 查看赛道 %2$s 的信息", "赛车系统", track.getName());
-		this.track = track;
-		
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
 		final RacingManagerImpl racingManager = raceService.getRacingManager();
+
+		this.caption = stringSet.format(player, "Dialog.TrackDialog.Caption", track.getName());
 		
 		dialogListItems.add(new DialogListItem()
 		{
 			@Override
 			public String toItemString()
 			{
-				return String.format("赛道名: %1$s", track.getName());
+				return stringSet.format(player, "Dialog.TrackDialog.Name", track.getName());
 			}
 			
 			@Override
@@ -71,7 +69,7 @@ public class TrackDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("作者: %1$s", track.getAuthorUniqueId());
+				return stringSet.format(player, "Dialog.TrackDialog.Author", track.getAuthorUniqueId());
 			}
 			
 			@Override
@@ -88,8 +86,8 @@ public class TrackDialog extends AbstractListDialog
 			public String toItemString()
 			{
 				String desc = track.getDesc();
-				if (StringUtils.isBlank(desc)) desc = "空";
-				return String.format("描述: %1$s", StringUtils.abbreviate(desc, 60));
+				if (StringUtils.isBlank(desc)) desc = stringSet.get(player, "Common.Empty");
+				return stringSet.format(player, "Dialog.TrackDialog.Desc", StringUtils.abbreviate(desc, 60));
 			}
 			
 			@Override
@@ -105,7 +103,7 @@ public class TrackDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("状态: %1$s", track.getStatus());
+				return stringSet.format(player, "Dialog.TrackDialog.Status", track.getStatus());
 			}
 			
 			@Override
@@ -121,7 +119,7 @@ public class TrackDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("检查点数: %1$d", track.getCheckpoints().size());
+				return stringSet.format(player, "Dialog.TrackDialog.Checkpoints", track.getCheckpoints().size());
 			}
 			
 			@Override
@@ -137,7 +135,7 @@ public class TrackDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("总长度: %1$1.2f公里", track.getLength()/1000.0f);
+				return stringSet.format(player, "Dialog.TrackDialog.Length", track.getLength()/1000.0f);
 			}
 			
 			@Override
@@ -153,7 +151,7 @@ public class TrackDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("当前距离: %1$1.1f米", player.getLocation().distance(track.getStartLocation()));
+				return stringSet.format(player, "Dialog.TrackDialog.Distance", player.getLocation().distance(track.getStartLocation()));
 			}
 			
 			@Override
@@ -164,7 +162,7 @@ public class TrackDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("编辑赛道")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackDialog.Edit"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -181,12 +179,9 @@ public class TrackDialog extends AbstractListDialog
 				
 				if (track.getStatus() == TrackStatus.COMPLETED)
 				{
-					String format =
-							"尝试再次编辑赛道将会清空当前所有的比赛成绩信息。\n" +
-							"这将会影响到其他玩家的感受，请您务必谨慎操作。\n\n" +
-							"您确定要再次编辑赛道 %1$s 吗？";
-					String message = String.format(format, track.getName());
-					new MsgboxDialog(player, shoebill, eventManager, TrackDialog.this, "再次编辑赛道确认", message)
+					String caption = stringSet.get(player, "Dialog.TrackEditConfirmDialog.Caption");
+					String text = stringSet.format(player, "Dialog.TrackEditConfirmDialog.Text", track.getName());
+					new MsgboxDialog(player, shoebill, eventManager, TrackDialog.this, caption, text)
 					{
 						protected void onClickOk()
 						{
@@ -206,7 +201,7 @@ public class TrackDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("测试本赛道")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackDialog.Test"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -246,7 +241,7 @@ public class TrackDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("发起新比赛")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackDialog.NewRacing"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -263,7 +258,7 @@ public class TrackDialog extends AbstractListDialog
 			}
 		});
 
-		dialogListItems.add(new DialogListItem("快速发起比赛")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackDialog.QuickNewRacing"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -286,8 +281,9 @@ public class TrackDialog extends AbstractListDialog
 				if (racingManager.isPlayerInRacing(player))
 				{
 					final Racing racing = racingManager.getPlayerRacing(player);
-					String text = String.format("当前正在参加 %1$s 比赛，您确定要退出并举行新比赛吗？", racing.getName());
-					new MsgboxDialog(player, shoebill, eventManager, TrackDialog.this, "开始新比赛", text)
+					String caption = stringSet.get(player, "Dialog.TrackNewRacingConfirmDialog.Caption");
+					String text = stringSet.format(player, "Dialog.TrackNewRacingConfirmDialog.Text", racing.getName());
+					new MsgboxDialog(player, shoebill, eventManager, TrackDialog.this, caption, text)
 					{
 						@Override
 						protected void onClickOk()
@@ -313,7 +309,6 @@ public class TrackDialog extends AbstractListDialog
 	@Override
 	public void show()
 	{
-		this.caption = String.format("%1$s: 赛道 %2$s (作者: %3$s)", "赛车系统", track.getName(), track.getAuthorUniqueId());
 		super.show();
 	}
 }

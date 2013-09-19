@@ -128,7 +128,7 @@ public class PlayerRaceContext extends AbstractPlayerContext
 					TrackCheckpoint checkpoint = editingTrack.createCheckpoint(player.getLocation());
 					trackEditor.updateMapIcons();
 					
-					new TrackCheckpointEditDialog(player, shoebill, eventManager, null, checkpoint).show();
+					new TrackCheckpointEditDialog(player, shoebill, eventManager, null, raceService, checkpoint).show();
 				}
 			}
 			else

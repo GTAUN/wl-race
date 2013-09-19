@@ -25,6 +25,7 @@ import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractPageListDialog;
+import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing;
 import net.gtaun.wl.race.racing.Racing.RacingStatus;
@@ -45,6 +46,8 @@ public class RacingListDialog extends AbstractPageListDialog
 	@Override
 	public void show()
 	{
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		
 		RacingManagerImpl racingManager = raceService.getRacingManager();
 		List<Racing> allRacings = racingManager.getRacings();
 		List<Racing> racings = racingManager.getRacings(RacingStatus.WAITING);
@@ -53,7 +56,7 @@ public class RacingListDialog extends AbstractPageListDialog
 		for (final Racing racing : racings)
 		{
 			Track track = racing.getTrack();
-			String item = String.format("比赛: %1$s	赛道: %2$s	举办者: %3$s", racing.getName(), track.getName(), racing.getSponsor().getName());
+			String item = stringSet.format(player, "Dialog.RacingListDialog.Text", racing.getName(), track.getName(), racing.getSponsor().getName());
 			dialogListItems.add(new DialogListItem(item)
 			{
 				@Override
@@ -65,7 +68,7 @@ public class RacingListDialog extends AbstractPageListDialog
 			});
 		}
 		
-		this.caption = String.format("浏览比赛 (可加入比赛 %1$d 个, 总比赛数 %2$d 个)", racings.size(), allRacings.size());
+		this.caption = stringSet.format(player, "Dialog.RacingListDialog.Caption", racings.size(), allRacings.size());
 		super.show();
 	}
 }

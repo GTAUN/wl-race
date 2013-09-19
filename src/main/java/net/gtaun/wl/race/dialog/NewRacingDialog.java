@@ -25,6 +25,7 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
+import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing;
 import net.gtaun.wl.race.racing.Racing.DeathRule;
@@ -47,11 +48,12 @@ public class NewRacingDialog extends AbstractListDialog
 	public NewRacingDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService, final Track track)
 	{
 		super(player, shoebill, eventManager, parentDialog);
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
 
 		final RacingManagerImpl racingManager = raceService.getRacingManager();
-		final String racingTypeStr = (track.getStatus() == TrackStatus.EDITING) ? "测试编辑中的赛道" : "发起新比赛";
+		final String racingMode = (track.getStatus() == TrackStatus.EDITING) ? stringSet.get(player, "Dialog.NewRacingDialog.RacingTestCaption") : stringSet.get(player, "Dialog.NewRacingDialog.RacingNormalCaption");
 		
-		this.caption = String.format("%1$s: %2$s", "赛车系统", racingTypeStr);
+		this.caption = stringSet.format(player, "Dialog.NewRacingDialog.Caption", racingMode);
 		this.racingName = RacingUtils.getDefaultName(player, track);
 		
 		setting = new RacingSetting(track);
@@ -68,7 +70,7 @@ public class NewRacingDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("比赛名称: %1$s", racingName);
+				return stringSet.format(player, "Dialog.NewRacingDialog.Name", racingName);
 			}
 			
 			@Override
@@ -76,8 +78,8 @@ public class NewRacingDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				
-				String caption = String.format("%1$s: %2$s: 编辑比赛名称", "赛车系统", racingTypeStr);
-				String message = "请输入新的比赛名称:";
+				String caption = stringSet.format(player, "Dialog.NewRacingEditNameDialog.Caption", racingMode);
+				String message = stringSet.get(player, "Dialog.NewRacingEditNameDialog.Text");
 				new AbstractInputDialog(player, shoebill, eventManager, NewRacingDialog.this, caption, message)
 				{
 					public void onClickOk(String inputText)
@@ -85,7 +87,7 @@ public class NewRacingDialog extends AbstractListDialog
 						String name = StringUtils.trimToEmpty(inputText);
 						if (name.length()<3 || name.length()>40)
 						{
-							append = "比赛名称长度要求为 3 ~ 40 之间，请重新输入。";
+							append = stringSet.get(player, "Dialog.NewRacingEditNameDialog.LimitAppendMessage");
 							show();
 							return;
 						}
@@ -101,8 +103,7 @@ public class NewRacingDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("赛道: %1$s (检查点数%2$d, 长度%3$1.1fKM)",
-						track.getName(), track.getCheckpoints().size(), track.getLength()/1000.0f);
+				return stringSet.format(player, "Dialog.NewRacingDialog.Track", track.getName(), track.getCheckpoints().size(), track.getLength()/1000.0f);
 			}
 			
 			@Override
@@ -113,9 +114,9 @@ public class NewRacingDialog extends AbstractListDialog
 			}
 		});
 		
-		String trackType = "普通赛道";
-		if (track.getType() == TrackType.CIRCUIT) trackType = String.format("绕圈赛道 (%1$d 圈)", track.getCircultLaps());
-		dialogListItems.add(new DialogListItem(String.format("赛道类型: %1$s", trackType))
+		String trackType = stringSet.get(player, "Track.Type.Normal");
+		if (track.getType() == TrackType.CIRCUIT) trackType = stringSet.format(player, "Dialog.NewRacingDialog.CircultFormat", track.getCircultLaps());
+		dialogListItems.add(new DialogListItem(stringSet.format(player, "Dialog.NewRacingDialog.ItemTrackType", trackType))
 		{
 			@Override
 			public void onItemSelect()
@@ -125,14 +126,14 @@ public class NewRacingDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItemRadio("比赛类型:")
+		dialogListItems.add(new DialogListItemRadio(stringSet.get(player, "Dialog.NewRacingDialog.RacingType"))
 		{
 			{
-				addItem(new RadioItem("普通", Color.CORNFLOWERBLUE)
+				addItem(new RadioItem(stringSet.get(player, "Racing.Type.Normal"), Color.CORNFLOWERBLUE)
 				{
 					@Override public void onSelected()	{ setting.setRacingType(RacingType.NORMAL); }
 				});
-				addItem(new RadioItem("淘汰赛", Color.MAGENTA)
+				addItem(new RadioItem(stringSet.get(player, "Racing.Type.Knockout"), Color.MAGENTA)
 				{
 					@Override public void onSelected()	{ setting.setRacingType(RacingType.KNOCKOUT); }
 				});
@@ -157,28 +158,28 @@ public class NewRacingDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				String format = "发车间隔: %1$s";
+				String format = stringSet.get(player, "Dialog.NewRacingDialog.DepartureInterval");
 				int interval = setting.getDepartureInterval();
-				if (interval == 0) return String.format(format, "无");
-				return String.format(format, interval);
+				if (interval == 0) return String.format(format, stringSet.get(player, "Common.None"));
+				return String.format(format, stringSet.format(player, "Time.Format.S", interval));
 			}
 
 			@Override
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
-				new RacingDepartureSettingDialog(player, shoebill, eventManager, NewRacingDialog.this, setting).show();
+				new RacingDepartureSettingDialog(player, shoebill, eventManager, NewRacingDialog.this, raceService, setting).show();
 			}
 		});
 		
-		dialogListItems.add(new DialogListItemRadio("死亡处理:")
+		dialogListItems.add(new DialogListItemRadio(stringSet.get(player, "Dialog.NewRacingDialog.DeathRule"))
 		{
 			{
-				addItem(new RadioItem("等待并回到检查点", Color.AQUA)
+				addItem(new RadioItem(stringSet.get(player, "Racing.DeathRule.WaitAndReturn"), Color.AQUA)
 				{
 					@Override public void onSelected()	{ setting.setDeathRule(DeathRule.WAIT_AND_RETURN); }
 				});
-				addItem(new RadioItem("淘汰", Color.FUCHSIA)
+				addItem(new RadioItem(stringSet.get(player, "Racing.DeathRule.Knockout"), Color.FUCHSIA)
 				{
 					@Override public void onSelected()	{ setting.setDeathRule(DeathRule.KNOCKOUT); }
 				});
@@ -198,22 +199,22 @@ public class NewRacingDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItemCheck("限制:")
+		dialogListItems.add(new DialogListItemCheck(stringSet.get(player, "Dialog.NewRacingDialog.Limit"))
 		{
 			{
-				addItem(new CheckItem("自动修车", Color.LIME)
+				addItem(new CheckItem(stringSet.get(player, "Racing.Limit.AutoRepair"), Color.LIME)
 				{
 					@Override public boolean isChecked()	{ return setting.getLimit().isAllowAutoRepair(); }
 				});
-				addItem(new CheckItem("无限氮气", Color.RED)
+				addItem(new CheckItem(stringSet.get(player, "Racing.Limit.InfiniteNitrous"), Color.RED)
 				{
 					@Override public boolean isChecked()	{ return setting.getLimit().isAllowInfiniteNitrous(); }
 				});
-				addItem(new CheckItem("自动翻车", Color.BLUE)
+				addItem(new CheckItem(stringSet.get(player, "Racing.Limit.AutoFlip"), Color.BLUE)
 				{
 					@Override public boolean isChecked()	{ return setting.getLimit().isAllowAutoFlip(); }
 				});
-				addItem(new CheckItem("更换载具", Color.GOLD)
+				addItem(new CheckItem(stringSet.get(player, "Racing.Limit.ChangeVehicle"), Color.GOLD)
 				{
 					@Override public boolean isChecked()	{ return setting.getLimit().isAllowChangeVehicle(); }
 				});
@@ -222,19 +223,19 @@ public class NewRacingDialog extends AbstractListDialog
 			@Override
 			public void onItemSelect()
 			{
-				new RacingLimitDialog(player, shoebill, eventManager, NewRacingDialog.this, track, setting.getLimit()).show();
+				new RacingLimitDialog(player, shoebill, eventManager, NewRacingDialog.this, raceService, track, setting.getLimit()).show();
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("人数限制: ")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.NewRacingDialog.PlayersLimit"))
 		{
 			@Override
 			public String toItemString()
 			{
 				int min = track.getSetting().getMinPlayers();
 				int max = setting.getMaxPlayers();
-				if (min != 0 && max != 0) return String.format("%1$d ~ %2$d 人", min, max);
-				return itemString + "不限制";
+				if (min != 0 && max != 0) return stringSet.format(player, "Dialog.NewRacingDialog.PlayersLimitFormat", min, max);
+				return itemString + " " + stringSet.get(player, "Dialog.NewRacingDialog.PlayersLimitNone");
 			}
 			
 			@Override
@@ -244,13 +245,13 @@ public class NewRacingDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("比赛密码: ")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.NewRacingDialog.Password"))
 		{
 			@Override
 			public String toItemString()
 			{
-				if (StringUtils.isBlank(setting.getPassword())) return itemString + "无";
-				return itemString + setting.getPassword();
+				if (StringUtils.isBlank(setting.getPassword())) return itemString + stringSet.get(player, "Common.None");
+				return itemString + " " + setting.getPassword();
 			}
 			
 			@Override
@@ -260,7 +261,7 @@ public class NewRacingDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("发起比赛")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.NewRacingDialog.Create"))
 		{
 			private void startNewRacing()
 			{

@@ -26,6 +26,7 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
+import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackManagerImpl;
@@ -35,9 +36,12 @@ public class TrackListMainDialog extends AbstractListDialog
 	public TrackListMainDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService)
 	{
 		super(player, shoebill, eventManager, parentDialog);
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
 		final TrackManagerImpl trackManager = raceService.getTrackManager();
+		
+		this.caption = "";
 
-		dialogListItems.add(new DialogListItem("搜索附近的赛道 ...")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackListMainDialog.Nearby"))
 		{
 			@Override
 			public void onItemSelect()
@@ -48,7 +52,7 @@ public class TrackListMainDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("列出所有赛道 ...")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackListMainDialog.MyFavorites"))
 		{
 			@Override
 			public void onItemSelect()
@@ -59,7 +63,7 @@ public class TrackListMainDialog extends AbstractListDialog
 			}
 		});
 
-		dialogListItems.add(new DialogListItem("我的赛道 ...")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackListMainDialog.MyTracks"))
 		{
 			@Override
 			public void onItemSelect()
@@ -71,14 +75,16 @@ public class TrackListMainDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("按作者搜索赛道")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackListMainDialog.SearchByAuthor"))
 		{
 			@Override
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
 				
-				new AbstractInputDialog(player, shoebill, eventManager, TrackListMainDialog.this, "赛车系统: 按作者搜索赛道", "请输入作者名字:")
+				String caption = stringSet.get(player, "Dialog.TrackSearchByAuthorDialog.Caption");
+				String message = stringSet.get(player, "Dialog.TrackSearchByAuthorDialog.Text");
+				new AbstractInputDialog(player, shoebill, eventManager, TrackListMainDialog.this, caption, message)
 				{
 					public void onClickOk(String inputText)
 					{
@@ -91,14 +97,16 @@ public class TrackListMainDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("按名字搜索赛道")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackListMainDialog.SearchByKeyword"))
 		{
 			@Override
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
-				
-				new AbstractInputDialog(player, shoebill, eventManager, TrackListMainDialog.this, "赛车系统: 按名字搜索赛道", "请输入搜索关键字，多个关键字请用空格隔开:")
+
+				String caption = stringSet.get(player, "Dialog.TrackSearchByKeywordDialog.Caption");
+				String message = stringSet.get(player, "Dialog.TrackSearchByKeywordDialog.Text");
+				new AbstractInputDialog(player, shoebill, eventManager, TrackListMainDialog.this, caption, message)
 				{
 					public void onClickOk(String inputText)
 					{

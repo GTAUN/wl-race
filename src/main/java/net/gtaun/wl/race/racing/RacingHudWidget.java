@@ -35,10 +35,13 @@ import net.gtaun.shoebill.object.Timer;
 import net.gtaun.shoebill.object.Timer.TimerCallback;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.textdraw.TextDrawUtils;
+import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
 
 public class RacingHudWidget extends AbstractPlayerContext
 {
+	private final RaceServiceImpl raceService;
 	private final RacingPlayerContext racingPlayerContext;
 
 	private Timer timer;
@@ -47,15 +50,16 @@ public class RacingHudWidget extends AbstractPlayerContext
 	private PlayerTextdraw checkpointNumber;
 	private PlayerTextdraw rankingNumber;
 	private PlayerTextdraw timeDiffDraw;
-	private PlayerTextdraw otherInfo;
+	private PlayerTextdraw bottomInfo;
 
 	private PlayerTextdraw progressBarBg;
 	private List<PlayerTextdraw> progressBarTextdraws;
 	
 	
-	public RacingHudWidget(Shoebill shoebill, EventManager rootEventManager, Player player, RacingPlayerContext racingPlayerContext)
+	public RacingHudWidget(Shoebill shoebill, EventManager rootEventManager, RaceServiceImpl raceService, Player player, RacingPlayerContext racingPlayerContext)
 	{
 		super(shoebill, rootEventManager, player);
+		this.raceService = raceService;
 		this.racingPlayerContext = racingPlayerContext;
 		progressBarTextdraws = new ArrayList<>();
 	}
@@ -85,12 +89,12 @@ public class RacingHudWidget extends AbstractPlayerContext
 		timeDiffDraw.setLetterSize(1.2f, 3.75f);
 		timeDiffDraw.setShadowSize(2);
 		
-		otherInfo = TextDrawUtils.createPlayerText(factory, player, 0, 460, "-");
-		otherInfo.setAlignment(TextDrawAlign.LEFT);
-		otherInfo.setFont(TextDrawFont.FONT2);
-		otherInfo.setLetterSize(0.25f, 0.8f);
-		otherInfo.setShadowSize(1);
-		otherInfo.show();
+		bottomInfo = TextDrawUtils.createPlayerText(factory, player, 0, 460, "-");
+		bottomInfo.setAlignment(TextDrawAlign.LEFT);
+		bottomInfo.setFont(TextDrawFont.FONT2);
+		bottomInfo.setLetterSize(0.25f, 0.8f);
+		bottomInfo.setShadowSize(1);
+		bottomInfo.show();
 		
 		progressBarBg = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240, 10, 200);
 		progressBarBg.setBoxColor(new Color(0, 0, 0, 128));
@@ -118,7 +122,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 		});
 		progressBarTimer.start();
 
-		addDestroyable(otherInfo);
+		addDestroyable(bottomInfo);
 		addDestroyable(rankingNumber);
 		addDestroyable(checkpointNumber);
 		addDestroyable(timeDiffDraw);
@@ -138,6 +142,8 @@ public class RacingHudWidget extends AbstractPlayerContext
 	
 	private void update()
 	{
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		
 		int passedCheckpoints = racingPlayerContext.getPassedCheckpoints();
 		int checkpoints = racingPlayerContext.getTrackCheckpoints();
 		
@@ -185,8 +191,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 		long minutes = time / 1000 / 60;
 		String formatedTime = String.format("%1$02d:%2$02d.%3$03d", minutes, seconds, milliseconds);
 		
-		final String otherInfoformat = "Completed: ~b~~h~%3$1.1f%%~w~ - Time: %4$s~n~Racing: ~y~~h~%1$s~w~ - Track: ~g~~h~%2$s~w~";
-		otherInfo.setText(String.format(otherInfoformat, racing.getName(), track.getName(), completionPercent * 100.0f, formatedTime));
+		bottomInfo.setText(stringSet.format(player, "Textdraw.RacingHudWidget.BottomInfoFormat", racing.getName(), track.getName(), completionPercent * 100.0f, formatedTime));
 	}
 	
 	private void updateProgressBar()

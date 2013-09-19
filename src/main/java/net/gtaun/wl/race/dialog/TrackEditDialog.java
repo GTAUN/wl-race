@@ -28,6 +28,7 @@ import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
 import net.gtaun.wl.common.dialog.MsgboxDialog;
+import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing;
 import net.gtaun.wl.race.racing.RacingManagerImpl;
@@ -46,7 +47,7 @@ public class TrackEditDialog extends AbstractListDialog
 	
 
 	public TrackEditDialog
-	(final Player player, final Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, RaceServiceImpl raceService, final Track track)
+	(final Player player, final Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService, final Track track)
 	{
 		super(player, shoebill, eventManager, parentDialog);
 		this.raceService = raceService;
@@ -56,6 +57,7 @@ public class TrackEditDialog extends AbstractListDialog
 	@Override
 	public void show()
 	{
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
 		final RacingManagerImpl racingManager = raceService.getRacingManager();
 		
 		dialogListItems.clear();
@@ -64,7 +66,7 @@ public class TrackEditDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("赛道名: %1$s", track.getName());
+				return stringSet.format(player, "Dialog.TrackEditDialog.Name", track.getName());
 			}
 			
 			@Override
@@ -72,9 +74,9 @@ public class TrackEditDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				
-				String caption = String.format("%1$s: 编辑赛道名: %2$s", "赛车系统", track.getName());
-				String message = String.format("原始赛道名 %1$s ，请输入新的赛道名: ", track.getName());
-				new TrackNamingDialog(player, shoebill, rootEventManager, caption, message, TrackEditDialog.this)
+				String caption = stringSet.get(player, "Dialog.TrackEditNameDialog.Caption");
+				String message = stringSet.format(player, "Dialog.TrackEditNameDialog.Text", track.getName());
+				new TrackNamingDialog(player, shoebill, rootEventManager, caption, message, TrackEditDialog.this, raceService)
 				{
 					protected void onNaming(String name)
 					{
@@ -86,12 +88,12 @@ public class TrackEditDialog extends AbstractListDialog
 						}
 						catch (AlreadyExistException e)
 						{
-							append = String.format("{FF0000}* 赛道名 {FFFFFF}\"%1$s\" {FF0000}已被使用，请重新命名。", name);
+							append = stringSet.format(player, "Dialog.TrackEditNameDialog.AlreadyExistAppendMessage", name);
 							show();
 						}
 						catch (IllegalArgumentException e)
 						{
-							append = String.format("{FF0000}* 赛道名 {FFFFFF}\"%1$s\" {FF0000}不合法，请重新命名。", name);
+							append = stringSet.format(player, "Dialog.TrackEditNameDialog.IllegalFormatAppendMessage", name);
 							show();
 						}
 					}
@@ -105,8 +107,8 @@ public class TrackEditDialog extends AbstractListDialog
 			public String toItemString()
 			{
 				String desc = track.getDesc();
-				if (StringUtils.isBlank(desc)) desc = "空";
-				return String.format("描述: %1$s", desc);
+				if (StringUtils.isBlank(desc)) desc = stringSet.get(player, "Common.Empty");
+				return stringSet.format(player, "Dialog.TrackEditDialog.Desc", desc);
 			}
 			
 			@Override
@@ -114,13 +116,8 @@ public class TrackEditDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				
-				String messageFormat =
-						"赛道 %1$s 原描述信息为:\n\n" +
-						"%2$s\n\n" +
-						"请输入新的描述信息:";
-				
-				String caption = String.format("%1$s: 编辑赛道描述: %2$s", "赛车系统", track.getName());
-				String message = String.format(messageFormat, track.getName(), track.getDesc());
+				String caption = stringSet.get(player, "Dialog.TrackEditDescDialog.Caption");
+				String message = stringSet.format(player, "Dialog.TrackEditDescDialog.Text", track.getName(), track.getDesc());
 				new AbstractInputDialog(player, shoebill, rootEventManager, TrackEditDialog.this, caption, message)
 				{
 					public void onClickOk(String inputText)
@@ -142,7 +139,7 @@ public class TrackEditDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("当前检查点数: %1$d", track.getCheckpoints().size());
+				return stringSet.format(player, "Dialog.TrackEditDialog.Checkpoints", track.getCheckpoints().size());
 			}
 			
 			@Override
@@ -158,7 +155,7 @@ public class TrackEditDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				return String.format("当前总长度: %1$1.2f公里", track.getLength()/1000.0f);
+				return stringSet.format(player, "Dialog.TrackEditDialog.Length", track.getLength()/1000.0f);
 			}
 			
 			@Override
@@ -169,7 +166,7 @@ public class TrackEditDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("添加当前地点为新检查点")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackEditDialog.AddCheckpoint"))
 		{
 			@Override
 			public void onItemSelect()
@@ -177,42 +174,39 @@ public class TrackEditDialog extends AbstractListDialog
 				player.playSound(1083, player.getLocation());
 				
 				TrackCheckpoint checkpoint = track.createCheckpoint(player.getLocation());
-				new TrackCheckpointEditDialog(player, shoebill, eventManager, null, checkpoint).show();
+				new TrackCheckpointEditDialog(player, shoebill, eventManager, null, raceService, checkpoint).show();
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("赛道比赛设置")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackEditDialog.Setting"))
 		{
 			@Override
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
-				new TrackSettingDialog(player, shoebill, rootEventManager, TrackEditDialog.this, track).show();
+				new TrackSettingDialog(player, shoebill, rootEventManager, TrackEditDialog.this, raceService, track).show();
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("删除赛道")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackEditDialog.Delete"))
 		{
 			@Override
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
 				
-				String format =
-					"警告！删除赛道将无法还原，所有的比赛记录也都将会消除。\n" +
-					"请您务必谨慎操作，有任何疑问，请先联系管理员解决。\n\n" +
-					"请您再次输入赛道名 %1$s 以确认删除操作：";
-				String message = String.format(format, track.getName());
-				new AbstractInputDialog(player, shoebill, rootEventManager, TrackEditDialog.this, "！！！删除赛道！！！", message)
+				String caption = stringSet.get(player, "Dialog.TrackDeleteConfirmDialog.Caption");
+				String message = stringSet.format(player, "Dialog.TrackDeleteConfirmDialog.Text", track.getName());
+				new AbstractInputDialog(player, shoebill, rootEventManager, TrackEditDialog.this, caption, message)
 				{
 					public void onClickOk(String inputText)
 					{
 						player.playSound(1083, player.getLocation());
 						if (!track.equals(inputText))
 						{
-							String format = "已取消删除赛道 %1$s 。";
-							String message = String.format(format, track.getName());
-							new MsgboxDialog(player, shoebill, rootEventManager, TrackEditDialog.this, "取消删除赛道", message)
+							String caption = stringSet.get(player, "Dialog.TrackDeleteConfirmDialog.Caption");
+							String message = stringSet.format(player, "Dialog.TrackDeleteConfirmDialog.Text", track.getName());
+							new MsgboxDialog(player, shoebill, rootEventManager, TrackEditDialog.this, caption, message)
 							{
 								protected void onClickOk()
 								{
@@ -226,9 +220,9 @@ public class TrackEditDialog extends AbstractListDialog
 						TrackManagerImpl trackManager = raceService.getTrackManager();
 						trackManager.deleteTrack(track);
 						
-						String format = "赛道 %1$s 已经成功删除。";
-						String message = String.format(format, track.getName());
-						new MsgboxDialog(player, shoebill, rootEventManager, null, "删除赛道成功", message)
+						String caption = stringSet.get(player, "Dialog.TrackDeleteCompleteDialog.Caption");
+						String message = stringSet.format(player, "Dialog.TrackDeleteCompleteDialog.Text", track.getName());
+						new MsgboxDialog(player, shoebill, rootEventManager, null, caption, message)
 						{
 							protected void onClickOk()
 							{
@@ -240,7 +234,7 @@ public class TrackEditDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("停止编辑赛道")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackEditDialog.StopEditing"))
 		{
 			@Override
 			public void onItemSelect()
@@ -250,7 +244,7 @@ public class TrackEditDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("完成赛道编辑")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackEditDialog.FinishEditing"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -264,13 +258,9 @@ public class TrackEditDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				
-				String format =
-					"赛道在编辑完成以后，将开始统计比赛成绩信息。\n" +
-					"尝试再次编辑赛道将会清空当前所有的比赛成绩。\n" +
-					"被管理员通过审核(Ranking)的赛道，将无法再次编辑。\n\n" +
-					"您确定要完成赛道 %1$s 吗？";
-				String message = String.format(format, track.getName());
-				new MsgboxDialog(player, shoebill, rootEventManager, TrackEditDialog.this, "完成赛道确认", message)
+				String caption = stringSet.get(player, "Dialog.TrackFinishEditingConfirmDialog.Caption");
+				String message = stringSet.format(player, "Dialog.TrackFinishEditingConfirmDialog.Text", track.getName());
+				new MsgboxDialog(player, shoebill, rootEventManager, TrackEditDialog.this, caption, message)
 				{
 					protected void onClickOk()
 					{
@@ -285,7 +275,7 @@ public class TrackEditDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("测试本赛道")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackEditDialog.Test"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -347,19 +337,19 @@ public class TrackEditDialog extends AbstractListDialog
 		{
 			final TrackCheckpoint checkpoint = checkpoints.get(i);
 			float distance = player.getLocation().distance(checkpoint.getLocation());
-			String item = String.format("检查点 %1$d (距离 %2$1.1f)", i+1, distance);
+			String item = stringSet.format(player, "Dialog.TrackEditDialog.Checkpoint", i+1, distance);
 			dialogListItems.add(new DialogListItem(item)
 			{
 				@Override
 				public void onItemSelect()
 				{
 					player.playSound(1083, player.getLocation());
-					new TrackCheckpointEditDialog(player, shoebill, eventManager, TrackEditDialog.this, checkpoint).show();
+					new TrackCheckpointEditDialog(player, shoebill, eventManager, TrackEditDialog.this, raceService, checkpoint).show();
 				}
 			});
 		}
 		
-		this.caption = String.format("%1$s: 编辑赛道: %2$s", "赛车系统", track.getName());
+		this.caption = stringSet.format(player, "Dialog.TrackEditDialog.Caption", track.getName());
 		super.show();
 	}
 }

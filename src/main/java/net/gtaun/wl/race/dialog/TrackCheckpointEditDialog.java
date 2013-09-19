@@ -32,24 +32,29 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
+import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackCheckpoint;
 
 public class TrackCheckpointEditDialog extends AbstractListDialog
 {
+	private final RaceServiceImpl raceService;
 	private final TrackCheckpoint checkpoint;
 	private final Track track;
 	
 	
-	public TrackCheckpointEditDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, final AbstractDialog parentDialog, final TrackCheckpoint checkpoint)
+	public TrackCheckpointEditDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, final AbstractDialog parentDialog, final RaceServiceImpl raceService, final TrackCheckpoint checkpoint)
 	{
 		super(player, shoebill, eventManager, parentDialog);
+		this.raceService = raceService;
 		this.checkpoint = checkpoint;
 		this.track = checkpoint.getTrack();
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
 		
 		if (track.getCheckpoints().contains(checkpoint) == false) player.setLocation(checkpoint.getLocation());
 
-		dialogListItems.add(new DialogListItem("完成")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Common.OK"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -65,7 +70,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("传送到这个检查点")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackCheckpointEditDialog.Teleport"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -89,7 +94,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			public String toItemString()
 			{
 				Radius loc = checkpoint.getLocation();
-				String item = String.format("坐标: x=%1$1.2f, y=%2$1.2f, z=%3$1.2f, interior=%4$d", loc.getX(), loc.getY(), loc.getZ(), loc.getInteriorId());
+				String item = stringSet.format(player, "Dialog.TrackCheckpointEditDialog.Position", loc.getX(), loc.getY(), loc.getZ(), loc.getInteriorId());
 				return item;
 			}
 			
@@ -99,8 +104,9 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 				player.playSound(1083, player.getLocation());
 				
 				final Radius oldLoc = checkpoint.getLocation();
-				String msg = String.format("当前坐标值为: x=%1$1.2f, y=%2$1.2f z=%3$1.2f interior=%4$d\n请输入新坐标值，格式: [x] [y] [z] [interior]", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ(), oldLoc.getInteriorId());
-				new AbstractInputDialog(player, shoebill, eventManager, TrackCheckpointEditDialog.this, "编辑检查点坐标", msg)
+				String caption = stringSet.get(player, "Dialog.TrackCheckpointEditPositionDialog.Caption");
+				String text = stringSet.format(player, "Dialog.TrackCheckpointEditPositionDialog.Text", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ(), oldLoc.getInteriorId());
+				new AbstractInputDialog(player, shoebill, eventManager, TrackCheckpointEditDialog.this, caption, text)
 				{
 					public void onClickOk(String inputText)
 					{
@@ -114,7 +120,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 						}
 						catch (NoSuchElementException e)
 						{
-							append = "{FF0000}* 请按照正确的格式输入坐标值。";
+							append = stringSet.get(player, "Dialog.TrackCheckpointEditPositionDialog.IllegalFormatAppendMessage");
 							show();
 						}
 					}
@@ -122,10 +128,10 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItemRadio("类型:")
+		dialogListItems.add(new DialogListItemRadio(stringSet.get(player, "Dialog.TrackCheckpointEditDialog.Type"))
 		{
 			{
-				addItem(new RadioItem("赛车", Color.RED)
+				addItem(new RadioItem(stringSet.get(player, "Track.Checkpoint.Type.Normal"), Color.RED)
 				{
 					@Override
 					public void onSelected()
@@ -134,7 +140,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 					}
 				});
 				
-				addItem(new RadioItem("飞行", Color.BLUE)
+				addItem(new RadioItem(stringSet.get(player, "Track.Checkpoint.Type.Air"), Color.BLUE)
 				{
 					@Override
 					public void onSelected()
@@ -163,7 +169,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			@Override
 			public String toItemString()
 			{
-				String item = String.format("大小: %1$1.1f", checkpoint.getSize());
+				String item = stringSet.format(player, "Dialog.TrackCheckpointEditDialog.Size", checkpoint.getSize());
 				return item;
 			}
 			
@@ -172,8 +178,9 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				
-				String msg = String.format("当前大小值为: %1$1.1f\n请输入新大小值:", checkpoint.getSize());
-				new AbstractInputDialog(player, shoebill, eventManager, TrackCheckpointEditDialog.this, "编辑检查点大小", msg)
+				String caption = stringSet.get(player, "Dialog.TrackCheckpointEditSizeDialog.Caption");
+				String text = stringSet.format(player, "Dialog.TrackCheckpointEditSizeDialog.Text", checkpoint.getSize());
+				new AbstractInputDialog(player, shoebill, eventManager, TrackCheckpointEditDialog.this, caption, text)
 				{
 					public void onClickOk(String inputText)
 					{
@@ -186,7 +193,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 						}
 						catch (NoSuchElementException e)
 						{
-							append = "{FF0000}* 请按照正确的格式输入大小值。";
+							append = stringSet.get(player, "Dialog.TrackCheckpointEditSizeDialog.IllegalFormatAppendMessage");
 							show();
 						}
 					}
@@ -201,7 +208,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			{
 				String code = checkpoint.getScript();
 				int lines = StringUtils.countMatches(code, "\n");
-				return String.format("触发代码: %1$d 行 (%2$d 个字符)", lines, code.length());
+				return stringSet.format(player, "Dialog.TrackCheckpointEditDialog.Script", lines, code.length());
 			}
 			
 			@Override
@@ -209,9 +216,9 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				
-				String title = String.format("检查点 %1$d", checkpoint.getNumber()+1);
+				String title = stringSet.format(player, "Dialog.TrackCheckpointEditDialog.CheckpointFormat", checkpoint.getNumber()+1);
 				String code = checkpoint.getScript();
-				new CodeEditorDialog(player, shoebill, eventManager, TrackCheckpointEditDialog.this, title, code)
+				new CodeEditorDialog(player, shoebill, eventManager, TrackCheckpointEditDialog.this, raceService, title, code)
 				{
 					@Override
 					protected void onComplete(String code)
@@ -223,7 +230,7 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("更新检查点位置")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackCheckpointEditDialog.UpdatePosition"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -237,12 +244,12 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				checkpoint.setLocation(player.getLocation());
-				player.sendMessage(Color.LIGHTBLUE, "赛车系统: 检查点位置已更新。");
+				player.sendMessage(Color.LIGHTBLUE, stringSet.get(player, "Dialog.TrackCheckpointEditDialog.UpdatePositionMessage"));
 				show();
 			}
 		});
 
-		dialogListItems.add(new DialogListItem("删除这个检查点")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackCheckpointEditDialog.Delete"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -263,11 +270,9 @@ public class TrackCheckpointEditDialog extends AbstractListDialog
 	@Override
 	public void show()
 	{
-		String format = "%1$s: 编辑赛道: %2$s: 编辑检查点 %3$d";
-		int number = checkpoint.getNumber();
-		if (number == -1) format = "%1$s: 编辑赛道: %2$s: 创建新检查点";
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
 		
-		this.caption = String.format(format, "赛车系统", track.getName(), number);
+		this.caption = stringSet.format(player, "Dialog.TrackCheckpointEditDialog.Caption", track.getName(), checkpoint.getNumber());
 		super.show();
 	}
 }

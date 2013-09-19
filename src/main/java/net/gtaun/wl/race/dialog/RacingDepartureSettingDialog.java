@@ -5,15 +5,20 @@ import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
+import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.RacingSetting;
 
 public class RacingDepartureSettingDialog extends AbstractListDialog
 {
-	public RacingDepartureSettingDialog(final Player player, Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, final RacingSetting setting)
+	public RacingDepartureSettingDialog(final Player player, Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService, final RacingSetting setting)
 	{
 		super(player, shoebill, eventManager, parentDialog);
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		
+		this.caption = stringSet.format(player, "Dialog.RacingDepartureSettingDialog.Caption");
 
-		dialogListItems.add(new DialogListItem("无")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Common.None"))
 		{	
 			@Override
 			public void onItemSelect()
@@ -24,93 +29,22 @@ public class RacingDepartureSettingDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("1秒钟")
-		{	
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				setting.setDepartureInterval(1);
-				showParentDialog();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem("2秒钟")
-		{	
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				setting.setDepartureInterval(2);
-				showParentDialog();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem("5秒钟")
-		{	
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				setting.setDepartureInterval(5);
-				showParentDialog();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem("10秒钟")
-		{	
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				setting.setDepartureInterval(10);
-				showParentDialog();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem("15秒钟")
-		{	
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				setting.setDepartureInterval(15);
-				showParentDialog();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem("30秒钟")
-		{	
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				setting.setDepartureInterval(30);
-				showParentDialog();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem("1分钟")
-		{	
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				setting.setDepartureInterval(60);
-				showParentDialog();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem("2分钟")
-		{	
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				setting.setDepartureInterval(120);
-				showParentDialog();
-			}
-		});
+		int[] intervals = {1, 2, 5, 10, 15, 30, 60, 120};
+		for (final int interval : intervals)
+		{
+			String item = stringSet.format(player, "Time.Format.S", interval);
+			if (interval >= 60 && interval % 60 == 0) item = stringSet.format(player, "Time.Format.M", interval/60);
+			dialogListItems.add(new DialogListItem(item)
+			{	
+				@Override
+				public void onItemSelect()
+				{
+					player.playSound(1083, player.getLocation());
+					setting.setDepartureInterval(interval);
+					showParentDialog();
+				}
+			});
+		}
 	}
 	
 	

@@ -41,6 +41,8 @@ import net.gtaun.shoebill.object.Timer;
 import net.gtaun.shoebill.object.Timer.TimerCallback;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
+import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.script.ScriptException;
 import net.gtaun.wl.race.script.ScriptExecutor;
 import net.gtaun.wl.race.script.ScriptInstructionCountLimitException;
@@ -74,6 +76,7 @@ public class Racing extends AbstractShoebillContext
 	}
 	
 	
+	private final RaceServiceImpl raceService;
 	private final RacingManagerImpl manager;
 	
 	private final Track track;
@@ -97,9 +100,10 @@ public class Racing extends AbstractShoebillContext
 	private int countdown;
 	
 	
-	Racing(Shoebill shoebill, EventManager rootEventManager, RacingManagerImpl racingManager, Track track, Player sponsor, String name)
+	Racing(Shoebill shoebill, EventManager rootEventManager, RaceServiceImpl raceService, RacingManagerImpl racingManager, Track track, Player sponsor, String name)
 	{
 		super(shoebill, rootEventManager);
+		this.raceService = raceService;
 		this.manager = racingManager;
 		this.track = track;
 		this.sponsor = sponsor;
@@ -198,6 +202,8 @@ public class Racing extends AbstractShoebillContext
 	
 	public void join(Player player)
 	{
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		
 		if (manager.isPlayerInRacing(player)) return;
 		manager.joinRacing(this, player);
 		players.add(player);
@@ -205,18 +211,20 @@ public class Racing extends AbstractShoebillContext
 		TrackCheckpoint first = track.getCheckpoints().get(0);
 		player.setRaceCheckpoint(first.getRaceCheckpoint());
 
-		player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已参与 %2$s 比赛 (赛道 %3$s)。", "赛车系统", getName(), track.getName());
+		player.sendMessage(Color.LIGHTBLUE, stringSet.format(player, "Racing.Message.JoinMessage", getName(), track.getName()));
 		for (Player otherPlayer : getPlayers())
 		{
 			if (otherPlayer == player) continue;
-			otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 已参与 %3$s 比赛。", "赛车系统", player.getName(), getName());
+			otherPlayer.sendMessage(Color.LIGHTBLUE, stringSet.format(otherPlayer, "Racing.Message.PlayerJoinMessage", player.getName(), getName()));
 		}
 		
-		player.sendMessage(Color.LIGHTBLUE, "%1$s: 在参与比赛的时候，只需按两下喇叭 (默认H键) 即可快速呼出比赛菜单。", "赛车系统");
+		player.sendMessage(Color.LIGHTBLUE, stringSet.get(player, "Racing.Message.JoinTipMessage"));
 	}
 	
 	public void leave(Player player)
 	{
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		
 		manager.leaveRacing(this, player);
 		player.disableRaceCheckpoint();
 		
@@ -230,11 +238,11 @@ public class Racing extends AbstractShoebillContext
 
 		if (!finishedPlayers.contains(player) && status != RacingStatus.ENDED)
 		{
-			player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已离开 %2$s 比赛。", "赛车系统", getName());
+			player.sendMessage(Color.LIGHTBLUE, stringSet.format(player, "Racing.Message.LeaveMessage", getName()));
 			for (Player otherPlayer : getPlayers())
 			{
 				if (otherPlayer == player) continue;
-				otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 已退出 %3$s 比赛。", "赛车系统", player.getName(), getName());
+				otherPlayer.sendMessage(Color.LIGHTBLUE, stringSet.format(otherPlayer, "Racing.Message.PlayerLeaveMessage", player.getName(), getName()));
 			}
 		}
 		
@@ -244,11 +252,13 @@ public class Racing extends AbstractShoebillContext
 
 	public void kick(Player player)
 	{
-		player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已被踢出 %2$s 比赛。", "赛车系统", getName());
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		
+		player.sendMessage(Color.LIGHTBLUE, stringSet.format(player, "Racing.Message.KickMessage", getName()));
 		for (Player otherPlayer : getPlayers())
 		{
 			if (otherPlayer == player) continue;
-			otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 已被踢出 %3$s 比赛。", "赛车系统", player.getName(), getName());
+			otherPlayer.sendMessage(Color.LIGHTBLUE, stringSet.format(otherPlayer, "Racing.Message.KickPlayerMessage", player.getName(), getName()));
 		}
 		
 		leave(player);
@@ -256,9 +266,11 @@ public class Racing extends AbstractShoebillContext
 	
 	public void cancel()
 	{
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		
 		for (Player otherPlayer : getPlayers())
 		{
-			otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: 比赛 %2$s 已被取消。", "赛车系统", getName());
+			otherPlayer.sendMessage(Color.LIGHTBLUE, stringSet.format(otherPlayer, "Racing.Message.KickPlayerMessage", getName()));
 		}
 		
 		end();
@@ -275,7 +287,8 @@ public class Racing extends AbstractShoebillContext
 			{
 				for (Player player : players)
 				{
-					player.sendGameText(2000, 6, "- %1$d -", countdown);
+					String repeat = StringUtils.repeat('-', countdown+1);
+					player.sendGameText(2000, 6, repeat + " %1$d " + repeat, countdown);
 					player.playSound(1056, player.getLocation());
 				}
 				countdown--;
@@ -301,6 +314,8 @@ public class Racing extends AbstractShoebillContext
 	
 	public void begin()
 	{
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		
 		if (status != RacingStatus.WAITING && status != RacingStatus.COUNTING) throw new IllegalStateException();
 		if (track.getCheckpoints().size() == 0) throw new IllegalStateException();
 		
@@ -319,7 +334,7 @@ public class Racing extends AbstractShoebillContext
 			
 			player.playSound(1057, player.getLocation());
 			player.setRaceCheckpoint(firstCheckpoint);
-			player.sendGameText(1000, 6, "- ~r~GO! -");
+			player.sendGameText(1000, 6, stringSet.get(player, "Racing.GameText.GoMessage"));
 		}
 		
 		updateRacingRankedList();
@@ -381,6 +396,8 @@ public class Racing extends AbstractShoebillContext
 			if (status == RacingStatus.WAITING) return;
 			if (player.getState() != PlayerState.DRIVER) return;
 
+			final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+
 			TrackRaceCheckpoint checkpoint = (TrackRaceCheckpoint) event.getCheckpoint();
 			TrackCheckpoint trackCheckpoint = checkpoint.getTrackCheckpoint();
 			RacingPlayerContextImpl context = playerContexts.get(player);
@@ -400,20 +417,20 @@ public class Racing extends AbstractShoebillContext
 					int colNum = e.getColumnNumber();
 					String line = e.getLineSource();
 					
-					player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$d): 脚本运行到第 %4$d 行时候发生错误 %5$s 。", "赛车系统", track.getName(), trackCheckpoint.getNumber(), lineNum, detail);
+					player.sendMessage(Color.RED, stringSet.format(player, "Racing.Script.ErrorMessage", track.getName(), trackCheckpoint.getNumber(), lineNum, detail));
 					if (line != null)
 					{
 						if (colNum != -1) line = line.substring(0, colNum) + "<ERROR>" + line.substring(colNum, line.length());
-						player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$d): 错误代码: %4$s 。", "赛车系统", track.getName(), trackCheckpoint.getNumber(), line);
+						player.sendMessage(Color.RED, stringSet.format(player, "Racing.Script.ErrorLineMessage", track.getName(), trackCheckpoint.getNumber(), line));
 					}
 				}
 				catch (ScriptTimeoutException e)
 				{
-					player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$d): 脚本运行时间超过规定时长，终止运行。", "赛车系统", track.getName(), trackCheckpoint.getNumber());
+					player.sendMessage(Color.RED, stringSet.format(player, "Racing.Script.TimeOutErrorMessage", track.getName(), trackCheckpoint.getNumber()));
 				}
 				catch (ScriptInstructionCountLimitException e)
 				{
-					player.sendMessage(Color.RED, "%1$s: 赛道 %2$s (检查点 %3$d): 脚本超过限制指令数，终止运行。", "赛车系统", track.getName(), trackCheckpoint.getNumber());
+					player.sendMessage(Color.RED, stringSet.format(player, "Racing.Script.InstructionCountLimitErrorMessage", track.getName(), trackCheckpoint.getNumber()));
 				}
 			}
 			
@@ -428,11 +445,11 @@ public class Racing extends AbstractShoebillContext
 				finishedPlayers.add(player);
 				leave(player);
 
-				player.sendMessage(Color.LIGHTBLUE, "%1$s: 您已完成 %2$s 比赛。", "赛车系统", getName());
+				player.sendMessage(Color.LIGHTBLUE, stringSet.format(player, "Racing.Message.FinishMessage", getName()));
 				for (Player otherPlayer : getPlayers())
 				{
 					if (otherPlayer == player) continue;
-					otherPlayer.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 已完成 %3$s 比赛。", "赛车系统", player.getName(), getName());
+					otherPlayer.sendMessage(Color.LIGHTBLUE, stringSet.format(otherPlayer, "Racing.Message.PlayerFinishMessage", player.getName(), getName()));
 				}
 			}
 		}

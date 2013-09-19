@@ -38,6 +38,8 @@ import net.gtaun.shoebill.resource.Plugin;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
 import net.gtaun.util.event.ManagedEventManager;
+import net.gtaun.wl.lang.LanguageService;
+import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.RacePlugin;
 import net.gtaun.wl.race.RaceService;
 import net.gtaun.wl.race.dialog.RaceMainDialog;
@@ -67,9 +69,12 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	
 	private final ManagedEventManager eventManager;
 	private final PlayerLifecycleHolder playerLifecycleHolder;
+
+	private final LocalizedStringSet localizedStringSet;
 	
 	private final TrackManagerImpl trackManager;
 	private final RacingManagerImpl racingManager;
+
 	
 	private boolean isCommandEnabled = true;
 	private String commandOperation = "/r";
@@ -84,6 +89,9 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 		
 		eventManager = new ManagedEventManager(rootEventManager);
 		playerLifecycleHolder = new PlayerLifecycleHolder(shoebill, eventManager);
+
+		LanguageService languageService = shoebill.getServiceStore().getService(LanguageService.class);
+		localizedStringSet = languageService.createStringSet(new File(plugin.getDataDir(), "text"));
 		
 		trackManager = new TrackManagerImpl(datastore);
 		racingManager = new RacingManagerImpl(shoebill, eventManager, datastore);
@@ -125,6 +133,11 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	protected void onDestroy()
 	{
 		trackManager.save();
+	}
+
+	public LocalizedStringSet getLocalizedStringSet()
+	{
+		return localizedStringSet;
 	}
 	
 	@Override

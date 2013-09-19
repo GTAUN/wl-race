@@ -28,6 +28,8 @@ import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractInputDialog;
 import net.gtaun.wl.common.dialog.AbstractPageListDialog;
+import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.race.impl.RaceServiceImpl;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,13 +40,15 @@ import org.apache.commons.lang3.StringUtils;
  */
 public abstract class CodeEditorDialog extends AbstractPageListDialog
 {
+	private final RaceServiceImpl raceService;
 	private final String title;
 	private List<String> codeLines;
 	
 	
-	protected CodeEditorDialog(Player player, Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, String title, String code)
+	protected CodeEditorDialog(Player player, Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, RaceServiceImpl raceService, String title, String code)
 	{
 		super(player, shoebill, eventManager, parentDialog);
+		this.raceService = raceService;
 		this.title = title;
 		
 		if (code == null) code = "";
@@ -54,6 +58,8 @@ public abstract class CodeEditorDialog extends AbstractPageListDialog
 	@Override
 	public void show()
 	{
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		
 		dialogListItems.clear();
 		
 		for (int i=0; i<codeLines.size(); i++)
@@ -61,15 +67,15 @@ public abstract class CodeEditorDialog extends AbstractPageListDialog
 			final String line = codeLines.get(i);
 			final int lineNum = i+1;
 			
-			dialogListItems.add(new DialogListItem(String.format("[%1$02d] %2$s", lineNum, line))
+			dialogListItems.add(new DialogListItem(stringSet.format(player, "Dialog.CodeEditorDialog.Item", lineNum, line))
 			{
 				@Override
 				public void onItemSelect()
 				{
 					player.playSound(1083, player.getLocation());
 					
-					final String caption = String.format("代码编辑器: 编辑第 %1$d 行代码", lineNum);
-					final String message = String.format("您正在编辑第 %1$d 行代码，原始代码为:\n\n%2$s\n\n输入 {0000FF}INSERT{A9C4E4} 可以在本行上面插入代码；\n输入 {FF0000}DELETE{A9C4E4} 可以删除本行代码。\n\n请输入新的代码，每行最长 144 字节:", lineNum, line);
+					final String caption = stringSet.format(player, "Dialog.CodeEditorEditLineDialog.Caption", lineNum);
+					final String message = stringSet.format(player, "Dialog.CodeEditorEditLineDialog.Text", lineNum, line);
 					new AbstractInputDialog(player, shoebill, rootEventManager, CodeEditorDialog.this, caption, message)
 					{
 						@Override
@@ -97,7 +103,7 @@ public abstract class CodeEditorDialog extends AbstractPageListDialog
 			});
 		}
 		
-		dialogListItems.add(new DialogListItem("[+] 添加新一行代码")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.CodeEditorDialog.Add"))
 		{
 			@Override
 			public void onItemSelect()
@@ -109,7 +115,7 @@ public abstract class CodeEditorDialog extends AbstractPageListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("[S] 保存代码")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.CodeEditorDialog.Save"))
 		{
 			@Override
 			public void onItemSelect()
@@ -119,14 +125,16 @@ public abstract class CodeEditorDialog extends AbstractPageListDialog
 			}
 		});
 		
-		this.caption = String.format("代码编辑器: 编辑 %1$s 的代码 (共 %2$d 行)", title, codeLines.size());
+		this.caption = stringSet.format(player, "Dialog.CodeEditorDialog.Caption", title, codeLines.size());
 		super.show();
 	}
 	
 	private void addNewLine(final int line, AbstractDialog dialog)
 	{
-		final String caption = String.format("代码编辑器: 添加第 %1$d 行代码", line);
-		final String message = String.format("请您输入第 %1$s 行的新代码，每行最长 144 字节:", line);
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		
+		final String caption = stringSet.format(player, "Dialog.CodeEditorNewLineDialog.Caption", line);
+		final String message = stringSet.format(player, "Dialog.CodeEditorNewLineDialog.Text", line);
 		new AbstractInputDialog(player, shoebill, rootEventManager, dialog, caption, message)
 		{
 			@Override

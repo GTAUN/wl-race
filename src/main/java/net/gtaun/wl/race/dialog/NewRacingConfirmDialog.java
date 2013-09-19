@@ -24,6 +24,7 @@ import net.gtaun.shoebill.event.dialog.DialogCancelEvent.DialogCancelType;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.MsgboxDialog;
+import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing;
 
@@ -34,8 +35,12 @@ public abstract class NewRacingConfirmDialog extends MsgboxDialog
 	
 	public NewRacingConfirmDialog(Player player, Shoebill shoebill, EventManager rootEventManager, AbstractDialog parentDialog, RaceServiceImpl raceService, Racing racing)
 	{
-		super(player, shoebill, rootEventManager, parentDialog, "开始新比赛", String.format("当前正在参加 %1$s 比赛，您确定要退出并举行新比赛吗？", racing.getName()));
+		super(player, shoebill, rootEventManager, parentDialog);
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
 		this.racing = racing;
+
+		this.caption = stringSet.get(player, "Dialog.NewRacingConfirmDialog.Caption");
+		this.message = stringSet.format(player, "Dialog.NewRacingConfirmDialog.Text", racing.getName());
 	}
 	
 	protected abstract void startRacing();

@@ -32,6 +32,8 @@ import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractPageListDialog;
+import net.gtaun.wl.common.dialog.DialogUtils;
+import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.util.TrackUtils;
@@ -74,16 +76,18 @@ public class TrackListDialog extends AbstractPageListDialog
 	
 	private void update()
 	{
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		
 		filteredTracks = TrackUtils.filterTracks(tracks, statusFilter);
 		Collections.sort(filteredTracks, trackComparator);
 		
 		dialogListItems.clear();
-		dialogListItems.add(new DialogListItemRadio("过滤状态: ")
+		dialogListItems.add(new DialogListItemRadio(stringSet.get(player, "Dialog.TrackListDialog.StatusFilter"))
 		{
 			{
-				addItem(new RadioItem("已完成", Color.LIGHTGREEN));
-				addItem(new RadioItem("已认证", Color.LIGHTBLUE));
-				addItem(new RadioItem("编辑中", Color.LIGHTPINK));
+				addItem(new RadioItem(stringSet.get(player, "Editing"), Color.LIGHTGREEN));
+				addItem(new RadioItem(stringSet.get(player, "Completed"), Color.LIGHTBLUE));
+				addItem(new RadioItem(stringSet.get(player, "Ranking"), Color.LIGHTPINK));
 			}
 			
 			@Override
@@ -102,12 +106,12 @@ public class TrackListDialog extends AbstractPageListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItemRadio("排序方式: ")
+		dialogListItems.add(new DialogListItemRadio(stringSet.get(player, "Dialog.TrackListDialog.SortMode"))
 		{
 			{
-				addItem(new RadioItem("距离最近", Color.RED));
-				addItem(new RadioItem("从长到短", Color.BLUE));
-				addItem(new RadioItem("从短到长", Color.GREEN));
+				addItem(new RadioItem(stringSet.get(player, "Nearest"), Color.RED));
+				addItem(new RadioItem(stringSet.get(player, "LongToShort"), Color.BLUE));
+				addItem(new RadioItem(stringSet.get(player, "ShortToLong"), Color.GREEN));
 			}
 			
 			@Override
@@ -131,9 +135,8 @@ public class TrackListDialog extends AbstractPageListDialog
 			String trackName = track.getName();
 			String author = track.getAuthorUniqueId();
 			
-			String item = String.format("赛道: %1$s	{7F7F7F}by %2$s - 长度 %3$1.1f公里, 点数 %4$d",
-				StringUtils.abbreviate(trackName, 23) + StringUtils.repeat('\t', (23-trackName.length())/8),
-				author, track.getLength()/1000.0f, track.getCheckpoints().size());
+			String item = stringSet.format(player, "Dialog.TrackListDialog.Item",
+					DialogUtils.rightPad(StringUtils.abbreviate(trackName, 23), 24, 8), author, track.getLength()/1000.0f, track.getCheckpoints().size());
 			
 			dialogListItems.add(new DialogListItem(item)
 			{
@@ -150,6 +153,8 @@ public class TrackListDialog extends AbstractPageListDialog
 	@Override
 	public void show()
 	{
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		this.caption = stringSet.format(player, "Dialog.TrackListDialog.Caption", getCurrentPage()+1, getMaxPage()+1);
 		super.show();
 	}
 }

@@ -27,6 +27,7 @@ import net.gtaun.shoebill.resource.ResourceDescription;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.AbstractListDialog;
 import net.gtaun.wl.common.dialog.MsgboxDialog;
+import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing;
 import net.gtaun.wl.race.racing.RacingManagerImpl;
@@ -39,11 +40,12 @@ public class RaceMainDialog extends AbstractListDialog
 	(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService)
 	{
 		super(player, shoebill, eventManager, parentDialog);
-		this.caption = "赛车系统";
-		
+		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
 		final TrackManagerImpl trackManager = raceService.getTrackManager();
 		final RacingManagerImpl racingManager = raceService.getRacingManager();
-
+		
+		this.caption = stringSet.get(player, "Dialog.RaceMainDialog.Caption");
+		
 		dialogListItems.add(new DialogListItem()
 		{
 			@Override
@@ -56,7 +58,7 @@ public class RaceMainDialog extends AbstractListDialog
 			public String toItemString()
 			{
 				Racing racing = racingManager.getPlayerRacing(player);
-				return String.format("参与中的比赛: %1$s", racing.getName());
+				return stringSet.format(player, "Dialog.RaceMainDialog.Racing", racing.getName());
 			}
 			
 			@Override
@@ -81,7 +83,7 @@ public class RaceMainDialog extends AbstractListDialog
 			public String toItemString()
 			{
 				Track track = raceService.getEditingTrack(player);
-				return String.format("编辑中的赛道: %1$s", track.getName());
+				return stringSet.format(player, "Dialog.RaceMainDialog.Editing", track.getName());
 			}
 			
 			@Override
@@ -94,7 +96,7 @@ public class RaceMainDialog extends AbstractListDialog
 			}
 		});
 
-		dialogListItems.add(new DialogListItem("赛道列表 ...")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RaceMainDialog.TrackList"))
 		{
 			@Override
 			public void onItemSelect()
@@ -104,7 +106,7 @@ public class RaceMainDialog extends AbstractListDialog
 			}
 		});
 
-		dialogListItems.add(new DialogListItem("赛道收藏夹 ...")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RaceMainDialog.TrackFavorites"))
 		{
 			@Override
 			public void onItemSelect()
@@ -113,7 +115,7 @@ public class RaceMainDialog extends AbstractListDialog
 			}
 		});
 
-		dialogListItems.add(new DialogListItem("当前比赛列表 ...")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RaceMainDialog.RacingList"))
 		{
 			@Override
 			public void onItemSelect()
@@ -123,7 +125,7 @@ public class RaceMainDialog extends AbstractListDialog
 			}
 		});
 
-		dialogListItems.add(new DialogListItem("创建新赛道")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RaceMainDialog.CreateTrack"))
 		{
 			@Override
 			public boolean isEnabled()
@@ -137,9 +139,9 @@ public class RaceMainDialog extends AbstractListDialog
 			{
 				player.playSound(1083, player.getLocation());
 				
-				String caption = String.format("%1$s: 创建新赛道", "赛车系统");
-				String message = "请您输入预想的赛道名:";
-				new TrackNamingDialog(player, shoebill, rootEventManager, caption, message, RaceMainDialog.this)
+				String caption = stringSet.get(player, "Dialog.CreateNewTrackNamingDialog.Caption");
+				String message = stringSet.get(player, "Dialog.CreateNewTrackNamingDialog.Text");
+				new TrackNamingDialog(player, shoebill, rootEventManager, caption, message, RaceMainDialog.this, raceService)
 				{
 					@Override
 					protected void onNaming(String name)
@@ -152,12 +154,12 @@ public class RaceMainDialog extends AbstractListDialog
 						}
 						catch (AlreadyExistException e)
 						{
-							append = String.format("{FF0000}* 赛道名 {FFFFFF}\"%1$s\" {FF0000}已被使用，请重新命名。", name);
+							append = stringSet.format(player, "Dialog.CreateNewTrackNamingDialog.AlreadyExistAppendMessage", name);
 							show();
 						}
 						catch (IllegalArgumentException e)
 						{
-							append = String.format("{FF0000}* 赛道名 {FFFFFF}\"%1$s\" {FF0000}不合法，请重新命名。", name);
+							append = stringSet.format(player, "Dialog.CreateNewTrackNamingDialog.IllegalNameAppendMessage", name);
 							show();
 						}
 					}
@@ -165,7 +167,7 @@ public class RaceMainDialog extends AbstractListDialog
 			}
 		});
 
-		dialogListItems.add(new DialogListItem("我的车手信息")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RaceMainDialog.MyRacerInfo"))
 		{
 			@Override
 			public void onItemSelect()
@@ -174,7 +176,7 @@ public class RaceMainDialog extends AbstractListDialog
 			}
 		});
 
-		dialogListItems.add(new DialogListItem("我的比赛记录 ...")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RaceMainDialog.MyRaceRecord"))
 		{
 			@Override
 			public void onItemSelect()
@@ -183,7 +185,7 @@ public class RaceMainDialog extends AbstractListDialog
 			}
 		});
 
-		dialogListItems.add(new DialogListItem("综合实力排名 ...")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RaceMainDialog.WorldRanking"))
 		{
 			@Override
 			public void onItemSelect()
@@ -192,7 +194,7 @@ public class RaceMainDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("个人偏好设置 ...")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RaceMainDialog.PersonalPreferences"))
 		{
 			@Override
 			public void onItemSelect()
@@ -201,18 +203,19 @@ public class RaceMainDialog extends AbstractListDialog
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("帮助信息")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RaceMainDialog.Help"))
 		{
 			@Override
 			public void onItemSelect()
 			{
 				player.playSound(1083, player.getLocation());
-				String caption = String.format("%1$s: %2$s", "车管", "帮助信息");
-				new MsgboxDialog(player, shoebill, eventManager, RaceMainDialog.this, caption, "偷懒中，暂无帮助信息……").show();
+				String caption = stringSet.get(player, "Dialog.HelpDialog.Caption");
+				String text = stringSet.get(player, "Dialog.HelpDialog.Text");
+				new MsgboxDialog(player, shoebill, eventManager, RaceMainDialog.this, caption, text).show();
 			}
 		});
 		
-		dialogListItems.add(new DialogListItem("关于赛车系统")
+		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RaceMainDialog.About"))
 		{
 			@Override
 			public void onItemSelect()
@@ -222,20 +225,8 @@ public class RaceMainDialog extends AbstractListDialog
 				Plugin plugin = raceService.getPlugin();
 				ResourceDescription desc = plugin.getDescription();
 				
-				String caption = String.format("%1$s: %2$s", "赛车", "关于赛车系统");
-				String format =
-					"--- 新未来世界 赛车系统组件 ---\n" +
-					"版本: %1$s (Build %2$d)\n" +
-					"编译时间: %3$s\n\n" +
-					"开发: mk124\n" +
-					"功能设计: mk124\n" +
-					"设计顾问: 52_PLA(aka. Yin.J), [ITC]1314, [ITC]KTS, snwang1996\n" +
-					"数据采集: mk124, 52_PLA\n" +
-					"测试: 52_PLA, [ITC]1314, [ITC]KTS, SMALL_KR, snwang1996\n" +
-					"感谢: 原未来世界制作团队成员(yezhizhu, vvg, fangye), Luck, Waunny\n\n" +
-					"本组件是新未来世界项目的一部分。\n" +
-					"本组件使用 AGPL v3 许可证开放源代码。\n" +
-					"本组件禁止在任何商业或盈利性服务器上使用。\n";
+				String caption = stringSet.get(player, "Dialog.AboutDialog.Caption");
+				String format = stringSet.get(player, "Dialog.AboutDialog.Text");
 				String message = String.format(format, desc.getVersion(), desc.getBuildNumber(), desc.getBuildDate());
 				
 				new MsgboxDialog(player, shoebill, eventManager, RaceMainDialog.this, caption, message).show();
