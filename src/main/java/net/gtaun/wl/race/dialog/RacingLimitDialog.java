@@ -18,6 +18,8 @@ public class RacingLimitDialog extends AbstractListDialog
 		super(player, shoebill, eventManager, parentDialog);
 		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
 		
+		this.caption = stringSet.get(player, "Dialog.RacingLimitDialog.Caption");
+		
 		final String allow = stringSet.get(player, "Common.Allow");
 		final String disallow = stringSet.get(player, "Common.Disallow");
 		

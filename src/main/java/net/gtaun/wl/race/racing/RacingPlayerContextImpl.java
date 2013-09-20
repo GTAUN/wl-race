@@ -40,6 +40,7 @@ import net.gtaun.shoebill.object.PlayerMapIcon.MapIcon;
 import net.gtaun.shoebill.object.Vehicle;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
+import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing.DeathRule;
 import net.gtaun.wl.race.script.ScriptExecutor;
 import net.gtaun.wl.race.script.ScriptExecutorFactory;
@@ -50,6 +51,7 @@ import net.gtaun.wl.vehicle.stat.OncePlayerVehicleStatistic;
 
 public class RacingPlayerContextImpl extends AbstractPlayerContext implements RacingPlayerContext
 {
+	private final RaceServiceImpl raceService;
 	private final Racing racing;
 	
 	private ScriptExecutor scriptExecutor;
@@ -68,9 +70,10 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	private Vehicle tempVehicle;
 	
 	
-	public RacingPlayerContextImpl(Shoebill shoebill, EventManager rootEventManager, Player player, final Racing racing, TrackCheckpoint startCheckpoint)
+	public RacingPlayerContextImpl(Shoebill shoebill, EventManager rootEventManager, Player player, RaceServiceImpl raceService, final Racing racing, TrackCheckpoint startCheckpoint)
 	{
 		super(shoebill, rootEventManager, player);
+		this.raceService = raceService;
 		this.racing = racing;
 		this.currentCheckpoint = startCheckpoint;
 		this.mapIcons = new HashMap<>();
@@ -108,7 +111,7 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	{
 		scriptExecutor = ScriptExecutorFactory.createCheckpointScriptExecutor(player);
 		
-		hudWidget = new RacingHudWidget(shoebill, rootEventManager, null, player, this);
+		hudWidget = new RacingHudWidget(shoebill, rootEventManager, raceService, player, this);
 		hudWidget.init();
 		addDestroyable(hudWidget);
 		

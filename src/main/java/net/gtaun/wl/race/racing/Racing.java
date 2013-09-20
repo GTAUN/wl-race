@@ -285,10 +285,10 @@ public class Racing extends AbstractShoebillContext
 			@Override
 			public void onTick(int factualInterval)
 			{
+				if (countdown == 0) return;
 				for (Player player : players)
 				{
-					String repeat = StringUtils.repeat('-', countdown+1);
-					player.sendGameText(2000, 6, repeat + " %1$d " + repeat, countdown);
+					player.sendGameText(2000, 6, "- %1$d -", countdown);
 					player.playSound(1056, player.getLocation());
 				}
 				countdown--;
@@ -326,7 +326,7 @@ public class Racing extends AbstractShoebillContext
 		TrackRaceCheckpoint firstCheckpoint = first.getRaceCheckpoint();
 		for (Player player : players) 
 		{
-			RacingPlayerContextImpl context = new RacingPlayerContextImpl(shoebill, rootEventManager, player, this, first);
+			RacingPlayerContextImpl context = new RacingPlayerContextImpl(shoebill, rootEventManager, player, raceService, this, first);
 			context.init();
 			context.begin();
 			

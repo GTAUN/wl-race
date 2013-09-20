@@ -85,9 +85,9 @@ public class TrackListDialog extends AbstractPageListDialog
 		dialogListItems.add(new DialogListItemRadio(stringSet.get(player, "Dialog.TrackListDialog.StatusFilter"))
 		{
 			{
-				addItem(new RadioItem(stringSet.get(player, "Editing"), Color.LIGHTGREEN));
-				addItem(new RadioItem(stringSet.get(player, "Completed"), Color.LIGHTBLUE));
-				addItem(new RadioItem(stringSet.get(player, "Ranking"), Color.LIGHTPINK));
+				addItem(new RadioItem(stringSet.get(player, "Track.Status.Completed"), Color.LIGHTGREEN));
+				addItem(new RadioItem(stringSet.get(player, "Track.Status.Ranking"), Color.LIGHTBLUE));
+				addItem(new RadioItem(stringSet.get(player, "Track.Status.Editing"), Color.LIGHTPINK));
 			}
 			
 			@Override
@@ -109,9 +109,9 @@ public class TrackListDialog extends AbstractPageListDialog
 		dialogListItems.add(new DialogListItemRadio(stringSet.get(player, "Dialog.TrackListDialog.SortMode"))
 		{
 			{
-				addItem(new RadioItem(stringSet.get(player, "Nearest"), Color.RED));
-				addItem(new RadioItem(stringSet.get(player, "LongToShort"), Color.BLUE));
-				addItem(new RadioItem(stringSet.get(player, "ShortToLong"), Color.GREEN));
+				addItem(new RadioItem(stringSet.get(player, "Track.SortMode.Nearest"), Color.RED));
+				addItem(new RadioItem(stringSet.get(player, "Track.SortMode.LongToShort"), Color.BLUE));
+				addItem(new RadioItem(stringSet.get(player, "Track.SortMode.ShortToLong"), Color.GREEN));
 			}
 			
 			@Override
@@ -136,7 +136,7 @@ public class TrackListDialog extends AbstractPageListDialog
 			String author = track.getAuthorUniqueId();
 			
 			String item = stringSet.format(player, "Dialog.TrackListDialog.Item",
-					DialogUtils.rightPad(StringUtils.abbreviate(trackName, 23), 24, 8), author, track.getLength()/1000.0f, track.getCheckpoints().size());
+					DialogUtils.rightPad(StringUtils.abbreviate(trackName, 20), 16, 8), author, track.getLength()/1000.0f, track.getCheckpoints().size());
 			
 			dialogListItems.add(new DialogListItem(item)
 			{

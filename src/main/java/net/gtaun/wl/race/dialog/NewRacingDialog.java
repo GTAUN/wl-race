@@ -116,7 +116,7 @@ public class NewRacingDialog extends AbstractListDialog
 		
 		String trackType = stringSet.get(player, "Track.Type.Normal");
 		if (track.getType() == TrackType.CIRCUIT) trackType = stringSet.format(player, "Dialog.NewRacingDialog.CircultFormat", track.getCircultLaps());
-		dialogListItems.add(new DialogListItem(stringSet.format(player, "Dialog.NewRacingDialog.ItemTrackType", trackType))
+		dialogListItems.add(new DialogListItem(stringSet.format(player, "Dialog.NewRacingDialog.TrackType", trackType))
 		{
 			@Override
 			public void onItemSelect()
@@ -223,6 +223,7 @@ public class NewRacingDialog extends AbstractListDialog
 			@Override
 			public void onItemSelect()
 			{
+				player.playSound(1083, player.getLocation());
 				new RacingLimitDialog(player, shoebill, eventManager, NewRacingDialog.this, raceService, track, setting.getLimit()).show();
 			}
 		});
@@ -241,7 +242,7 @@ public class NewRacingDialog extends AbstractListDialog
 			@Override
 			public void onItemSelect()
 			{
-				
+				player.playSound(1083, player.getLocation());
 			}
 		});
 		
@@ -257,7 +258,7 @@ public class NewRacingDialog extends AbstractListDialog
 			@Override
 			public void onItemSelect()
 			{
-				
+				player.playSound(1083, player.getLocation());
 			}
 		});
 		

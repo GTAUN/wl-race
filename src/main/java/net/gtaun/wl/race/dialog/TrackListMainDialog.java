@@ -39,7 +39,7 @@ public class TrackListMainDialog extends AbstractListDialog
 		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
 		final TrackManagerImpl trackManager = raceService.getTrackManager();
 		
-		this.caption = "";
+		this.caption = stringSet.get(player, "Dialog.TrackListMainDialog.Caption");
 
 		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackListMainDialog.Nearby"))
 		{

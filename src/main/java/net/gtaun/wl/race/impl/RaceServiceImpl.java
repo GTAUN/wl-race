@@ -94,7 +94,7 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 		localizedStringSet = languageService.createStringSet(new File(plugin.getDataDir(), "text"));
 		
 		trackManager = new TrackManagerImpl(datastore);
-		racingManager = new RacingManagerImpl(shoebill, eventManager, datastore);
+		racingManager = new RacingManagerImpl(shoebill, eventManager, this, datastore);
 		
 		init();
 	}

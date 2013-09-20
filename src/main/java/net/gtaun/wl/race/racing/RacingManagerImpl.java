@@ -37,6 +37,7 @@ import net.gtaun.util.event.EventManager;
 import net.gtaun.util.event.EventManager.HandlerPriority;
 import net.gtaun.wl.race.RacingManager;
 import net.gtaun.wl.race.exception.AlreadyJoinedException;
+import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing.RacingStatus;
 import net.gtaun.wl.race.track.Track;
 
@@ -44,13 +45,17 @@ import com.google.code.morphia.Datastore;
 
 public class RacingManagerImpl extends AbstractShoebillContext implements RacingManager
 {
+	private final RaceServiceImpl raceService;
+	
 	private List<Racing> racings;
 	private Map<Player, Racing> playerRacings;
 	
 
-	public RacingManagerImpl(Shoebill shoebill, EventManager rootEventManager, Datastore datastore)
+	public RacingManagerImpl(Shoebill shoebill, EventManager rootEventManager, RaceServiceImpl raceService, Datastore datastore)
 	{
 		super(shoebill, rootEventManager);
+		this.raceService = raceService;
+		
 		racings = new ArrayList<>();
 		playerRacings = new HashMap<>();
 	}
@@ -85,7 +90,7 @@ public class RacingManagerImpl extends AbstractShoebillContext implements Racing
 	public Racing createRacing(Track track, Player sponsor, String name) throws AlreadyJoinedException
 	{
 		if (isPlayerInRacing(sponsor)) throw new AlreadyJoinedException();
-		Racing racing = new Racing(shoebill, rootEventManager, null, this, track, sponsor, name);
+		Racing racing = new Racing(shoebill, rootEventManager, raceService, this, track, sponsor, name);
 		racings.add(racing);
 		racing.join(sponsor);
 		
