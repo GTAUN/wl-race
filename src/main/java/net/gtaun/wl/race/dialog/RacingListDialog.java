@@ -56,7 +56,7 @@ public class RacingListDialog extends AbstractPageListDialog
 		for (final Racing racing : racings)
 		{
 			Track track = racing.getTrack();
-			String item = stringSet.format(player, "Dialog.RacingListDialog.Text", racing.getName(), track.getName(), racing.getSponsor().getName());
+			String item = stringSet.format(player, "Dialog.RacingListDialog.Item", racing.getName(), track.getName(), racing.getSponsor().getName());
 			dialogListItems.add(new DialogListItem(item)
 			{
 				@Override
