@@ -109,7 +109,7 @@ public class PlayerRaceContext extends AbstractPlayerContext
 		protected void onPlayerKeyStateChange(PlayerKeyStateChangeEvent event)
 		{
 			PlayerKeyState keyState = player.getKeyState();
-			if (player.isAdmin()) player.sendMessage(Color.WHITE, "OLD " + event.getOldkeys() + ", NOW " + keyState.getKeys());
+			if (player.isAdmin()) player.sendMessage(Color.WHITE, "OLD " + event.getOldState().getKeys() + ", NOW " + keyState.getKeys());
 			
 			Track editingTrack = getEditingTrack();
 			if (editingTrack != null)
@@ -133,7 +133,7 @@ public class PlayerRaceContext extends AbstractPlayerContext
 			}
 			else
 			{
-				if (keyState.getKeys() == PlayerKey.CROUCH.getValue())
+				if (keyState.isAccurateKeyPressed(PlayerKey.CROUCH))
 				{
 					long now = System.currentTimeMillis();
 					if (now <= lastHornKeyPressedTime + PlayerKeyUtils.getDoublePressKeyTimeDiff(player))
@@ -147,7 +147,7 @@ public class PlayerRaceContext extends AbstractPlayerContext
 					}
 					lastHornKeyPressedTime = System.currentTimeMillis();
 				}
-				else if (keyState.getKeys() == PlayerKey.ANALOG_DOWN.getValue())
+				else if (keyState.isAccurateKeyPressed(PlayerKey.ANALOG_DOWN))
 				{
 					long now = System.currentTimeMillis();
 					if (now <= lastAnalogDownKeyPressedTime + PlayerKeyUtils.getDoublePressKeyTimeDiff(player))
