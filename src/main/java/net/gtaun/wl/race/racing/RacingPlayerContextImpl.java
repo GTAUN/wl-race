@@ -23,14 +23,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.ColorUtils;
-import net.gtaun.shoebill.common.player.AbstractPlayerContext;
+import net.gtaun.shoebill.common.player.PlayerLifecycleObject;
 import net.gtaun.shoebill.constant.MapIconStyle;
 import net.gtaun.shoebill.data.AngledLocation;
 import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.data.Velocity;
-import net.gtaun.shoebill.event.PlayerEventHandler;
 import net.gtaun.shoebill.event.player.PlayerDeathEvent;
 import net.gtaun.shoebill.event.player.PlayerSpawnEvent;
 import net.gtaun.shoebill.event.player.PlayerStateChangeEvent;
@@ -38,8 +36,10 @@ import net.gtaun.shoebill.event.player.PlayerUpdateEvent;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.object.PlayerMapIcon.MapIcon;
 import net.gtaun.shoebill.object.Vehicle;
+import net.gtaun.shoebill.service.Service;
+import net.gtaun.util.event.Attentions;
 import net.gtaun.util.event.EventManager;
-import net.gtaun.util.event.EventManager.HandlerPriority;
+import net.gtaun.util.event.HandlerPriority;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing.DeathRule;
 import net.gtaun.wl.race.script.ScriptExecutor;
@@ -49,7 +49,7 @@ import net.gtaun.wl.vehicle.PlayerOverrideLimit;
 import net.gtaun.wl.vehicle.VehicleManagerService;
 import net.gtaun.wl.vehicle.stat.OncePlayerVehicleStatistic;
 
-public class RacingPlayerContextImpl extends AbstractPlayerContext implements RacingPlayerContext
+public class RacingPlayerContextImpl extends PlayerLifecycleObject implements RacingPlayerContext
 {
 	private final RaceServiceImpl raceService;
 	private final Racing racing;
@@ -70,9 +70,9 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	private Vehicle tempVehicle;
 	
 	
-	public RacingPlayerContextImpl(Shoebill shoebill, EventManager rootEventManager, Player player, RaceServiceImpl raceService, final Racing racing, TrackCheckpoint startCheckpoint)
+	public RacingPlayerContextImpl(EventManager rootEventManager, Player player, RaceServiceImpl raceService, final Racing racing, TrackCheckpoint startCheckpoint)
 	{
-		super(shoebill, rootEventManager, player);
+		super(rootEventManager, player);
 		this.raceService = raceService;
 		this.racing = racing;
 		this.currentCheckpoint = startCheckpoint;
@@ -111,16 +111,41 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	{
 		scriptExecutor = ScriptExecutorFactory.createCheckpointScriptExecutor(player);
 		
-		hudWidget = new RacingHudWidget(shoebill, rootEventManager, raceService, player, this);
+		hudWidget = new RacingHudWidget(rootEventManager, raceService, player, this);
 		hudWidget.init();
 		addDestroyable(hudWidget);
 		
 		if (player.isInAnyVehicle()) lastVehicleModel = player.getVehicle().getModelId();
 		
-		eventManager.registerHandler(PlayerUpdateEvent.class, player, playerEventHandler, HandlerPriority.NORMAL);
-		eventManager.registerHandler(PlayerDeathEvent.class, player, playerEventHandler, HandlerPriority.NORMAL);
-		eventManager.registerHandler(PlayerSpawnEvent.class, player, playerEventHandler, HandlerPriority.BOTTOM);
-		eventManager.registerHandler(PlayerStateChangeEvent.class, player, playerEventHandler, HandlerPriority.NORMAL);
+		eventManagerNode.registerHandler(PlayerUpdateEvent.class, HandlerPriority.NORMAL, Attentions.create().object(player), (e) ->
+		{
+			if (player.getUpdateCount() % 40 != 0) return;
+			updateMapIcons();
+		});
+		
+		eventManagerNode.registerHandler(PlayerDeathEvent.class, HandlerPriority.NORMAL, Attentions.create().object(player), (e) ->
+		{
+			if (racing.getSetting().getDeathRule() == DeathRule.KNOCKOUT) racing.leave(player);
+		});
+		
+		eventManagerNode.registerHandler(PlayerSpawnEvent.class, HandlerPriority.BOTTOM, Attentions.create().object(player), (e) ->
+		{
+			if (lastVehicleModel != 0)
+			{
+				createTempVehicle(lastVehicleModel);
+				tempVehicle.setLocation(lastPassLocation);
+				tempVehicle.setVelocity(lastPassVelocity);
+			}
+			else
+			{
+				player.setLocation(lastPassLocation);
+			}
+		});
+
+		eventManagerNode.registerHandler(PlayerStateChangeEvent.class, HandlerPriority.NORMAL, Attentions.create().object(player), (e) ->
+		{
+			if (player.isInAnyVehicle()) lastVehicleModel = player.getVehicle().getModelId();
+		});
 	}
 	
 	@Override
@@ -128,7 +153,7 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	{
 		scriptExecutor = null;
 		
-		VehicleManagerService service = shoebill.getServiceStore().getService(VehicleManagerService.class);
+		VehicleManagerService service = Service.get(VehicleManagerService.class);
 		if (service != null)
 		{
 			service.endRacingStatistic(player);
@@ -163,7 +188,7 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 	public void begin()
 	{
 		startTime = new Date();
-		VehicleManagerService service = shoebill.getServiceStore().getService(VehicleManagerService.class);
+		VehicleManagerService service = Service.get(VehicleManagerService.class);
 		if (service != null)
 		{
 			service.startRacingStatistic(player);
@@ -259,7 +284,7 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 		if (index <= 0) return 0.0f;
 		
 		float speed;
-		VehicleManagerService service = shoebill.getServiceStore().getService(VehicleManagerService.class);
+		VehicleManagerService service = Service.get(VehicleManagerService.class);
 		if (service == null) speed = player.getVelocity().speed3d() * 50;
 		else
 		{
@@ -314,43 +339,10 @@ public class RacingPlayerContextImpl extends AbstractPlayerContext implements Ra
 		Velocity velocity = player.getVelocity();
 		
 		if (tempVehicle != null) tempVehicle.destroy();
-		tempVehicle = shoebill.getSampObjectFactory().createVehicle(lastVehicleModel, player.getLocation(), 0, 0, 3600);
+		tempVehicle = Vehicle.create(lastVehicleModel, player.getLocation(), 0, 0, 3600);
 		tempVehicle.putPlayer(player, 0);
 		
 		tempVehicle.setLocation(location);
 		tempVehicle.setVelocity(velocity);
 	}
-	
-	private PlayerEventHandler playerEventHandler = new PlayerEventHandler()
-	{
-		protected void onPlayerUpdate(PlayerUpdateEvent event)
-		{
-			if (player.getUpdateFrameCount() % 40 != 0) return;
-			updateMapIcons();
-		}
-		
-		protected void onPlayerDeath(PlayerDeathEvent event)
-		{
-			if (racing.getSetting().getDeathRule() == DeathRule.KNOCKOUT) racing.leave(player);
-		}
-		
-		protected void onPlayerSpawn(PlayerSpawnEvent event)
-		{
-			if (lastVehicleModel != 0)
-			{
-				createTempVehicle(lastVehicleModel);
-				tempVehicle.setLocation(lastPassLocation);
-				tempVehicle.setVelocity(lastPassVelocity);
-			}
-			else
-			{
-				player.setLocation(lastPassLocation);
-			}
-		}
-		
-		protected void onPlayerStateChange(PlayerStateChangeEvent event)
-		{
-			if (player.isInAnyVehicle()) lastVehicleModel = player.getVehicle().getModelId();
-		}
-	};
 }

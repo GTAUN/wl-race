@@ -25,22 +25,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.ColorUtils;
-import net.gtaun.shoebill.common.player.AbstractPlayerContext;
+import net.gtaun.shoebill.common.player.PlayerLifecycleObject;
 import net.gtaun.shoebill.constant.MapIconStyle;
 import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.data.Location;
-import net.gtaun.shoebill.event.PlayerEventHandler;
 import net.gtaun.shoebill.event.player.PlayerUpdateEvent;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.object.PlayerMapIcon.MapIcon;
+import net.gtaun.util.event.Attentions;
 import net.gtaun.util.event.EventManager;
-import net.gtaun.util.event.EventManager.HandlerPriority;
+import net.gtaun.util.event.HandlerPriority;
 import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 
-public class TrackEditor extends AbstractPlayerContext
+public class TrackEditor extends PlayerLifecycleObject
 {
 	private final RaceServiceImpl raceService;
 	private final Track track;
@@ -48,9 +47,9 @@ public class TrackEditor extends AbstractPlayerContext
 	private Map<TrackCheckpoint, MapIcon> mapIcons;
 	
 	
-	public TrackEditor(Shoebill shoebill, EventManager rootEventManager, Player player, RaceServiceImpl raceService, Track track)
+	public TrackEditor(EventManager rootEventManager, Player player, RaceServiceImpl raceService, Track track)
 	{
-		super(shoebill, rootEventManager, player);
+		super(rootEventManager, player);
 		this.raceService = raceService;
 		this.track = track;
 		this.mapIcons = new HashMap<>();
@@ -59,8 +58,12 @@ public class TrackEditor extends AbstractPlayerContext
 	@Override
 	protected void onInit()
 	{
-		eventManager.registerHandler(PlayerUpdateEvent.class, player, playerEventHandler, HandlerPriority.NORMAL);
 
+		eventManagerNode.registerHandler(PlayerUpdateEvent.class, HandlerPriority.NORMAL, Attentions.create().object(player), (e) ->
+		{
+			if (player.getUpdateCount() % 40 == 0) updateMapIcons();
+		});
+		
 		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
 		player.sendMessage(Color.LIGHTBLUE, stringSet.format(player, "TrackEditor.StartEditingTrackMessage", track.getName()));
 	}
@@ -120,13 +123,4 @@ public class TrackEditor extends AbstractPlayerContext
 
 		for (MapIcon icon : lastMapIcons.values()) icon.destroy();
 	}
-
-	private PlayerEventHandler playerEventHandler = new PlayerEventHandler()
-	{	
-		protected void onPlayerUpdate(PlayerUpdateEvent event)
-		{
-			if (player.getUpdateFrameCount() % 40 != 0) return;
-			updateMapIcons();
-		}
-	};
 }

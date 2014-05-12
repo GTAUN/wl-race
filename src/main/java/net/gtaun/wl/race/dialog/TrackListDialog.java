@@ -22,29 +22,30 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Predicate;
 
-import org.apache.commons.lang3.StringUtils;
-
-import net.gtaun.shoebill.Shoebill;
-import net.gtaun.shoebill.common.Filter;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
+import net.gtaun.shoebill.common.dialog.ListDialogItem;
+import net.gtaun.shoebill.common.dialog.ListDialogItemRadio;
 import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
-import net.gtaun.wl.common.dialog.AbstractPageListDialog;
 import net.gtaun.wl.common.dialog.DialogUtils;
+import net.gtaun.wl.common.dialog.WlPageListDialog;
 import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.util.TrackUtils;
 
-public class TrackListDialog extends AbstractPageListDialog
+import org.apache.commons.lang3.StringUtils;
+
+public class TrackListDialog extends WlPageListDialog
 {
 	private final RaceServiceImpl raceService;
 	private final List<Track> tracks;
 
-	private final List<Filter<Track>> statusFilters;
-	private Filter<Track> statusFilter;
+	private final List<Predicate<Track>> statusFilters;
+	private Predicate<Track> statusFilter;
 
 	private final List<Comparator<Track>> trackComparators;
 	private Comparator<Track> trackComparator;
@@ -53,10 +54,10 @@ public class TrackListDialog extends AbstractPageListDialog
 	
 	
 	public TrackListDialog
-	(Player player, Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, RaceServiceImpl raceService, List<Track> tracks)
-	{
-		super(player, shoebill, eventManager, parentDialog);
-		this.raceService = raceService;
+	(Player player, EventManager eventManager, AbstractDialog parent, RaceServiceImpl service, List<Track> tracks)
+	{		super(player, eventManager);
+		setParentDialog(parent);
+		this.raceService = service;
 		this.tracks = tracks;
 		
 		statusFilters = new ArrayList<>();
@@ -81,8 +82,8 @@ public class TrackListDialog extends AbstractPageListDialog
 		filteredTracks = TrackUtils.filterTracks(tracks, statusFilter);
 		Collections.sort(filteredTracks, trackComparator);
 		
-		dialogListItems.clear();
-		dialogListItems.add(new DialogListItemRadio(stringSet.get(player, "Dialog.TrackListDialog.StatusFilter"))
+		items.clear();
+		items.add(new ListDialogItemRadio(stringSet.get(player, "Dialog.TrackListDialog.StatusFilter"))
 		{
 			{
 				addItem(new RadioItem(stringSet.get(player, "Track.Status.Completed"), Color.LIGHTGREEN));
@@ -99,14 +100,14 @@ public class TrackListDialog extends AbstractPageListDialog
 			@Override
 			public void onItemSelect(RadioItem item, int index)
 			{
-				player.playSound(1083, player.getLocation());
+				player.playSound(1083);
 				statusFilter = statusFilters.get(index);
 				update();
 				show();
 			}
 		});
 		
-		dialogListItems.add(new DialogListItemRadio(stringSet.get(player, "Dialog.TrackListDialog.SortMode"))
+		items.add(new ListDialogItemRadio(stringSet.get(player, "Dialog.TrackListDialog.SortMode"))
 		{
 			{
 				addItem(new RadioItem(stringSet.get(player, "Track.SortMode.Nearest"), Color.RED));
@@ -123,7 +124,7 @@ public class TrackListDialog extends AbstractPageListDialog
 			@Override
 			public void onItemSelect(RadioItem item, int index)
 			{
-				player.playSound(1083, player.getLocation());
+				player.playSound(1083);
 				trackComparator = trackComparators.get(index);
 				update();
 				show();
@@ -138,13 +139,13 @@ public class TrackListDialog extends AbstractPageListDialog
 			String item = stringSet.format(player, "Dialog.TrackListDialog.Item",
 					DialogUtils.rightPad(StringUtils.abbreviate(trackName, 20), 16, 8), author, track.getLength()/1000.0f, track.getCheckpoints().size());
 			
-			dialogListItems.add(new DialogListItem(item)
+			items.add(new ListDialogItem(item)
 			{
 				@Override
 				public void onItemSelect()
 				{
-					player.playSound(1083, player.getLocation());
-					new TrackDialog(player, shoebill, eventManager, TrackListDialog.this, raceService, track).show();
+					player.playSound(1083);
+					TrackDialog.create(player, eventManagerNode.getParent(), TrackListDialog.this, raceService, track).show();
 				}
 			});
 		}
@@ -154,7 +155,7 @@ public class TrackListDialog extends AbstractPageListDialog
 	public void show()
 	{
 		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
-		this.caption = stringSet.format(player, "Dialog.TrackListDialog.Caption", getCurrentPage()+1, getMaxPage()+1);
+		setCaption(stringSet.format(player, "Dialog.TrackListDialog.Caption", getCurrentPage()+1, getMaxPage()+1));
 		super.show();
 	}
 }

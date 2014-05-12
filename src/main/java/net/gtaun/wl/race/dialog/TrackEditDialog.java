@@ -20,15 +20,15 @@ package net.gtaun.wl.race.dialog;
 
 import java.util.List;
 
-import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
+import net.gtaun.shoebill.common.dialog.MsgboxDialog;
 import net.gtaun.shoebill.exception.AlreadyExistException;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
-import net.gtaun.wl.common.dialog.AbstractInputDialog;
-import net.gtaun.wl.common.dialog.AbstractListDialog;
-import net.gtaun.wl.common.dialog.MsgboxDialog;
-import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.common.dialog.WlInputDialog;
+import net.gtaun.wl.common.dialog.WlListDialog;
+import net.gtaun.wl.common.dialog.WlMsgboxDialog;
+import net.gtaun.wl.lang.LocalizedStringSet.PlayerStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing;
 import net.gtaun.wl.race.racing.RacingManagerImpl;
@@ -40,316 +40,207 @@ import net.gtaun.wl.race.util.RacingUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class TrackEditDialog extends AbstractListDialog
+
+
+public class TrackEditDialog extends WlListDialog
 {
+	private final PlayerStringSet stringSet;
+	
 	private final RaceServiceImpl raceService;
 	private final Track track;
 	
 
-	public TrackEditDialog
-	(final Player player, final Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService, final Track track)
-	{
-		super(player, shoebill, eventManager, parentDialog);
-		this.raceService = raceService;
+	public TrackEditDialog(Player player, EventManager eventManager, AbstractDialog parent, RaceServiceImpl service, Track track)
+	{		super(player, eventManager);
+		setParentDialog(parent);
+		
+		this.raceService = service;
 		this.track = track;
+		
+		stringSet = service.getLocalizedStringSet().getStringSet(player);
+		setCaption(() -> stringSet.format("Dialog.TrackEditDialog.Caption", track.getName()));
+		
+		setClickOkHandler((d, i) -> player.playSound(1083));
 	}
 	
 	@Override
 	public void show()
 	{
-		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
-		final RacingManagerImpl racingManager = raceService.getRacingManager();
+		RacingManagerImpl racingManager = raceService.getRacingManager();
 		
-		dialogListItems.clear();
-		dialogListItems.add(new DialogListItem()
+		items.clear();
+		addItem(stringSet.format("Dialog.TrackEditDialog.Name", track.getName()), (i) ->
 		{
-			@Override
-			public String toItemString()
+			String caption = stringSet.get("Dialog.TrackEditNameDialog.Caption");
+			String message = stringSet.format("Dialog.TrackEditNameDialog.Text", track.getName());
+			TrackNamingDialog.create(player, rootEventManager, this, caption, message, raceService, (d, name) ->
 			{
-				return stringSet.format(player, "Dialog.TrackEditDialog.Name", track.getName());
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				
-				String caption = stringSet.get(player, "Dialog.TrackEditNameDialog.Caption");
-				String message = stringSet.format(player, "Dialog.TrackEditNameDialog.Text", track.getName());
-				new TrackNamingDialog(player, shoebill, rootEventManager, caption, message, TrackEditDialog.this, raceService)
+				try
 				{
-					protected void onNaming(String name)
-					{
-						try
-						{
-							TrackManagerImpl trackManager = raceService.getTrackManager();
-							trackManager.renameTrack(track, name);
-							showParentDialog();
-						}
-						catch (AlreadyExistException e)
-						{
-							append = stringSet.format(player, "Dialog.TrackEditNameDialog.AlreadyExistAppendMessage", name);
-							show();
-						}
-						catch (IllegalArgumentException e)
-						{
-							append = stringSet.format(player, "Dialog.TrackEditNameDialog.IllegalFormatAppendMessage", name);
-							show();
-						}
-					}
-				}.show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public String toItemString()
-			{
-				String desc = track.getDesc();
-				if (StringUtils.isBlank(desc)) desc = stringSet.get(player, "Common.Empty");
-				return stringSet.format(player, "Dialog.TrackEditDialog.Desc", desc);
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				
-				String caption = stringSet.get(player, "Dialog.TrackEditDescDialog.Caption");
-				String message = stringSet.format(player, "Dialog.TrackEditDescDialog.Text", track.getName(), track.getDesc());
-				new AbstractInputDialog(player, shoebill, rootEventManager, TrackEditDialog.this, caption, message)
+					TrackManagerImpl trackManager = raceService.getTrackManager();
+					trackManager.renameTrack(track, name);
+					showParentDialog();
+				}
+				catch (AlreadyExistException ex)
 				{
-					public void onClickOk(String inputText)
-					{
-						String desc = StringUtils.trimToEmpty(inputText);
-						desc = StringUtils.replace(desc, "%", "#");
-						desc = StringUtils.replace(desc, "\t", " ");
-						desc = StringUtils.replace(desc, "\n", " ");
-						
-						track.setDesc(desc);
-						showParentDialog();
-					}
-				}.show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public String toItemString()
-			{
-				return stringSet.format(player, "Dialog.TrackEditDialog.Checkpoints", track.getCheckpoints().size());
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public String toItemString()
-			{
-				return stringSet.format(player, "Dialog.TrackEditDialog.Length", track.getLength()/1000.0f);
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackEditDialog.AddCheckpoint"))
-		{
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				
-				TrackCheckpoint checkpoint = track.createCheckpoint(player.getLocation());
-				new TrackCheckpointEditDialog(player, shoebill, eventManager, null, raceService, checkpoint).show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackEditDialog.Setting"))
-		{
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				new TrackSettingDialog(player, shoebill, rootEventManager, TrackEditDialog.this, raceService, track).show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackEditDialog.Delete"))
-		{
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				
-				String caption = stringSet.get(player, "Dialog.TrackDeleteConfirmDialog.Caption");
-				String message = stringSet.format(player, "Dialog.TrackDeleteConfirmDialog.Text", track.getName());
-				new AbstractInputDialog(player, shoebill, rootEventManager, TrackEditDialog.this, caption, message)
+					d.setAppendMessage(stringSet.format("Dialog.TrackEditNameDialog.AlreadyExistAppendMessage", name));
+					show();
+				}
+				catch (IllegalArgumentException ex)
 				{
-					public void onClickOk(String inputText)
-					{
-						player.playSound(1083, player.getLocation());
-						if (!track.equals(inputText))
-						{
-							String caption = stringSet.get(player, "Dialog.TrackDeleteConfirmDialog.Caption");
-							String message = stringSet.format(player, "Dialog.TrackDeleteConfirmDialog.Text", track.getName());
-							new MsgboxDialog(player, shoebill, rootEventManager, TrackEditDialog.this, caption, message)
-							{
-								protected void onClickOk()
-								{
-									onClickCancel();
-								}
-							}.show();
-						}
-						
-						raceService.stopEditingTrack(player);
-						
-						TrackManagerImpl trackManager = raceService.getTrackManager();
-						trackManager.deleteTrack(track);
-						
-						String caption = stringSet.get(player, "Dialog.TrackDeleteCompleteDialog.Caption");
-						String message = stringSet.format(player, "Dialog.TrackDeleteCompleteDialog.Text", track.getName());
-						new MsgboxDialog(player, shoebill, rootEventManager, null, caption, message)
-						{
-							protected void onClickOk()
-							{
-								onClickCancel();
-							}
-						}.show();
-					}
-				}.show();
-			}
+					d.setAppendMessage(stringSet.format("Dialog.TrackEditNameDialog.IllegalFormatAppendMessage", name));
+					show();
+				}
+			}).show();
 		});
 		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackEditDialog.StopEditing"))
+		addItem(() ->
 		{
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				raceService.stopEditingTrack(player);
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackEditDialog.FinishEditing"))
+			String desc = track.getDesc();
+			if (StringUtils.isBlank(desc)) desc = stringSet.get("Common.Empty");
+			return stringSet.format("Dialog.TrackEditDialog.Desc", desc);
+		}, (i) ->
 		{
-			@Override
-			public boolean isEnabled()
-			{
-				if (track.getCheckpoints().size() < 2) return false;
-				return true;
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				
-				String caption = stringSet.get(player, "Dialog.TrackFinishEditingConfirmDialog.Caption");
-				String message = stringSet.format(player, "Dialog.TrackFinishEditingConfirmDialog.Text", track.getName());
-				new MsgboxDialog(player, shoebill, rootEventManager, TrackEditDialog.this, caption, message)
+			String caption = stringSet.get("Dialog.TrackEditDescDialog.Caption");
+			String message = stringSet.format("Dialog.TrackEditDescDialog.Text", track.getName(), track.getDesc());
+			WlInputDialog.create(player, rootEventManager)
+				.parentDialog(this)
+				.caption(caption)
+				.message(message)
+				.onClickOk((d, text) ->
 				{
-					protected void onClickOk()
-					{
-						player.playSound(1083, player.getLocation());
-						
-						raceService.stopEditingTrack(player);
-						track.setStatus(TrackStatus.COMPLETED);
-						
-						TrackEditDialog.this.showParentDialog();
-					}
-				}.show();
-			}
+					String desc = StringUtils.trimToEmpty(text);
+					desc = StringUtils.replace(desc, "%", "#");
+					desc = StringUtils.replace(desc, "\t", " ");
+					desc = StringUtils.replace(desc, "\n", " ");
+					
+					track.setDesc(desc);
+					d.showParentDialog();
+				})
+				.build().show();
 		});
 		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackEditDialog.Test"))
+		addItem(() -> stringSet.format("Dialog.TrackEditDialog.Checkpoints", track.getCheckpoints().size()), (i) -> show());
+		addItem(() -> stringSet.format("Dialog.TrackEditDialog.Length", track.getLength()/1000.0f), (i) -> show());
+		
+		addItem(() -> stringSet.get("Dialog.TrackEditDialog.AddCheckpoint"), (i) ->
 		{
-			@Override
-			public boolean isEnabled()
-			{
-				if (track.getCheckpoints().isEmpty()) return false;
-				return true;
-			}
+			TrackCheckpoint checkpoint = track.createCheckpoint(player.getLocation());
+			TrackCheckpointEditDialog.create(player, eventManagerNode, null, raceService, checkpoint, true).show();
+		});
+		
+		addItem(() -> stringSet.get("Dialog.TrackEditDialog.Setting"), (i) ->
+		{
+			TrackSettingDialog.create(player, rootEventManager, this, raceService, track).show();
+		});
+		
+		addItem(() -> stringSet.get("Dialog.TrackEditDialog.Delete"), (i) ->
+		{
+			String caption = stringSet.get("Dialog.TrackDeleteConfirmDialog.Caption");
+			String message = stringSet.format("Dialog.TrackDeleteConfirmDialog.Text", track.getName());
+			WlInputDialog.create(player, rootEventManager)
+				.parentDialog(this)
+				.caption(caption)
+				.message(message)
+				.onClickOk((d, text) ->
+				{
+					if (!track.equals(text))
+					{
+						d.showParentDialog();
+						return;
+					}
+					
+					raceService.stopEditingTrack(player);
+					
+					TrackManagerImpl trackManager = raceService.getTrackManager();
+					trackManager.deleteTrack(track);
+					
+					String msgboxCaption = stringSet.get("Dialog.TrackDeleteCompleteDialog.Caption");
+					String msgboxMessage = stringSet.format("Dialog.TrackDeleteCompleteDialog.Text", track.getName());
+					WlMsgboxDialog.create(player, rootEventManager)
+						.parentDialog(this)
+						.caption(msgboxCaption)
+						.message(msgboxMessage)
+						.onClickOk((dialog) ->
+						{
+							player.playSound(1083);
+							dialog.showParentDialog();
+						})
+						.build().show();
+				})
+				.build().show();
+		});
+		
+		addItem(stringSet.get("Dialog.TrackEditDialog.StopEditing"), (i) ->
+		{
+			raceService.stopEditingTrack(player);
+		});
+		
+		addItem(stringSet.get("Dialog.TrackEditDialog.FinishEditing"), () ->
+		{
+			if (track.getCheckpoints().size() < 2) return false;
+			return true;
+		}, (i) ->
+		{
+			String caption = stringSet.get("Dialog.TrackFinishEditingConfirmDialog.Caption");
+			String message = stringSet.format("Dialog.TrackFinishEditingConfirmDialog.Text", track.getName());
 			
-			private void startNewRacing()
+			MsgboxDialog.create(player, rootEventManager)
+				.caption(caption)
+				.message(message)
+				.onClickOk((d) ->
+				{
+					player.playSound(1083);
+					
+					raceService.stopEditingTrack(player);
+					track.setStatus(TrackStatus.COMPLETED);
+					
+					showParentDialog();
+				})
+				.build().show();;
+		});
+		
+		addItem(stringSet.get("Dialog.TrackEditDialog.Test"), () ->
+		{
+			if (track.getCheckpoints().isEmpty()) return false;
+			return true;
+		}, (i) ->
+		{
+			Runnable startNewRacing = () ->
 			{
 				Racing racing = racingManager.createRacing(track, player, RacingUtils.getDefaultName(player, track));
 				racing.teleToStartingPoint(player);
 				racing.beginCountdown();
-			}
+			};
 			
-			@Override
-			public void onItemSelect()
+			List<TrackCheckpoint> checkpoints = track.getCheckpoints();
+			if (checkpoints.isEmpty()) return;
+			
+			if (racingManager.isPlayerInRacing(player))
 			{
-				player.playSound(1083, player.getLocation());
-				
-				List<TrackCheckpoint> checkpoints = track.getCheckpoints();
-				if (checkpoints.isEmpty()) return;
-				
-				if (racingManager.isPlayerInRacing(player))
+				Racing racing = racingManager.getPlayerRacing(player);
+				NewRacingConfirmDialog.create(player, rootEventManager, this, raceService, racing, () ->
 				{
-					final Racing racing = racingManager.getPlayerRacing(player);
-					new NewRacingConfirmDialog(player, shoebill, rootEventManager, TrackEditDialog.this, raceService, racing)
-					{
-						@Override
-						protected void startRacing()
-						{
-							startNewRacing();
-						}
-					}.show();
-				}
-				else startNewRacing();
+					startNewRacing.run();
+				}).show();
 			}
+			else startNewRacing.run();
 		});
 		
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public boolean isEnabled()
-			{
-				List<TrackCheckpoint> checkpoints = track.getCheckpoints();
-				return !checkpoints.isEmpty();
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				show();
-			}
-		});
+		addItem("-", (i) -> show());
 		
 		List<TrackCheckpoint> checkpoints = track.getCheckpoints();
 		for (int i=0; i<checkpoints.size(); i++)
 		{
-			final TrackCheckpoint checkpoint = checkpoints.get(i);
+			TrackCheckpoint checkpoint = checkpoints.get(i);
 			float distance = player.getLocation().distance(checkpoint.getLocation());
-			String item = stringSet.format(player, "Dialog.TrackEditDialog.Checkpoint", i+1, distance);
-			dialogListItems.add(new DialogListItem(item)
+			String item = stringSet.format("Dialog.TrackEditDialog.Checkpoint", i+1, distance);
+			addItem(item, (listItem) ->
 			{
-				@Override
-				public void onItemSelect()
-				{
-					player.playSound(1083, player.getLocation());
-					new TrackCheckpointEditDialog(player, shoebill, eventManager, TrackEditDialog.this, raceService, checkpoint).show();
-				}
+				TrackCheckpointEditDialog.create(player, eventManagerNode, this, raceService, checkpoint, false).show();
 			});
 		}
 		
-		this.caption = stringSet.format(player, "Dialog.TrackEditDialog.Caption", track.getName());
 		super.show();
 	}
 }

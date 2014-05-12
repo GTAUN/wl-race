@@ -21,14 +21,14 @@ package net.gtaun.wl.race.dialog;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
-import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
-import net.gtaun.wl.common.dialog.AbstractInputDialog;
-import net.gtaun.wl.common.dialog.AbstractPageListDialog;
-import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.common.dialog.WlInputDialog;
+import net.gtaun.wl.common.dialog.WlPageListDialog;
+import net.gtaun.wl.lang.LocalizedStringSet.PlayerStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 
 import org.apache.commons.lang3.StringUtils;
@@ -38,114 +38,105 @@ import org.apache.commons.lang3.StringUtils;
  * 
  * @author MK124
  */
-public abstract class CodeEditorDialog extends AbstractPageListDialog
+public class CodeEditorDialog extends WlPageListDialog
 {
-	private final RaceServiceImpl raceService;
-	private final String title;
+	private final PlayerStringSet stringSet;
+	
 	private List<String> codeLines;
+	private Consumer<String> onCompleteHandler;
 	
 	
-	protected CodeEditorDialog(Player player, Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, RaceServiceImpl raceService, String title, String code)
-	{
-		super(player, shoebill, eventManager, parentDialog);
-		this.raceService = raceService;
-		this.title = title;
+	public CodeEditorDialog(Player player, EventManager eventManager, AbstractDialog parent, RaceServiceImpl service, String title, String code, Consumer<String> onCompleteHandler)
+	{		super(player, eventManager);
+		setParentDialog(parent);
+		
+		this.onCompleteHandler = onCompleteHandler;
 		
 		if (code == null) code = "";
 		codeLines = new ArrayList<>(Arrays.asList(StringUtils.split(code, '\n')));
+
+		stringSet = service.getLocalizedStringSet().getStringSet(player);
+		setCaption(() -> stringSet.format("Dialog.CodeEditorDialog.Caption", title, codeLines.size()));
 	}
 	
 	@Override
 	public void show()
 	{
-		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
-		
-		dialogListItems.clear();
+		items.clear();
 		
 		for (int i=0; i<codeLines.size(); i++)
 		{
-			final String line = codeLines.get(i);
-			final int lineNum = i+1;
+			String line = codeLines.get(i);
+			int lineNum = i+1;
 			
-			dialogListItems.add(new DialogListItem(stringSet.format(player, "Dialog.CodeEditorDialog.Item", lineNum, line))
+			addItem(stringSet.format("Dialog.CodeEditorDialog.Item", lineNum, line), (item) ->
 			{
-				@Override
-				public void onItemSelect()
-				{
-					player.playSound(1083, player.getLocation());
-					
-					final String caption = stringSet.format(player, "Dialog.CodeEditorEditLineDialog.Caption", lineNum);
-					final String message = stringSet.format(player, "Dialog.CodeEditorEditLineDialog.Text", lineNum, line);
-					new AbstractInputDialog(player, shoebill, rootEventManager, CodeEditorDialog.this, caption, message)
+				player.playSound(1083);
+				
+				String caption = stringSet.format("Dialog.CodeEditorEditLineDialog.Caption", lineNum);
+				String message = stringSet.format("Dialog.CodeEditorEditLineDialog.Text", lineNum, line);
+				
+				WlInputDialog.create(player, rootEventManager)
+					.parentDialog(this)
+					.caption(caption)
+					.message(message)
+					.onClickOk((d, text) ->
 					{
-						@Override
-						public void onClickOk(String inputText)
+						player.playSound(1083);
+						
+						if (text.equalsIgnoreCase("INSERT"))
 						{
-							player.playSound(1083, player.getLocation());
-							
-							if (inputText.equalsIgnoreCase("INSERT"))
-							{
-								addNewLine(lineNum, parentDialog);
-								return;
-							}
-							else if (inputText.equalsIgnoreCase("DELETE"))
-							{
-								codeLines.remove(lineNum-1);
-								showParentDialog();
-								return;
-							}
-							
-							codeLines.set(lineNum-1, inputText);
-							showParentDialog();
+							showInsertLineDialog(lineNum, d.getParentDialog());
+							return;
 						}
-					}.show();
-				}
+						else if (text.equalsIgnoreCase("DELETE"))
+						{
+							codeLines.remove(lineNum-1);
+							showParentDialog();
+							return;
+						}
+						
+						codeLines.set(lineNum-1, text);
+						showParentDialog();
+					})
+					.build().show();
 			});
 		}
 		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.CodeEditorDialog.Add"))
+		addItem(stringSet.get("Dialog.CodeEditorDialog.Add"), (i) ->
 		{
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				
-				final int lineNum = codeLines.size() + 1;
-				addNewLine(lineNum, CodeEditorDialog.this);
-			}
+			player.playSound(1083);
+			
+			int lineNum = codeLines.size() + 1;
+			showInsertLineDialog(lineNum, CodeEditorDialog.this);
 		});
 		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.CodeEditorDialog.Save"))
+		addItem(stringSet.get("Dialog.CodeEditorDialog.Save"), (i) ->
 		{
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				onComplete(toCode());
-			}
+			player.playSound(1083);
+			onCompleteHandler.accept(toCode());
 		});
 		
-		this.caption = stringSet.format(player, "Dialog.CodeEditorDialog.Caption", title, codeLines.size());
 		super.show();
 	}
 	
-	private void addNewLine(final int line, AbstractDialog dialog)
+	private void showInsertLineDialog(int line, AbstractDialog dialog)
 	{
-		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		String caption = stringSet.format("Dialog.CodeEditorNewLineDialog.Caption", line);
+		String message = stringSet.format("Dialog.CodeEditorNewLineDialog.Text", line);
 		
-		final String caption = stringSet.format(player, "Dialog.CodeEditorNewLineDialog.Caption", line);
-		final String message = stringSet.format(player, "Dialog.CodeEditorNewLineDialog.Text", line);
-		new AbstractInputDialog(player, shoebill, rootEventManager, dialog, caption, message)
-		{
-			@Override
-			public void onClickOk(String inputText)
+		WlInputDialog.create(player, rootEventManager)
+			.parentDialog(dialog)
+			.caption(caption)
+			.message(message)
+			.onClickOk((d, text) ->
 			{
-				player.playSound(1083, player.getLocation());
+				player.playSound(1083);
 				
-				codeLines.add(line-1, inputText);
-				showParentDialog();
-			}
-		}.show();
+				codeLines.add(line-1, text);
+				d.showParentDialog();
+			})
+			.build().show();
 	}
 	
 	public String toCode()
@@ -159,6 +150,4 @@ public abstract class CodeEditorDialog extends AbstractPageListDialog
 		
 		return builder.toString();
 	}
-	
-	protected abstract void onComplete(String code);
 }

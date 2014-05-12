@@ -20,295 +20,155 @@ package net.gtaun.wl.race.dialog;
 
 import java.util.List;
 
-import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
-import net.gtaun.shoebill.event.dialog.DialogCancelEvent.DialogCancelType;
+import net.gtaun.shoebill.common.dialog.MsgboxDialog;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
-import net.gtaun.wl.common.dialog.AbstractListDialog;
-import net.gtaun.wl.common.dialog.MsgboxDialog;
-import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.common.dialog.WlListDialog;
+import net.gtaun.wl.common.dialog.WlMsgboxDialog;
+import net.gtaun.wl.lang.LocalizedStringSet.PlayerStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing;
 import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
-import net.gtaun.wl.race.track.TrackCheckpoint;
 import net.gtaun.wl.race.track.Track.TrackStatus;
+import net.gtaun.wl.race.track.TrackCheckpoint;
 import net.gtaun.wl.race.util.RacingUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class TrackDialog extends AbstractListDialog
+public class TrackDialog
 {
-	public TrackDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, final AbstractDialog parentDialog, final RaceServiceImpl raceService, final Track track)
+	public static WlListDialog create(Player player, EventManager eventManager, AbstractDialog parent, RaceServiceImpl service, Track track)
 	{
-		super(player, shoebill, eventManager, parentDialog);
-		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
-		final RacingManagerImpl racingManager = raceService.getRacingManager();
+		PlayerStringSet stringSet = service.getLocalizedStringSet().getStringSet(player);
+		RacingManagerImpl racingManager = service.getRacingManager();
 
-		this.caption = stringSet.format(player, "Dialog.TrackDialog.Caption", track.getName());
-		
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public String toItemString()
-			{
-				return stringSet.format(player, "Dialog.TrackDialog.Name", track.getName());
-			}
+		return WlListDialog.create(player, eventManager)
+			.parentDialog(parent)
+			.caption(() -> stringSet.format("Dialog.TrackDialog.Caption", track.getName()))
 			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public String toItemString()
-			{
-				return stringSet.format(player, "Dialog.TrackDialog.Author", track.getAuthorUniqueId());
-			}
+			.item(() -> stringSet.format("Dialog.TrackDialog.Name", track.getName()), (i) -> i.getCurrentDialog().show())
+			.item(() -> stringSet.format("Dialog.TrackDialog.Author", track.getAuthorUniqueId()), (i) -> i.getCurrentDialog().show())
 			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public String toItemString()
+			.item(() ->
 			{
 				String desc = track.getDesc();
-				if (StringUtils.isBlank(desc)) desc = stringSet.get(player, "Common.Empty");
-				return stringSet.format(player, "Dialog.TrackDialog.Desc", StringUtils.abbreviate(desc, 60));
-			}
+				if (StringUtils.isBlank(desc)) desc = stringSet.get("Common.Empty");
+				return stringSet.format("Dialog.TrackDialog.Desc", StringUtils.abbreviate(desc, 60));				
+			}, (i) ->
+			{
+				i.getCurrentDialog().show();
+			})
 			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public String toItemString()
-			{
-				return stringSet.format(player, "Dialog.TrackDialog.Status", track.getStatus());
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public String toItemString()
-			{
-				return stringSet.format(player, "Dialog.TrackDialog.Checkpoints", track.getCheckpoints().size());
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public String toItemString()
-			{
-				return stringSet.format(player, "Dialog.TrackDialog.Length", track.getLength()/1000.0f);
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public String toItemString()
-			{
-				return stringSet.format(player, "Dialog.TrackDialog.Distance", player.getLocation().distance(track.getStartLocation()));
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackDialog.Edit"))
-		{
-			@Override
-			public boolean isEnabled()
+			.item(() -> stringSet.format("Dialog.TrackDialog.Status", track.getStatus()), (i) -> i.getCurrentDialog().show())
+			.item(() -> stringSet.format("Dialog.TrackDialog.Checkpoints", track.getCheckpoints().size()), (i) -> i.getCurrentDialog().show())
+			.item(() -> stringSet.format("Dialog.TrackDialog.Length", track.getLength()/1000.0f), (i) -> i.getCurrentDialog().show())
+			.item(() -> stringSet.format("Dialog.TrackDialog.Distance", player.getLocation().distance(track.getStartLocation())), (i) -> i.getCurrentDialog().show())
+
+			.item(() -> stringSet.get("Dialog.TrackDialog.Edit"), () ->
 			{
 				if (track.getStatus() == TrackStatus.RANKING) return false;
 				if (player.isAdmin()) return true;
 				return player.getName().equals(track.getAuthorUniqueId());
-			}
-			
-			@Override
-			public void onItemSelect()
+			}, (i) ->
 			{
-				player.playSound(1083, player.getLocation());
-				
 				if (track.getStatus() == TrackStatus.COMPLETED)
 				{
-					String caption = stringSet.get(player, "Dialog.TrackEditConfirmDialog.Caption");
-					String text = stringSet.format(player, "Dialog.TrackEditConfirmDialog.Text", track.getName());
-					new MsgboxDialog(player, shoebill, eventManager, TrackDialog.this, caption, text)
-					{
-						protected void onClickOk()
+					String caption = stringSet.get("Dialog.TrackEditConfirmDialog.Caption");
+					String text = stringSet.format("Dialog.TrackEditConfirmDialog.Text", track.getName());
+					
+					MsgboxDialog.create(player, eventManager)
+						.parentDialog(i.getCurrentDialog())
+						.caption(caption)
+						.message(text)
+						.onClickOk((d) ->
 						{
-							player.playSound(1083, player.getLocation());
-							raceService.editTrack(player, track);
-						}
-					}.show();
+							player.playSound(1083);
+							service.editTrack(player, track);	
+						})
+						.build();
 				}
 				else if (track.getStatus() == TrackStatus.RANKING)
 				{
-					show();
+					i.getCurrentDialog().show();
 				}
 				else
 				{
-					raceService.editTrack(player, track);
+					service.editTrack(player, track);
 				}
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackDialog.Test"))
-		{
-			@Override
-			public boolean isEnabled()
+			})
+			
+			.item(() -> stringSet.get("Dialog.TrackDialog.Test"), () ->
 			{
 				if (track.getCheckpoints().isEmpty()) return false;
 				return track.getStatus() == TrackStatus.EDITING;
-			}
-			
-			private void startNewRacing()
+			}, (i) ->
 			{
-				Racing racing = racingManager.createRacing(track, player, RacingUtils.getDefaultName(player, track));
-				racing.teleToStartingPoint(player);
-				racing.beginCountdown();
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				
+				Runnable startNewRacing = () ->
+				{
+					Racing racing = racingManager.createRacing(track, player, RacingUtils.getDefaultName(player, track));
+					racing.teleToStartingPoint(player);
+					racing.beginCountdown();
+				};
+
 				List<TrackCheckpoint> checkpoints = track.getCheckpoints();
 				if (checkpoints.isEmpty()) return;
 				
 				if (racingManager.isPlayerInRacing(player))
 				{
-					final Racing racing = racingManager.getPlayerRacing(player);
-					new NewRacingConfirmDialog(player, shoebill, rootEventManager, TrackDialog.this, raceService, racing)
+					Racing racing = racingManager.getPlayerRacing(player);
+					NewRacingConfirmDialog.create(player, eventManager, i.getCurrentDialog(), service, racing, () ->
 					{
-						@Override
-						protected void startRacing()
-						{
-							startNewRacing();
-						}
-					}.show();
+						startNewRacing.run();
+					}).show();
 				}
-				else startNewRacing();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackDialog.NewRacing"))
-		{
-			@Override
-			public boolean isEnabled()
+				else startNewRacing.run();
+			})
+			
+			.item(() -> stringSet.get("Dialog.TrackDialog.NewRacing"), () ->
 			{
 				if (track.getCheckpoints().isEmpty()) return false;
 				return track.getStatus() != TrackStatus.EDITING;
-			}
-			
-			@Override
-			public void onItemSelect()
+			}, (i) ->
 			{
-				player.playSound(1083, player.getLocation());
-				new NewRacingDialog(player, shoebill, eventManager, TrackDialog.this, raceService, track).show();
-			}
-		});
+				NewRacingDialog.create(player, eventManager, i.getCurrentDialog(), service, track).show();
+			})
+			
+			.item(() -> stringSet.get("Dialog.TrackDialog.QuickNewRacing"), () ->
+			{
+				if (track.getCheckpoints().isEmpty()) return false;
+				return track.getStatus() != TrackStatus.EDITING;
+			}, (i) ->
+			{
+				Runnable startNewRacing = () ->
+				{
+					Racing racing = racingManager.createRacing(track, player, RacingUtils.getDefaultName(player, track));
+					racing.teleToStartingPoint(player);
+				};
 
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackDialog.QuickNewRacing"))
-		{
-			@Override
-			public boolean isEnabled()
-			{
-				if (track.getCheckpoints().isEmpty()) return false;
-				return track.getStatus() != TrackStatus.EDITING;
-			}
-			
-			private void startNewRacing()
-			{
-				Racing racing = racingManager.createRacing(track, player, RacingUtils.getDefaultName(player, track));
-				racing.teleToStartingPoint(player);
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				
 				if (racingManager.isPlayerInRacing(player))
 				{
-					final Racing racing = racingManager.getPlayerRacing(player);
-					String caption = stringSet.get(player, "Dialog.TrackNewRacingConfirmDialog.Caption");
-					String text = stringSet.format(player, "Dialog.TrackNewRacingConfirmDialog.Text", racing.getName());
-					new MsgboxDialog(player, shoebill, eventManager, TrackDialog.this, caption, text)
-					{
-						@Override
-						protected void onClickOk()
+					Racing racing = racingManager.getPlayerRacing(player);
+					String caption = stringSet.get("Dialog.TrackNewRacingConfirmDialog.Caption");
+					String text = stringSet.format("Dialog.TrackNewRacingConfirmDialog.Text", racing.getName());
+					
+					WlMsgboxDialog.create(player, eventManager)
+						.parentDialog(parent)
+						.caption(caption)
+						.message(text)
+						.onClickOk((d) ->
 						{
-							player.playSound(1083, player.getLocation());
+							player.playSound(1083);
 							racing.leave(player);
-							startNewRacing();
-						}
-						
-						@Override
-						protected void onCancel(DialogCancelType type)
-						{
-							player.playSound(1083, player.getLocation());
-							showParentDialog();
-						}
-					}.show();
+							startNewRacing.run();
+						})
+						.build().show();
 				}
-				else startNewRacing();
-			}
-		});
-	}
-	
-	@Override
-	public void show()
-	{
-		super.show();
+				else startNewRacing.run();
+			})
+			
+			.onClickOk((d, i) -> player.playSound(1083))
+			.build();
 	}
 }

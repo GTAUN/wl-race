@@ -25,8 +25,8 @@ import net.gtaun.shoebill.data.Location;
 import net.gtaun.shoebill.data.RaceCheckpoint;
 import net.gtaun.shoebill.data.Radius;
 
-import com.google.code.morphia.annotations.Embedded;
-import com.google.code.morphia.annotations.Transient;
+import org.mongodb.morphia.annotations.Embedded;
+import org.mongodb.morphia.annotations.Transient;
 
 @Embedded
 public class TrackCheckpoint
@@ -102,17 +102,17 @@ public class TrackCheckpoint
 	
 	public Radius getLocation()
 	{
-		return location;
+		return location.clone();
 	}
 	
 	public void setLocation(Location location)
 	{
-		this.location = new Radius(location, DEFAULT_SIZE).immutable();
+		this.location = new Radius(location, DEFAULT_SIZE);
 	}
 	
 	public void setLocation(Radius location)
 	{
-		this.location = location.immutable();
+		this.location = new Radius(location);
 	}
 
 	public float getSize()
@@ -122,7 +122,7 @@ public class TrackCheckpoint
 	
 	public void setSize(float size)
 	{
-		location = new Radius(location, size).immutable();
+		location = new Radius(location, size);
 	}
 	
 	public RaceCheckpointType getType()

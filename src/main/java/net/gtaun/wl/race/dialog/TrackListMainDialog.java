@@ -20,103 +20,75 @@ package net.gtaun.wl.race.dialog;
 
 import java.util.List;
 
-import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
-import net.gtaun.wl.common.dialog.AbstractInputDialog;
-import net.gtaun.wl.common.dialog.AbstractListDialog;
-import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.common.dialog.WlInputDialog;
+import net.gtaun.wl.common.dialog.WlListDialog;
+import net.gtaun.wl.lang.LocalizedStringSet.PlayerStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackManagerImpl;
 
-public class TrackListMainDialog extends AbstractListDialog
+public class TrackListMainDialog
 {
-	public TrackListMainDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService)
+	public static WlListDialog create(Player player, EventManager eventManager, AbstractDialog parent, RaceServiceImpl service)
 	{
-		super(player, shoebill, eventManager, parentDialog);
-		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
-		final TrackManagerImpl trackManager = raceService.getTrackManager();
-		
-		this.caption = stringSet.get(player, "Dialog.TrackListMainDialog.Caption");
-
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackListMainDialog.Nearby"))
-		{
-			@Override
-			public void onItemSelect()
+		PlayerStringSet stringSet = service.getLocalizedStringSet().getStringSet(player);
+		TrackManagerImpl trackManager = service.getTrackManager();
+	
+		return WlListDialog.create(player, eventManager)
+			.parentDialog(parent)
+			.caption(stringSet.get("Dialog.TrackListMainDialog.Caption"))
+			.item(stringSet.get("Dialog.TrackListMainDialog.Nearby"), (i) ->
 			{
-				player.playSound(1083, player.getLocation());
 				List<Track> tracks = trackManager.getAllTracks();
-				new TrackListDialog(player, shoebill, eventManager, TrackListMainDialog.this, raceService, tracks).show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackListMainDialog.MyFavorites"))
-		{
-			@Override
-			public void onItemSelect()
+				new TrackListDialog(player, eventManager, i.getCurrentDialog(), service, tracks).show();
+			})
+			.item(stringSet.get("Dialog.TrackListMainDialog.MyFavorites"), (i) ->
 			{
-				player.playSound(1083, player.getLocation());
 				List<Track> tracks = trackManager.getAllTracks();
-				new TrackListDialog(player, shoebill, eventManager, TrackListMainDialog.this, raceService, tracks).show();
-			}
-		});
-
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackListMainDialog.MyTracks"))
-		{
-			@Override
-			public void onItemSelect()
+				new TrackListDialog(player, eventManager, i.getCurrentDialog(), service, tracks).show();
+			})
+			.item(stringSet.get("Dialog.TrackListMainDialog.MyTracks"), (i) ->
 			{
-				player.playSound(1083, player.getLocation());
-				
 				List<Track> tracks = trackManager.searchTrackByAuthor(player.getName());
-				new TrackListDialog(player, shoebill, eventManager, TrackListMainDialog.this, raceService, tracks).show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackListMainDialog.SearchByAuthor"))
-		{
-			@Override
-			public void onItemSelect()
+				new TrackListDialog(player, eventManager, i.getCurrentDialog(), service, tracks).show();
+			})
+			.item(stringSet.get("Dialog.TrackListMainDialog.SearchByAuthor"), (i) ->
 			{
-				player.playSound(1083, player.getLocation());
-				
-				String caption = stringSet.get(player, "Dialog.TrackSearchByAuthorDialog.Caption");
-				String message = stringSet.get(player, "Dialog.TrackSearchByAuthorDialog.Text");
-				new AbstractInputDialog(player, shoebill, eventManager, TrackListMainDialog.this, caption, message)
-				{
-					public void onClickOk(String inputText)
-					{
-						player.playSound(1083, player.getLocation());
-						
-						List<Track> tracks = trackManager.searchTrackByAuthor(inputText);
-						new TrackListDialog(player, shoebill, eventManager, TrackListMainDialog.this, raceService, tracks).show();
-					}
-				}.show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackListMainDialog.SearchByKeyword"))
-		{
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
 
-				String caption = stringSet.get(player, "Dialog.TrackSearchByKeywordDialog.Caption");
-				String message = stringSet.get(player, "Dialog.TrackSearchByKeywordDialog.Text");
-				new AbstractInputDialog(player, shoebill, eventManager, TrackListMainDialog.this, caption, message)
-				{
-					public void onClickOk(String inputText)
+				String caption = stringSet.get("Dialog.TrackSearchByAuthorDialog.Caption");
+				String message = stringSet.get("Dialog.TrackSearchByAuthorDialog.Text");
+				WlInputDialog.create(player, eventManager)
+					.parentDialog(i.getCurrentDialog())
+					.caption(caption)
+					.message(message)
+					.onClickOk((d, text) ->
 					{
-						player.playSound(1083, player.getLocation());
+						player.playSound(1083);
 						
-						List<Track> tracks = trackManager.searchTrackByName(inputText);
-						new TrackListDialog(player, shoebill, eventManager, TrackListMainDialog.this, raceService, tracks).show();
-					}
-				}.show();
-			}
-		});
+						List<Track> tracks = trackManager.searchTrackByAuthor(text);
+						new TrackListDialog(player, eventManager, i.getCurrentDialog(), service, tracks).show();
+					})
+					.build().show();
+			})
+			.item(stringSet.get("Dialog.TrackListMainDialog.SearchByKeyword"), (i) ->
+			{
+				String caption = stringSet.get("Dialog.TrackSearchByKeywordDialog.Caption");
+				String message = stringSet.get("Dialog.TrackSearchByKeywordDialog.Text");
+				WlInputDialog.create(player, eventManager)
+					.parentDialog(i.getCurrentDialog())
+					.caption(caption)
+					.message(message)
+					.onClickOk((d, text) ->
+					{
+						List<Track> tracks = trackManager.searchTrackByName(text);
+						new TrackListDialog(player, eventManager, i.getCurrentDialog(), service, tracks).show();
+					})
+					.build().show();
+			})
+			.onClickOk((d, i) -> player.playSound(1083))
+			.build();
 	}
 }

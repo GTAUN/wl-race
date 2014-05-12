@@ -20,14 +20,13 @@ package net.gtaun.wl.race.dialog;
 
 import java.util.List;
 
-import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.data.Location;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
-import net.gtaun.wl.common.dialog.AbstractListDialog;
-import net.gtaun.wl.common.dialog.MsgboxDialog;
-import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.common.dialog.WlListDialog;
+import net.gtaun.wl.common.dialog.WlMsgboxDialog;
+import net.gtaun.wl.lang.LocalizedStringSet.PlayerStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing;
 import net.gtaun.wl.race.racing.Racing.RacingStatus;
@@ -35,91 +34,50 @@ import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackCheckpoint;
 
-public class RacingDialog extends AbstractListDialog
+public class RacingDialog extends WlListDialog
 {
 	private final RaceServiceImpl raceService;
 	private final Racing racing;
+
+	private final PlayerStringSet stringSet;
 	
 	
-	public RacingDialog
-	(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService, final Racing racing)
-	{
-		super(player, shoebill, eventManager, parentDialog);
-		this.raceService = raceService;
-		this.racing = racing;
+	public RacingDialog(Player player, EventManager eventManager, AbstractDialog parent, RaceServiceImpl service, Racing racing)
+	{		super(player, eventManager);
+		setParentDialog(parent);
 		
-		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
-		this.caption = stringSet.format(player, "Dialog.RacingDialog.Caption", racing.getName());
+		this.raceService = service;
+		this.racing = racing;
+		this.stringSet = service.getLocalizedStringSet().getStringSet(player);
+		
+		setCaption(() -> stringSet.format("Dialog.RacingDialog.Caption", racing.getName()));
+		setClickOkHandler((d, i) -> player.playSound(1083));
 	}
 	
 	@Override
 	public void show()
-	{
-		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
-		
-		final Track track = racing.getTrack();
-		final RacingManagerImpl racingManager = raceService.getRacingManager();
+	{	
+		Track track = racing.getTrack();
+		RacingManagerImpl racingManager = raceService.getRacingManager();
 
-		dialogListItems.clear();
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public String toItemString()
-			{
-				return stringSet.format(player, "Dialog.RacingDialog.Name", racing.getName());
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				show();
-			}
-		});
+		items.clear();
 		
-		dialogListItems.add(new DialogListItem()
+		addItem(() -> stringSet.format("Dialog.RacingDialog.Name", racing.getName()), (i) -> show());
+		addItem(() -> stringSet.format("Dialog.RacingDialog.Track", track.getName()), (i) ->
 		{
-			@Override
-			public String toItemString()
-			{
-				return stringSet.format(player, "Dialog.RacingDialog.Track", track.getName());
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				new TrackDialog(player, shoebill, eventManager, RacingDialog.this, raceService, track).show();
-			}
+			TrackDialog.create(player, rootEventManager, RacingDialog.this, raceService, track).show();
 		});
+
+		addItem(() -> stringSet.format("Dialog.RacingDialog.Sponsor", racing.getSponsor().getName()), (i) -> show());
 		
-		dialogListItems.add(new DialogListItem()
+		addItem(() -> stringSet.get("Dialog.RacingDialog.Join"), () ->
 		{
-			@Override
-			public String toItemString()
-			{
-				return stringSet.format(player, "Dialog.RacingDialog.Sponsor", racing.getSponsor().getName());
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RacingDialog.Join"))
+			if (racing.getStatus() != RacingStatus.WAITING) return false;
+			if (racingManager.getPlayerRacing(player) == racing) return false;
+			return true;
+		}, (i) ->
 		{
-			@Override
-			public boolean isEnabled()
-			{
-				if (racing.getStatus() != RacingStatus.WAITING) return false;
-				if (racingManager.getPlayerRacing(player) == racing) return false;
-				return true;
-			}
-			
-			private void joinRacing()
+			Runnable joinRacing = () ->
 			{
 				racing.join(player);
 				
@@ -131,151 +89,113 @@ public class RacingDialog extends AbstractListDialog
 				location.setZ(location.getZ() + 2.0f);
 				
 				player.setLocation(location);
-			}
-			
-			@Override
-			public void onItemSelect()
+			};
+
+			if (racingManager.isPlayerInRacing(player))
 			{
-				player.playSound(1083, player.getLocation());
-				if (racingManager.isPlayerInRacing(player))
-				{
-					final Racing nowRacing = racingManager.getPlayerRacing(player);
-					String caption = stringSet.get(player, "Dialog.RacingLeaveAndJoinConfirmDialog.Caption");
-					String text = stringSet.format(player, "Dialog.RacingLeaveAndJoinConfirmDialog.Text", nowRacing.getName(), racing.getName());
-					new MsgboxDialog(player, shoebill, eventManager, RacingDialog.this, caption, text)
-					{
-						@Override
-						protected void onClickOk()
-						{
-							player.playSound(1083, player.getLocation());
-							nowRacing.leave(player);
-							joinRacing();
-						}
-					}.show();
-				}
-				else joinRacing();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RacingDialog.Leave"))
-		{
-			@Override
-			public boolean isEnabled()
-			{
-				if (racingManager.getPlayerRacing(player) != racing) return false;
-				if (racing.getStatus() == RacingStatus.WAITING && racing.getSponsor() == player) return false;
-				return true;
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				if (racingManager.getPlayerRacing(player) != racing) return ;
+				Racing nowRacing = racingManager.getPlayerRacing(player);
+				String caption = stringSet.get("Dialog.RacingLeaveAndJoinConfirmDialog.Caption");
+				String text = stringSet.format("Dialog.RacingLeaveAndJoinConfirmDialog.Text", nowRacing.getName(), racing.getName());
 				
-				String caption = stringSet.get(player, "Dialog.RacingLeaveConfirmDialog.Caption");
-				String text = stringSet.format(player, "Dialog.RacingLeaveConfirmDialog.Text", racing.getName());
-				new MsgboxDialog(player, shoebill, eventManager, RacingDialog.this, caption, text)
-				{
-					@Override
-					protected void onClickOk()
+				WlMsgboxDialog.create(player, rootEventManager)
+					.parentDialog(this)
+					.caption(caption)
+					.message(text)
+					.onClickOk((d) ->
 					{
-						player.playSound(1083, player.getLocation());
-						racing.leave(player);
-						RacingDialog.this.showParentDialog();
-					}
-				}.show();
+						player.playSound(1083);
+						nowRacing.leave(player);
+						joinRacing.run();
+					})
+					.build().show();
 			}
-		});
-
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RacingDialog.Cancel"))
-		{
-			@Override
-			public boolean isEnabled()
-			{
-				if (racingManager.getPlayerRacing(player) != racing) return false;
-				if (racing.getStatus() != RacingStatus.WAITING || racing.getSponsor() != player) return false;
-				return true;
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				if (racingManager.getPlayerRacing(player) != racing) return ;
-
-				String caption = stringSet.get(player, "Dialog.RacingCancelConfirmDialog.Caption");
-				String text = stringSet.format(player, "Dialog.RacingCancelConfirmDialog.Text", racing.getName());
-				new MsgboxDialog(player, shoebill, eventManager, RacingDialog.this, caption, text)
-				{
-					@Override
-					protected void onClickOk()
-					{
-						player.playSound(1083, player.getLocation());
-						racing.cancel();
-						RacingDialog.this.showParentDialog();
-					}
-				}.show();
-			}
+			else joinRacing.run();;
 		});
 		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.RacingDialog.Start"))
+		addItem(() -> stringSet.get("Dialog.RacingDialog.Leave"), () ->
 		{
-			@Override
-			public boolean isEnabled()
-			{
-				if (racing.getStatus() != RacingStatus.WAITING) return false;
-				if (racingManager.getPlayerRacing(player) != racing) return false;
-				if (racing.getSponsor() != player) return false;
-				return true;
-			}
+			if (racingManager.getPlayerRacing(player) != racing) return false;
+			if (racing.getStatus() == RacingStatus.WAITING && racing.getSponsor() == player) return false;
+			return true;
+		}, (i) ->
+		{
+			if (racingManager.getPlayerRacing(player) != racing) return ;
 			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				racing.beginCountdown();
-			}
+			String caption = stringSet.get("Dialog.RacingLeaveConfirmDialog.Caption");
+			String text = stringSet.format("Dialog.RacingLeaveConfirmDialog.Text", racing.getName());
+			
+			WlMsgboxDialog.create(player, rootEventManager)
+				.parentDialog(this)
+				.caption(caption)
+				.message(text)
+				.onClickOk((d) ->
+				{
+					player.playSound(1083);
+					racing.leave(player);
+					showParentDialog();
+				})
+				.build().show();
 		});
 		
-		dialogListItems.add(new DialogListItem()
+		addItem(() -> stringSet.get("Dialog.RacingDialog.Cancel"), () ->
 		{
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				show();
-			}
-		});
+			if (racingManager.getPlayerRacing(player) != racing) return false;
+			if (racing.getStatus() != RacingStatus.WAITING || racing.getSponsor() != player) return false;
+			return true;
+		}, (i) ->
+		{
+			if (racingManager.getPlayerRacing(player) != racing) return ;
 
-		List<Player> players = racing.getPlayers();
-		for (final Player joinedPlayer : players)
-		{
-			String item = stringSet.format(player, "Dialog.RacingDialog.Player", joinedPlayer.getName());
-			dialogListItems.add(new DialogListItem(item)
-			{
-				@Override
-				public void onItemSelect()
+			String caption = stringSet.get("Dialog.RacingCancelConfirmDialog.Caption");
+			String text = stringSet.format("Dialog.RacingCancelConfirmDialog.Text", racing.getName());
+			
+			WlMsgboxDialog.create(player, rootEventManager)
+				.parentDialog(this)
+				.caption(caption)
+				.message(text)
+				.onClickOk((d) ->
 				{
-					player.playSound(1083, player.getLocation());
-					if (player != racing.getSponsor() || player == joinedPlayer)
-					{
-						show();
-					}
-					else
-					{
-						String caption = stringSet.get(player, "Dialog.RacingKickConfirmDialog.Caption");
-						String text = stringSet.format(player, "Dialog.RacingKickConfirmDialog.Text", joinedPlayer.getName());
-						new MsgboxDialog(player, shoebill, rootEventManager, RacingDialog.this, caption, text)
+					player.playSound(1083);
+					racing.cancel();
+					showParentDialog();
+				})
+				.build().show();
+		});
+		
+		addItem(() -> stringSet.get("Dialog.RacingDialog.Start"), () ->
+		{
+			if (racing.getStatus() != RacingStatus.WAITING) return false;
+			if (racingManager.getPlayerRacing(player) != racing) return false;
+			if (racing.getSponsor() != player) return false;
+			return true;
+		}, (i) ->
+		{
+			player.playSound(1083);
+			racing.beginCountdown();
+		});
+		
+		addItem("-", (i) -> show());
+		
+		for (Player joinedPlayer : racing.getPlayers())
+		{
+			addItem(() -> stringSet.format("Dialog.RacingDialog.Player", joinedPlayer.getName()), (i) ->
+			{
+				if (player != racing.getSponsor() || player == joinedPlayer) show();
+				else
+				{
+					String caption = stringSet.get("Dialog.RacingKickConfirmDialog.Caption");
+					String text = stringSet.format("Dialog.RacingKickConfirmDialog.Text", joinedPlayer.getName());
+					WlMsgboxDialog.create(joinedPlayer, rootEventManager)
+						.parentDialog(this)
+						.caption(caption)
+						.message(text)
+						.onClickOk((d) ->
 						{
-							protected void onClickOk()
-							{
-								player.playSound(1083, player.getLocation());
-								racing.kick(joinedPlayer);
-								showParentDialog();
-							}
-						}.show();
-					}
+							player.playSound(1083);
+							racing.kick(joinedPlayer);
+							showParentDialog();
+						})
+						.build().show();
 				}
 			});
 		}

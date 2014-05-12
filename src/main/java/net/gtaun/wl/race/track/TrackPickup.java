@@ -20,8 +20,8 @@ package net.gtaun.wl.race.track;
 
 import net.gtaun.shoebill.data.Location;
 
-import com.google.code.morphia.annotations.Embedded;
-import com.google.code.morphia.annotations.Transient;
+import org.mongodb.morphia.annotations.Embedded;
+import org.mongodb.morphia.annotations.Transient;
 
 @Embedded
 public class TrackPickup
@@ -61,12 +61,12 @@ public class TrackPickup
 	
 	public Location getLocation()
 	{
-		return location.immutable();
+		return location.clone();
 	}
 	
 	public void setLocation(Location location)
 	{
-		this.location = location.immutable();
+		this.location = location.clone();
 	}
 	
 	public int getModelId()

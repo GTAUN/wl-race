@@ -18,58 +18,54 @@
 
 package net.gtaun.wl.race.dialog;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.ArrayList;
+import java.util.List;
 
-import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
+import net.gtaun.shoebill.common.dialog.ListDialogItem;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
-import net.gtaun.wl.common.dialog.AbstractListDialog;
+import net.gtaun.wl.common.dialog.WlPageListDialog;
 import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.Track.ScriptType;
 
-public class TrackScriptEditDialog extends AbstractListDialog
+import org.apache.commons.lang3.StringUtils;
+
+public class TrackScriptEditDialog
 {
-	protected TrackScriptEditDialog
-	(final Player player, final Shoebill shoebill, final EventManager eventManager, AbstractDialog parentDialog, final RaceServiceImpl raceService, final Track track)
+	protected WlPageListDialog create
+	(Player player, EventManager eventManager, AbstractDialog parent, RaceServiceImpl service, Track track)
 	{
-		super(player, shoebill, eventManager, parentDialog);
-		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		LocalizedStringSet stringSet = service.getLocalizedStringSet();
 		
-		this.caption = stringSet.format(player, "Dialog.TrackScriptEditDialog.Caption", track.getName());
-		
-		for (final ScriptType type : ScriptType.values())
+		List<ListDialogItem> items = new ArrayList<>();
+		for (ScriptType type : ScriptType.values())
 		{
-			dialogListItems.add(new DialogListItem()
+			items.add(new ListDialogItem(() ->
 			{
-				@Override
-				public String toItemString()
-				{
-					String code = track.getScript(type);
-					int lines = StringUtils.countMatches(code, "\n");
-					return stringSet.format(player, "Dialog.TrackScriptEditDialog.Item", type.name(), lines, code.length());
-				}
+				String code = track.getScript(type);
+				int lines = StringUtils.countMatches(code, "\n");
+				return stringSet.format(player, "Dialog.TrackScriptEditDialog.Item", type.name(), lines, code.length());
+			}, (i) ->
+			{
+				player.playSound(1083);
 				
-				@Override
-				public void onItemSelect()
+				String title = stringSet.format(player, "Dialog.TrackScriptEditDialog.EventFormat", type.name());
+				String code = track.getScript(type);
+				new CodeEditorDialog(player, eventManager, i.getCurrentDialog(), service, title, code, (newCode) ->
 				{
-					player.playSound(1083, player.getLocation());
-					
-					final String title = stringSet.format(player, "Dialog.TrackScriptEditDialog.EventFormat", type.name());
-					final String code = track.getScript(type);
-					new CodeEditorDialog(player, shoebill, eventManager, TrackScriptEditDialog.this, raceService, title, code)
-					{
-						@Override
-						protected void onComplete(String code)
-						{
-							player.playSound(1083, player.getLocation());
-							track.setScript(type, code);
-						}
-					}.show();
-				}
-			});
+					player.playSound(1083);
+					track.setScript(type, newCode);
+				}).show();
+			}));
 		}
+	
+		return WlPageListDialog.create(player, eventManager)
+			.parentDialog(parent)
+			.caption((d) -> stringSet.format(player, "Dialog.TrackScriptEditDialog.Caption", track.getName()))
+			.items(items)
+			.build();
 	}	
 }

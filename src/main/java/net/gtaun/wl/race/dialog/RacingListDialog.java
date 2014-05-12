@@ -20,55 +20,51 @@ package net.gtaun.wl.race.dialog;
 
 import java.util.List;
 
-import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
-import net.gtaun.wl.common.dialog.AbstractPageListDialog;
-import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.common.dialog.WlPageListDialog;
+import net.gtaun.wl.lang.LocalizedStringSet.PlayerStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.Racing;
 import net.gtaun.wl.race.racing.Racing.RacingStatus;
 import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
 
-public class RacingListDialog extends AbstractPageListDialog
+public class RacingListDialog extends WlPageListDialog
 {
 	private final RaceServiceImpl raceService;
 	
 	
-	public RacingListDialog(Player player, Shoebill shoebill, EventManager eventManager, AbstractDialog parentDialog, RaceServiceImpl raceService)
-	{
-		super(player, shoebill, eventManager, parentDialog);
-		this.raceService = raceService;
+	public RacingListDialog(Player player, EventManager eventManager, AbstractDialog parent, RaceServiceImpl service)
+	{		super(player, eventManager);
+		setParentDialog(parent);
+		
+		this.raceService = service;
 	}
 	
 	@Override
 	public void show()
 	{
-		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		PlayerStringSet stringSet = raceService.getLocalizedStringSet().getStringSet(player);
 		
 		RacingManagerImpl racingManager = raceService.getRacingManager();
 		List<Racing> allRacings = racingManager.getRacings();
 		List<Racing> racings = racingManager.getRacings(RacingStatus.WAITING);
 		
-		dialogListItems.clear();
-		for (final Racing racing : racings)
+		items.clear();
+		for (Racing racing : racings)
 		{
 			Track track = racing.getTrack();
-			String item = stringSet.format(player, "Dialog.RacingListDialog.Item", racing.getName(), track.getName(), racing.getSponsor().getName());
-			dialogListItems.add(new DialogListItem(item)
+			String item = stringSet.format("Dialog.RacingListDialog.Item", racing.getName(), track.getName(), racing.getSponsor().getName());
+			addItem(item, (i) ->
 			{
-				@Override
-				public void onItemSelect()
-				{
-					player.playSound(1083, player.getLocation());
-					new RacingDialog(player, shoebill, eventManager, RacingListDialog.this, raceService, racing).show();
-				}
+				player.playSound(1083);
+				new RacingDialog(player, rootEventManager, this, raceService, racing).show();
 			});
 		}
 		
-		this.caption = stringSet.format(player, "Dialog.RacingListDialog.Caption", racings.size(), allRacings.size());
+		setCaption(stringSet.format("Dialog.RacingListDialog.Caption", racings.size(), allRacings.size()));
 		super.show();
 	}
 }

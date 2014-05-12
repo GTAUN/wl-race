@@ -21,258 +21,151 @@ package net.gtaun.wl.race.dialog;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-import org.apache.commons.lang3.StringUtils;
-
-import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
+import net.gtaun.shoebill.common.dialog.ListDialogItemRadio;
 import net.gtaun.shoebill.constant.RaceCheckpointType;
 import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.data.Radius;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
-import net.gtaun.wl.common.dialog.AbstractInputDialog;
-import net.gtaun.wl.common.dialog.AbstractListDialog;
-import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.common.dialog.WlInputDialog;
+import net.gtaun.wl.common.dialog.WlListDialog;
+import net.gtaun.wl.lang.LocalizedStringSet.PlayerStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackCheckpoint;
 
-public class TrackCheckpointEditDialog extends AbstractListDialog
+import org.apache.commons.lang3.StringUtils;
+
+public class TrackCheckpointEditDialog
 {
-	private final RaceServiceImpl raceService;
-	private final TrackCheckpoint checkpoint;
-	private final Track track;
-	
-	
-	public TrackCheckpointEditDialog(final Player player, final Shoebill shoebill, final EventManager eventManager, final AbstractDialog parentDialog, final RaceServiceImpl raceService, final TrackCheckpoint checkpoint)
+	public static WlListDialog create
+	(Player player, EventManager eventManager, AbstractDialog parent, RaceServiceImpl service, TrackCheckpoint checkpoint, boolean isCreateNew)
 	{
-		super(player, shoebill, eventManager, parentDialog);
-		this.raceService = raceService;
-		this.checkpoint = checkpoint;
-		this.track = checkpoint.getTrack();
-		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
+		PlayerStringSet stringSet = service.getLocalizedStringSet().getStringSet(player);
+		Track track = checkpoint.getTrack();
 		
 		if (track.getCheckpoints().contains(checkpoint) == false) player.setLocation(checkpoint.getLocation());
-
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Common.OK"))
-		{
-			@Override
-			public boolean isEnabled()
-			{
-				return parentDialog instanceof TrackEditDialog == false;
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				showParentDialog();
-			}
-		});
 		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackCheckpointEditDialog.Teleport"))
-		{
-			@Override
-			public boolean isEnabled()
+		return WlListDialog.create(player, eventManager)
+			.parentDialog(parent)
+			.caption(() -> stringSet.format("Dialog.TrackCheckpointEditDialog.Caption", track.getName(), checkpoint.getNumber()))
+			
+			.item(() -> stringSet.get("Common.OK"), () -> isCreateNew, (i) -> i.getCurrentDialog().showParentDialog())
+			
+			.item(() -> stringSet.get("Dialog.TrackCheckpointEditDialog.Teleport"), () ->
 			{
 				if (player.getLocation().equals(checkpoint.getLocation())) return false;
 				return track.getCheckpoints().contains(checkpoint);
-			}
-			
-			@Override
-			public void onItemSelect()
+			}, (i) ->
 			{
-				player.playSound(1083, player.getLocation());
 				player.setLocation(checkpoint.getLocation());
-				show();
-			}
-		});
-
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public String toItemString()
+				i.getCurrentDialog().show();
+			})
+			
+			.item(() ->
 			{
 				Radius loc = checkpoint.getLocation();
-				String item = stringSet.format(player, "Dialog.TrackCheckpointEditDialog.Position", loc.getX(), loc.getY(), loc.getZ(), loc.getInteriorId());
+				String item = stringSet.format("Dialog.TrackCheckpointEditDialog.Position", loc.getX(), loc.getY(), loc.getZ(), loc.getInteriorId());
 				return item;
-			}
-			
-			@Override
-			public void onItemSelect()
+			}, (i) ->
 			{
-				player.playSound(1083, player.getLocation());
+				Radius oldLoc = checkpoint.getLocation();
+				String caption = stringSet.get("Dialog.TrackCheckpointEditPositionDialog.Caption");
+				String message = stringSet.format("Dialog.TrackCheckpointEditPositionDialog.Text", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ(), oldLoc.getInteriorId());
 				
-				final Radius oldLoc = checkpoint.getLocation();
-				String caption = stringSet.get(player, "Dialog.TrackCheckpointEditPositionDialog.Caption");
-				String text = stringSet.format(player, "Dialog.TrackCheckpointEditPositionDialog.Text", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ(), oldLoc.getInteriorId());
-				new AbstractInputDialog(player, shoebill, eventManager, TrackCheckpointEditDialog.this, caption, text)
-				{
-					public void onClickOk(String inputText)
+				WlInputDialog.create(player, eventManager)
+					.parentDialog(i.getCurrentDialog())
+					.caption(caption)
+					.message(message)
+					.onClickOk((d, text) ->
 					{
-						player.playSound(1083, player.getLocation());
+						player.playSound(1083);
 						
-						try (Scanner scanner = new Scanner(inputText))
+						try (Scanner scanner = new Scanner(text))
 						{
 							Radius loc = new Radius(scanner.nextFloat(), scanner.nextFloat(), scanner.nextFloat(), scanner.nextInt(), oldLoc.getWorldId(), oldLoc.getRadius());
 							checkpoint.setLocation(loc);
-							showParentDialog();
+							d.showParentDialog();
 						}
 						catch (NoSuchElementException e)
 						{
-							append = stringSet.get(player, "Dialog.TrackCheckpointEditPositionDialog.IllegalFormatAppendMessage");
-							show();
+							((WlInputDialog) d).setAppendMessage(stringSet.get("Dialog.TrackCheckpointEditPositionDialog.IllegalFormatAppendMessage"));
+							i.getCurrentDialog().show();
 						}
-					}
-				}.show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItemRadio(stringSet.get(player, "Dialog.TrackCheckpointEditDialog.Type"))
-		{
-			{
-				addItem(new RadioItem(stringSet.get(player, "Track.Checkpoint.Type.Normal"), Color.RED)
-				{
-					@Override
-					public void onSelected()
-					{
-						checkpoint.setType(RaceCheckpointType.NORMAL);
-					}
-				});
-				
-				addItem(new RadioItem(stringSet.get(player, "Track.Checkpoint.Type.Air"), Color.BLUE)
-				{
-					@Override
-					public void onSelected()
-					{
-						checkpoint.setType(RaceCheckpointType.AIR);
-					}
-				});
-			}
+					})
+					.build().show();
+			})
 			
-			@Override
-			public int getSelected()
-			{
-				return checkpoint.getType() == RaceCheckpointType.NORMAL ? 0 : 1;
-			}
+			.item(ListDialogItemRadio.create()
+				.selectedIndex(() -> checkpoint.getType() == RaceCheckpointType.NORMAL ? 0 : 1)
+				.itemText(() -> stringSet.get("Dialog.TrackCheckpointEditDialog.Type"))
+				.item(stringSet.get("Track.Checkpoint.Type.Normal"), Color.RED, () -> checkpoint.setType(RaceCheckpointType.NORMAL))
+				.item(stringSet.get("Track.Checkpoint.Type.Air"), Color.BLUE, () -> checkpoint.setType(RaceCheckpointType.AIR))
+				.onSelect((i) -> i.getCurrentDialog().show())
+				.build())
 			
-			@Override
-			public void onItemSelect(RadioItem item, int index)
+			.item(() -> stringSet.format("Dialog.TrackCheckpointEditDialog.Size", checkpoint.getSize()), (i) ->
 			{
-				player.playSound(1083, player.getLocation());
-				show();
-			}
-		});
+				String caption = stringSet.get("Dialog.TrackCheckpointEditSizeDialog.Caption");
+				String message = stringSet.format("Dialog.TrackCheckpointEditSizeDialog.Text", checkpoint.getSize());
 
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public String toItemString()
-			{
-				String item = stringSet.format(player, "Dialog.TrackCheckpointEditDialog.Size", checkpoint.getSize());
-				return item;
-			}
-			
-			@Override
-			public void onItemSelect()
-			{
-				player.playSound(1083, player.getLocation());
-				
-				String caption = stringSet.get(player, "Dialog.TrackCheckpointEditSizeDialog.Caption");
-				String text = stringSet.format(player, "Dialog.TrackCheckpointEditSizeDialog.Text", checkpoint.getSize());
-				new AbstractInputDialog(player, shoebill, eventManager, TrackCheckpointEditDialog.this, caption, text)
-				{
-					public void onClickOk(String inputText)
+				WlInputDialog.create(player, eventManager)
+					.parentDialog(i.getCurrentDialog())
+					.caption(caption)
+					.message(message)
+					.onClickOk((d, text) ->
 					{
-						player.playSound(1083, player.getLocation());
+						player.playSound(1083);
 						
-						try (Scanner scanner = new Scanner(inputText))
+						try (Scanner scanner = new Scanner(text))
 						{
 							checkpoint.setSize(scanner.nextFloat());
-							showParentDialog();
+							d.showParentDialog();
 						}
 						catch (NoSuchElementException e)
 						{
-							append = stringSet.get(player, "Dialog.TrackCheckpointEditSizeDialog.IllegalFormatAppendMessage");
-							show();
+							((WlInputDialog) d).setAppendMessage(stringSet.get("Dialog.TrackCheckpointEditSizeDialog.IllegalFormatAppendMessage"));
+							i.getCurrentDialog().show();
 						}
-					}
-				}.show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem()
-		{
-			@Override
-			public String toItemString()
+					})
+					.build().show();
+			})
+			
+			.item(() ->
 			{
 				String code = checkpoint.getScript();
 				int lines = StringUtils.countMatches(code, "\n");
-				return stringSet.format(player, "Dialog.TrackCheckpointEditDialog.Script", lines, code.length());
-			}
-			
-			@Override
-			public void onItemSelect()
+				return stringSet.format("Dialog.TrackCheckpointEditDialog.Script", lines, code.length());
+			}, (i) ->
 			{
-				player.playSound(1083, player.getLocation());
-				
-				String title = stringSet.format(player, "Dialog.TrackCheckpointEditDialog.CheckpointFormat", checkpoint.getNumber()+1);
+				String title = stringSet.format("Dialog.TrackCheckpointEditDialog.CheckpointFormat", checkpoint.getNumber()+1);
 				String code = checkpoint.getScript();
-				new CodeEditorDialog(player, shoebill, eventManager, TrackCheckpointEditDialog.this, raceService, title, code)
+				new CodeEditorDialog(player, eventManager, i.getCurrentDialog(), service, title, code, (newCode) ->
 				{
-					@Override
-					protected void onComplete(String code)
-					{
-						checkpoint.setScript(code);
-						showParentDialog();
-					}
-				}.show();
-			}
-		});
-		
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackCheckpointEditDialog.UpdatePosition"))
-		{
-			@Override
-			public boolean isEnabled()
+					checkpoint.setScript(newCode);
+					i.getCurrentDialog().showParentDialog();
+				}).show();
+			})
+			
+			.item(() -> stringSet.get("Dialog.TrackCheckpointEditDialog.UpdatePosition"), () ->
 			{
 				if (player.getLocation().equals(checkpoint.getLocation())) return false;
 				return track.getCheckpoints().contains(checkpoint);
-			}
-			
-			@Override
-			public void onItemSelect()
+			}, (i) ->
 			{
-				player.playSound(1083, player.getLocation());
 				checkpoint.setLocation(player.getLocation());
-				player.sendMessage(Color.LIGHTBLUE, stringSet.get(player, "Dialog.TrackCheckpointEditDialog.UpdatePositionMessage"));
-				show();
-			}
-		});
-
-		dialogListItems.add(new DialogListItem(stringSet.get(player, "Dialog.TrackCheckpointEditDialog.Delete"))
-		{
-			@Override
-			public boolean isEnabled()
-			{
-				return track.getCheckpoints().contains(checkpoint);
-			}
+				player.sendMessage(Color.LIGHTBLUE, stringSet.get("Dialog.TrackCheckpointEditDialog.UpdatePositionMessage"));
+				i.getCurrentDialog().show();
+			})
 			
-			@Override
-			public void onItemSelect()
+			.item(() -> stringSet.get("Dialog.TrackCheckpointEditDialog.Delete"), () -> track.getCheckpoints().contains(checkpoint), (i) ->
 			{
-				player.playSound(1083, player.getLocation());
 				track.removeChechpoint(checkpoint);
-				showParentDialog();
-			}
-		});
-	}
-	
-	@Override
-	public void show()
-	{
-		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
-		
-		this.caption = stringSet.format(player, "Dialog.TrackCheckpointEditDialog.Caption", track.getName(), checkpoint.getNumber());
-		super.show();
+				i.getCurrentDialog().show();
+			})
+			
+			.onClickOk((d, i) -> player.playSound(1083))
+			.build();
 	}
 }

@@ -18,42 +18,39 @@
 
 package net.gtaun.wl.race.dialog;
 
-import net.gtaun.shoebill.Shoebill;
+import java.util.function.BiConsumer;
+
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
-import net.gtaun.wl.common.dialog.AbstractInputDialog;
-import net.gtaun.wl.lang.LocalizedStringSet;
+import net.gtaun.wl.common.dialog.WlInputDialog;
+import net.gtaun.wl.lang.LocalizedStringSet.PlayerStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.util.TrackUtils;
 
-public abstract class TrackNamingDialog extends AbstractInputDialog
+public abstract class TrackNamingDialog
 {
-	private RaceServiceImpl raceService;
-	
-	
-	public TrackNamingDialog(Player player, Shoebill shoebill, EventManager rootEventManager, String caption, String message, AbstractDialog parentDialog, RaceServiceImpl raceService)
+	public static WlInputDialog create(Player player, EventManager eventManager, AbstractDialog parent, String caption, String message, RaceServiceImpl raceService, BiConsumer<WlInputDialog, String> namingHandler)
 	{
-		super(player, shoebill, rootEventManager, parentDialog, caption, message);
-		this.raceService = raceService;
+		PlayerStringSet stringSet = raceService.getLocalizedStringSet().getStringSet(player);
+		return WlInputDialog.create(player, eventManager)
+			.parentDialog(parent)
+			.caption(caption)
+			.message(message)
+			.onClickOk((d, text) ->
+			{
+				player.playSound(1083);
+				
+				String name = TrackUtils.filterName(text);
+				if (TrackUtils.isVaildName(name) == false)
+				{
+					((WlInputDialog) d).setAppendMessage(stringSet.format("Dialog.TrackNamingDialog.IllegalLengthAppendMessage", TrackUtils.NAME_MIN_LENGTH, TrackUtils.NAME_MAX_LENGTH));
+					d.show();
+					return;
+				}
+				
+				namingHandler.accept((WlInputDialog) d, name);
+			})
+			.build();
 	}
-	
-	public void onClickOk(String inputText)
-	{
-		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
-		
-		player.playSound(1083, player.getLocation());
-		
-		String name = TrackUtils.filterName(inputText);
-		if (TrackUtils.isVaildName(name) == false)
-		{
-			append = stringSet.format(player, "Dialog.TrackNamingDialog.IllegalLengthAppendMessage", TrackUtils.NAME_MIN_LENGTH, TrackUtils.NAME_MAX_LENGTH);
-			show();
-			return;
-		}
-		
-		onNaming(name);
-	}
-	
-	protected abstract void onNaming(String name);
 }

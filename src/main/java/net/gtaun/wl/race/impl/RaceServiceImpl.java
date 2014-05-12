@@ -24,25 +24,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-import net.gtaun.shoebill.SampObjectFactory;
-import net.gtaun.shoebill.Shoebill;
 import net.gtaun.shoebill.common.AbstractShoebillContext;
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
-import net.gtaun.shoebill.common.dialog.AbstractListDialog.DialogListItem;
+import net.gtaun.shoebill.common.dialog.ListDialogItem;
 import net.gtaun.shoebill.common.player.PlayerLifecycleHolder;
 import net.gtaun.shoebill.common.player.PlayerLifecycleHolder.PlayerLifecycleObjectFactory;
-import net.gtaun.shoebill.event.PlayerEventHandler;
 import net.gtaun.shoebill.event.player.PlayerCommandEvent;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.object.Timer;
-import net.gtaun.shoebill.object.Timer.TimerCallback;
 import net.gtaun.shoebill.resource.Plugin;
+import net.gtaun.shoebill.service.Service;
 import net.gtaun.util.event.EventManager;
-import net.gtaun.util.event.EventManager.HandlerPriority;
-import net.gtaun.util.event.ManagedEventManager;
-import net.gtaun.wl.gamemode.event.GameListDialogShowEvent;
-import net.gtaun.wl.gamemode.event.GamemodeDialogEventHandler;
-import net.gtaun.wl.gamemode.event.MainMenuDialogShowEvent;
+import net.gtaun.wl.common.dialog.WlListDialog;
+import net.gtaun.wl.gamemode.event.GameListDialogExtendEvent;
+import net.gtaun.wl.gamemode.event.MainMenuDialogExtendEvent;
 import net.gtaun.wl.lang.LanguageService;
 import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.RacePlugin;
@@ -58,7 +53,7 @@ import net.gtaun.wl.race.racing.RacingManagerImpl;
 import net.gtaun.wl.race.track.Track;
 import net.gtaun.wl.race.track.TrackManagerImpl;
 
-import com.google.code.morphia.Datastore;
+import org.mongodb.morphia.Datastore;
 
 public class RaceServiceImpl extends AbstractShoebillContext implements RaceService
 {
@@ -77,7 +72,6 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	
 	private final RacePlugin plugin;
 	
-	private final ManagedEventManager eventManager;
 	private final PlayerLifecycleHolder playerLifecycleHolder;
 
 	private final LocalizedStringSet localizedStringSet;
@@ -92,19 +86,18 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	private Timer timer;
 	
 	
-	public RaceServiceImpl(Shoebill shoebill, EventManager rootEventManager, RacePlugin plugin, Datastore datastore)
+	public RaceServiceImpl(EventManager rootEventManager, RacePlugin plugin, Datastore datastore)
 	{
-		super(shoebill, rootEventManager);
+		super(rootEventManager);
 		this.plugin = plugin;
 		
-		eventManager = new ManagedEventManager(rootEventManager);
-		playerLifecycleHolder = new PlayerLifecycleHolder(shoebill, eventManager);
+		playerLifecycleHolder = new PlayerLifecycleHolder(eventManagerNode);
 
-		LanguageService languageService = shoebill.getServiceStore().getService(LanguageService.class);
+		LanguageService languageService = Service.get(LanguageService.class);
 		localizedStringSet = languageService.createStringSet(new File(plugin.getDataDir(), "text"));
 		
 		trackManager = new TrackManagerImpl(datastore);
-		racingManager = new RacingManagerImpl(shoebill, eventManager, this, datastore);
+		racingManager = new RacingManagerImpl(eventManagerNode, this, datastore);
 		
 		init();
 	}
@@ -112,32 +105,113 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	protected void onInit()
 	{
 		new SraceImporter(trackManager, new File(plugin.getDataDir(), "import/srace")).importAll();
-		
-		eventManager.registerHandler(PlayerCommandEvent.class, playerEventHandler, HandlerPriority.NORMAL);
 
-		eventManager.registerHandler(MainMenuDialogShowEvent.class, gamemodeDialogEventHandler, HandlerPriority.NORMAL);
-		eventManager.registerHandler(GameListDialogShowEvent.class, gamemodeDialogEventHandler, HandlerPriority.NORMAL);
+		eventManagerNode.registerHandler(PlayerCommandEvent.class, (e) ->
+		{
+			if (isCommandEnabled == false) return;
+			
+			Player player = e.getPlayer();
+			
+			String command = e.getCommand();
+			String[] splits = command.split(" ", 2);
+			
+			String operation = splits[0].toLowerCase();
+			Queue<String> args = new LinkedList<>();
+			
+			if (splits.length > 1)
+			{
+				String[] argsArray = splits[1].split(" ");
+				args.addAll(Arrays.asList(argsArray));
+			}
+			
+			if (operation.equals(commandOperation))
+			{
+				showMainDialog(player, null);
+				e.setProcessed();
+				return;
+			}
+		});
+
+		eventManagerNode.registerHandler(MainMenuDialogExtendEvent.class, (e) ->
+		{
+			Player player = e.getPlayer();
+			WlListDialog dialog = e.getDialog();
+
+			dialog.addItem(ListDialogItem.create()
+				.enabled(() -> racingManager.isPlayerInRacing(player))
+				.itemText(() ->
+				{
+					Racing racing = racingManager.getPlayerRacing(player);
+					return localizedStringSet.format(player, "Gamemode.MainMenuDialog.Racing", racing.getName());	
+				})
+				.onSelect((i) ->
+				{
+					player.playSound(1083);
+					
+					Racing racing = racingManager.getPlayerRacing(player);
+					new RacingDialog(player, eventManagerNode, i.getCurrentDialog(), RaceServiceImpl.this, racing).show();
+				})
+				.build());
+		
+			dialog.addItem(ListDialogItem.create()
+				.enabled(() -> getEditingTrack(player) != null)
+				.itemText(() ->
+				{
+					Track track = getEditingTrack(player);
+					return localizedStringSet.format(player, "Gamemode.MainMenuDialog.Editing", track.getName());
+				})
+				.onSelect((i) ->
+				{
+					player.playSound(1083);
+					
+					Track track = getEditingTrack(player);
+					new TrackEditDialog(player, eventManagerNode, i.getCurrentDialog(), RaceServiceImpl.this, track).show();
+				})
+				.build());
+			
+			dialog.addItem(localizedStringSet.get(player, "Gamemode.MainMenuDialog.Item"), (i) ->
+			{
+				player.playSound(1083);
+				showMainDialog(player, i.getCurrentDialog());
+			});
+		});
+		
+		eventManagerNode.registerHandler(GameListDialogExtendEvent.class, (e) ->
+		{
+			Player player = e.getPlayer();
+			WlListDialog dialog = e.getDialog();
+
+			dialog.addItem(localizedStringSet.get(player, "Gamemode.GameListDialog.NewGame"), (i) ->
+			{
+				player.playSound(1083);
+				TrackListMainDialog.create(player, rootEventManager, i.getCurrentDialog(), RaceServiceImpl.this).show();
+			});
+			
+			List<Racing> racings = racingManager.getRacings(RacingStatus.WAITING);
+			for (Racing racing : racings)
+			{
+				Track track = racing.getTrack();
+				String item = localizedStringSet.format(player, "Gamemode.GameListDialog.Racing", racing.getName(), track.getName(), racing.getSponsor().getName());
+				dialog.addItem(item, (i) ->
+				{
+					player.playSound(1083);
+					new RacingDialog(player, eventManagerNode, i.getCurrentDialog(), RaceServiceImpl.this, racing).show();
+				});
+			}
+		});
 		
 		PlayerLifecycleObjectFactory<PlayerRaceContext> objectFactory = new PlayerLifecycleObjectFactory<PlayerRaceContext>()
 		{
 			@Override
-			public PlayerRaceContext create(Shoebill shoebill, EventManager eventManager, Player player)
+			public PlayerRaceContext create(EventManager eventManager, Player player)
 			{
-				return new PlayerRaceContext(shoebill, eventManager, player, RaceServiceImpl.this);
+				return new PlayerRaceContext(eventManager, player, RaceServiceImpl.this);
 			}
 		};
 		playerLifecycleHolder.registerClass(PlayerRaceContext.class, objectFactory);
 		addDestroyable(playerLifecycleHolder);
 		
-		SampObjectFactory factory = shoebill.getSampObjectFactory();
-		timer = factory.createTimer(1000*60*5, new TimerCallback()
-		{	
-			@Override
-			public void onTick(int factualInterval)
-			{
-				trackManager.save();
-			}
-		});
+		timer = Timer.create(1000*60*5, (factualInterval) -> trackManager.save());
 		addDestroyable(timer);
 		
 		racingManager.init();
@@ -162,7 +236,7 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 	@Override
 	public void showMainDialog(Player player, AbstractDialog parentDialog)
 	{
-		new RaceMainDialog(player, shoebill, rootEventManager, parentDialog, RaceServiceImpl.this).show();
+		RaceMainDialog.create(player, rootEventManager, parentDialog, RaceServiceImpl.this).show();
 	}
 
 	@Override
@@ -204,134 +278,4 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 		PlayerRaceContext context = playerLifecycleHolder.getObject(player, PlayerRaceContext.class);
 		return context.getEditingTrack();
 	}
-	
-	private PlayerEventHandler playerEventHandler = new PlayerEventHandler()
-	{
-		protected void onPlayerCommand(PlayerCommandEvent event)
-		{
-			if (isCommandEnabled == false) return;
-			
-			Player player = event.getPlayer();
-			
-			String command = event.getCommand();
-			String[] splits = command.split(" ", 2);
-			
-			String operation = splits[0].toLowerCase();
-			Queue<String> args = new LinkedList<>();
-			
-			if (splits.length > 1)
-			{
-				String[] argsArray = splits[1].split(" ");
-				args.addAll(Arrays.asList(argsArray));
-			}
-			
-			if (operation.equals(commandOperation))
-			{
-				showMainDialog(player, null);
-				event.setProcessed();
-				return;
-			}
-		}
-	};
-	
-	private GamemodeDialogEventHandler gamemodeDialogEventHandler = new GamemodeDialogEventHandler()
-	{
-		@Override
-		protected void onMainMenuDialogShow(final MainMenuDialogShowEvent event)
-		{
-			final Player player = event.getPlayer();
-
-			event.addItem(new DialogListItem()
-			{
-				@Override
-				public boolean isEnabled()
-				{
-					return racingManager.isPlayerInRacing(player);
-				}
-				
-				@Override
-				public String toItemString()
-				{
-					Racing racing = racingManager.getPlayerRacing(player);
-					return localizedStringSet.format(player, "Gamemode.MainMenuDialog.Racing", racing.getName());
-				}
-				
-				@Override
-				public void onItemSelect()
-				{
-					player.playSound(1083, player.getLocation());
-					
-					Racing racing = racingManager.getPlayerRacing(player);
-					new RacingDialog(player, shoebill, eventManager, getCurrentDialog(), RaceServiceImpl.this, racing).show();
-				}
-			});
-
-			event.addItem(new DialogListItem()
-			{
-				@Override
-				public boolean isEnabled()
-				{
-					return getEditingTrack(player) != null;
-				}
-				
-				@Override
-				public String toItemString()
-				{
-					Track track = getEditingTrack(player);
-					return localizedStringSet.format(player, "Gamemode.MainMenuDialog.Editing", track.getName());
-				}
-				
-				@Override
-				public void onItemSelect()
-				{
-					player.playSound(1083, player.getLocation());
-					
-					Track track = getEditingTrack(player);
-					new TrackEditDialog(player, shoebill, eventManager, getCurrentDialog(), RaceServiceImpl.this, track).show();
-				}
-			});
-
-			event.addItem(new DialogListItem(localizedStringSet.get(player, "Gamemode.MainMenuDialog.Item"))
-			{
-				@Override
-				public void onItemSelect()
-				{
-					player.playSound(1083, player.getLocation());
-					showMainDialog(player, getCurrentDialog());
-				}
-			});
-		}
-
-		@Override
-		protected void onGameListDialogShow(GameListDialogShowEvent event)
-		{
-			final Player player = event.getPlayer();
-
-			event.addItem(new DialogListItem(localizedStringSet.get(player, "Gamemode.GameListDialog.NewGame"))
-			{
-				@Override
-				public void onItemSelect()
-				{
-					player.playSound(1083, player.getLocation());
-					new TrackListMainDialog(player, shoebill, rootEventManager, getCurrentDialog(), RaceServiceImpl.this).show();
-				}
-			});
-			
-			List<Racing> racings = racingManager.getRacings(RacingStatus.WAITING);
-			for (final Racing racing : racings)
-			{
-				Track track = racing.getTrack();
-				String item = localizedStringSet.format(player, "Gamemode.GameListDialog.Racing", racing.getName(), track.getName(), racing.getSponsor().getName());
-				event.addItem(new DialogListItem(item)
-				{
-					@Override
-					public void onItemSelect()
-					{
-						player.playSound(1083, player.getLocation());
-						new RacingDialog(player, shoebill, eventManager, getCurrentDialog(), RaceServiceImpl.this, racing).show();
-					}
-				});
-			}
-		}
-	};
 }

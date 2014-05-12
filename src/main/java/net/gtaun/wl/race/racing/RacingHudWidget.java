@@ -22,9 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import net.gtaun.shoebill.SampObjectFactory;
-import net.gtaun.shoebill.Shoebill;
-import net.gtaun.shoebill.common.player.AbstractPlayerContext;
+import net.gtaun.shoebill.common.player.PlayerLifecycleObject;
 import net.gtaun.shoebill.constant.TextDrawAlign;
 import net.gtaun.shoebill.constant.TextDrawFont;
 import net.gtaun.shoebill.data.Color;
@@ -32,14 +30,13 @@ import net.gtaun.shoebill.exception.CreationFailedException;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.object.PlayerTextdraw;
 import net.gtaun.shoebill.object.Timer;
-import net.gtaun.shoebill.object.Timer.TimerCallback;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.textdraw.TextDrawUtils;
 import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.track.Track;
 
-public class RacingHudWidget extends AbstractPlayerContext
+public class RacingHudWidget extends PlayerLifecycleObject
 {
 	private final RaceServiceImpl raceService;
 	private final RacingPlayerContext racingPlayerContext;
@@ -56,9 +53,9 @@ public class RacingHudWidget extends AbstractPlayerContext
 	private List<PlayerTextdraw> progressBarTextdraws;
 	
 	
-	public RacingHudWidget(Shoebill shoebill, EventManager rootEventManager, RaceServiceImpl raceService, Player player, RacingPlayerContext racingPlayerContext)
+	public RacingHudWidget(EventManager rootEventManager, RaceServiceImpl raceService, Player player, RacingPlayerContext racingPlayerContext)
 	{
-		super(shoebill, rootEventManager, player);
+		super(rootEventManager, player);
 		this.raceService = raceService;
 		this.racingPlayerContext = racingPlayerContext;
 		progressBarTextdraws = new ArrayList<>();
@@ -67,59 +64,42 @@ public class RacingHudWidget extends AbstractPlayerContext
 	@Override
 	protected void onInit()
 	{
-		SampObjectFactory factory = shoebill.getSampObjectFactory();
 		
-		checkpointNumber = TextDrawUtils.createPlayerText(factory, player, 0, 435, "0/0");
+		checkpointNumber = TextDrawUtils.createPlayerText(player, 0, 435, "0/0");
 		checkpointNumber.setAlignment(TextDrawAlign.LEFT);
 		checkpointNumber.setFont(TextDrawFont.FONT2);
 		checkpointNumber.setLetterSize(0.75f, 2.4f);
 		checkpointNumber.setShadowSize(1);
 		checkpointNumber.show();
 
-		rankingNumber = TextDrawUtils.createPlayerText(factory, player, 635, 360, "-");
+		rankingNumber = TextDrawUtils.createPlayerText(player, 635, 360, "-");
 		rankingNumber.setAlignment(TextDrawAlign.RIGHT);
 		rankingNumber.setFont(TextDrawFont.FONT2);
 		rankingNumber.setLetterSize(1.2f, 3.75f);
 		rankingNumber.setShadowSize(2);
 		rankingNumber.show();
 		
-		timeDiffDraw = TextDrawUtils.createPlayerText(factory, player, 320, 440, "-");
+		timeDiffDraw = TextDrawUtils.createPlayerText(player, 320, 440, "-");
 		timeDiffDraw.setAlignment(TextDrawAlign.CENTER);
 		timeDiffDraw.setFont(TextDrawFont.PRICEDOWN);
 		timeDiffDraw.setLetterSize(1.2f, 3.75f);
 		timeDiffDraw.setShadowSize(2);
 		
-		bottomInfo = TextDrawUtils.createPlayerText(factory, player, 0, 460, "-");
+		bottomInfo = TextDrawUtils.createPlayerText(player, 0, 460, "-");
 		bottomInfo.setAlignment(TextDrawAlign.LEFT);
 		bottomInfo.setFont(TextDrawFont.FONT2);
 		bottomInfo.setLetterSize(0.25f, 0.8f);
 		bottomInfo.setShadowSize(1);
 		bottomInfo.show();
 		
-		progressBarBg = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240, 10, 200);
+		progressBarBg = TextDrawUtils.createPlayerTextBG(player, 2, 240, 10, 200);
 		progressBarBg.setBoxColor(new Color(0, 0, 0, 128));
 		progressBarBg.show();
 
-		timer = factory.createTimer(100);
-		timer.setCallback(new TimerCallback()
-		{
-			@Override
-			public void onTick(int factualInterval)
-			{
-				update();
-			}
-		});
+		timer = Timer.create(100, (factualInterval) -> update());
 		timer.start();
 		
-		progressBarTimer = factory.createTimer(500);
-		progressBarTimer.setCallback(new TimerCallback()
-		{
-			@Override
-			public void onTick(int factualInterval)
-			{
-				updateProgressBar();
-			}
-		});
+		progressBarTimer = Timer.create(500, (factualInterval) -> updateProgressBar());
 		progressBarTimer.start();
 
 		addDestroyable(bottomInfo);
@@ -197,7 +177,6 @@ public class RacingHudWidget extends AbstractPlayerContext
 	private void updateProgressBar()
 	{
 		Racing racing = racingPlayerContext.getRacing();
-		SampObjectFactory factory = shoebill.getSampObjectFactory();
 		
 		for (PlayerTextdraw textdraw : progressBarTextdraws) textdraw.destroy();
 		progressBarTextdraws.clear();
@@ -210,7 +189,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 			
 			try
 			{
-				PlayerTextdraw draw = TextDrawUtils.createPlayerTextBG(factory, player, 2, 240+189*(1.0f-percent), 15, 4);
+				PlayerTextdraw draw = TextDrawUtils.createPlayerTextBG(player, 2, 240+189*(1.0f-percent), 15, 4);
 				draw.setBoxColor(new Color(context.getPlayer().getColor().getValue() & 0xFFFFFF00 | 0x7F));
 				draw.show();
 				progressBarTextdraws.add(draw);
@@ -222,7 +201,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 			
 			try
 			{
-				PlayerTextdraw text = TextDrawUtils.createPlayerText(factory, player, 18, 240+189*(1.0f-percent)-4, context.getPlayer().getName());
+				PlayerTextdraw text = TextDrawUtils.createPlayerText(player, 18, 240+189*(1.0f-percent)-4, context.getPlayer().getName());
 				text.setAlignment(TextDrawAlign.LEFT);
 				text.setFont(TextDrawFont.FONT2);
 				text.setLetterSize(0.25f, 0.8f);
@@ -230,7 +209,7 @@ public class RacingHudWidget extends AbstractPlayerContext
 				text.show();
 				progressBarTextdraws.add(text);
 			}
-			catch (Exception e)
+			catch (Throwable e)
 			{
 				System.err.println("PlayerTextdraw CreationFailed.");
 			}
