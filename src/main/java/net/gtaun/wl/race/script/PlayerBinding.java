@@ -66,6 +66,6 @@ public class PlayerBinding implements ScriptBinding
 	
 	public void playSound(int sound)
 	{
-		player.playSound(sound, player.getLocation());
+		player.playSound(sound);
 	}
 }

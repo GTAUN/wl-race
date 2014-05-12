@@ -167,7 +167,7 @@ public class Racing extends AbstractShoebillContext
 			player.setRaceCheckpoint(next);
 			
 			context.onPassCheckpoint(trackCheckpoint);
-			player.playSound(1138, player.getLocation());
+			player.playSound(1138);
 			
 			if (next == null)
 			{
@@ -348,7 +348,7 @@ public class Racing extends AbstractShoebillContext
 				for (Player player : players)
 				{
 					player.sendGameText(2000, 6, "- %1$d -", countdown);
-					player.playSound(1056, player.getLocation());
+					player.playSound(1056);
 				}
 				countdown--;
 			}
@@ -391,7 +391,7 @@ public class Racing extends AbstractShoebillContext
 			
 			playerContexts.put(player, context);
 			
-			player.playSound(1057, player.getLocation());
+			player.playSound(1057);
 			player.setRaceCheckpoint(firstCheckpoint);
 			player.sendGameText(1000, 6, stringSet.get(player, "Racing.GameText.GoMessage"));
 		}
