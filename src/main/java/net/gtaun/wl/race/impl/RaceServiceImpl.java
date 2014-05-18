@@ -102,6 +102,7 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 		init();
 	}
 	
+	@Override
 	protected void onInit()
 	{
 		new SraceImporter(trackManager, new File(plugin.getDataDir(), "import/srace")).importAll();
@@ -217,6 +218,7 @@ public class RaceServiceImpl extends AbstractShoebillContext implements RaceServ
 		racingManager.init();
 	}
 
+	@Override
 	protected void onDestroy()
 	{
 		trackManager.save();

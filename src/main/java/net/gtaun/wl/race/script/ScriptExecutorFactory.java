@@ -65,6 +65,7 @@ public final class ScriptExecutorFactory
 			instructionCount = 0;
 		}
 		
+		@Override
 		protected void observeInstructionCount(int count)
 		{
 			instructionCount += count;
@@ -82,12 +83,14 @@ public final class ScriptExecutorFactory
 			TimeLimitContext context = new TimeLimitContext();
 			context.setWrapFactory(new WrapFactory()
 			{
+				@Override
 				public Scriptable wrapAsJavaObject(Context cx, Scriptable scope, Object javaObject, java.lang.Class<?> staticType)
 				{
 					return new NativeJavaObject(scope, javaObject, getClass())
 					{
 						private static final long serialVersionUID = 1L;
 
+						@Override
 						public Object get(String name, Scriptable start)
 						{
 							if (name.equals("getClass")) return NOT_FOUND;

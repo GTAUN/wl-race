@@ -1,11 +1,10 @@
 package net.gtaun.wl.race.dialog;
 
 import net.gtaun.shoebill.common.dialog.AbstractDialog;
-import net.gtaun.shoebill.common.dialog.ListDialogItem;
+import net.gtaun.shoebill.common.dialog.ListDialog.AbstractListDialogBuilder;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
 import net.gtaun.wl.common.dialog.WlListDialog;
-import net.gtaun.wl.lang.LocalizedStringSet;
 import net.gtaun.wl.lang.LocalizedStringSet.PlayerStringSet;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
 import net.gtaun.wl.race.racing.RacingSetting;
@@ -28,7 +27,9 @@ public class RacingDepartureSettingDialog
 				{
 					String item = stringSet.format("Time.Format.S", interval);
 					if (interval >= 60 && interval % 60 == 0) item = stringSet.format("Time.Format.M", interval/60);
-					b.item(item, (i) -> setting.setDepartureInterval(interval));
+
+					// XXX: Buggy Eclipse JDT Compiler
+					((AbstractListDialogBuilder<?, ?>) b).item(item, (i) -> setting.setDepartureInterval(interval));
 				}
 			})
 			.onClickOk((d, i) ->
