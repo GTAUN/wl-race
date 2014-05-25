@@ -22,63 +22,29 @@ import java.util.List;
 
 import net.gtaun.shoebill.constant.RaceCheckpointType;
 import net.gtaun.shoebill.data.Location;
-import net.gtaun.shoebill.data.RaceCheckpoint;
 import net.gtaun.shoebill.data.Radius;
+import net.gtaun.shoebill.object.RaceCheckpoint;
 
 import org.mongodb.morphia.annotations.Embedded;
 import org.mongodb.morphia.annotations.Transient;
 
 @Embedded
-public class TrackCheckpoint
+public class TrackCheckpoint implements RaceCheckpoint
 {
-	public class TrackRaceCheckpoint extends RaceCheckpoint
-	{
-		private TrackRaceCheckpoint()
-		{
-			
-		}
-		
-		public TrackCheckpoint getTrackCheckpoint()
-		{
-			return TrackCheckpoint.this;
-		}
-		
-		@Override
-		public Radius getLocation()
-		{
-			return location;
-		}
-		
-		@Override
-		public RaceCheckpointType getType()
-		{
-			return type;
-		}
-		
-		@Override
-		public RaceCheckpoint getNext()
-		{
-			TrackCheckpoint checkpoint = TrackCheckpoint.this.getNext();
-			return checkpoint == null ? null : checkpoint.getRaceCheckpoint();
-		}
-	}
-	
-	
 	private static final float DEFAULT_SIZE = 15.0f;
-	
-	
+
+
 	@Transient private Track track;
-	@Transient private TrackRaceCheckpoint raceCheckpoint;
-	
+
 	private Radius location;
 	private RaceCheckpointType type;
 
 	private String script;
-	
+
 
 	private TrackCheckpoint()
 	{
-		raceCheckpoint = new TrackRaceCheckpoint();
+
 	}
 
 	TrackCheckpoint(Track track, Location location)
@@ -89,67 +55,64 @@ public class TrackCheckpoint
 		type = RaceCheckpointType.NORMAL;
 		this.script = "";
 	}
-	
-	public Track getTrack()
-	{
-		return track;
-	}
-	
-	void setTrack(Track track)
-	{
-		this.track = track;
-	}
-	
+
+	@Override
 	public Radius getLocation()
 	{
 		return location.clone();
 	}
-	
+
+	@Override
+	public RaceCheckpointType getType()
+	{
+		return type;
+	}
+
+	public Track getTrack()
+	{
+		return track;
+	}
+
+	void setTrack(Track track)
+	{
+		this.track = track;
+	}
+
 	public void setLocation(Location location)
 	{
 		this.location = new Radius(location, DEFAULT_SIZE);
 	}
-	
+
 	public void setLocation(Radius location)
 	{
 		this.location = new Radius(location);
 	}
 
-	public float getSize()
-	{
-		return location.getRadius();
-	}
-	
 	public void setSize(float size)
 	{
 		location = new Radius(location, size);
 	}
-	
-	public RaceCheckpointType getType()
-	{
-		return type;
-	}
-	
+
 	public void setType(RaceCheckpointType type)
 	{
 		this.type = type;
 	}
-	
+
 	public String getScript()
 	{
 		return script;
 	}
-	
+
 	public void setScript(String script)
 	{
 		this.script = script;
 	}
-	
+
 	public int getNumber()
 	{
 		return track.getCheckpoints().indexOf(this);
 	}
-	
+
 	public TrackCheckpoint getPrev()
 	{
 		int index = getNumber() - 1;
@@ -157,7 +120,8 @@ public class TrackCheckpoint
 		List<TrackCheckpoint> checkpoints = track.getCheckpoints();
 		return checkpoints.get(index);
 	}
-	
+
+	@Override
 	public TrackCheckpoint getNext()
 	{
 		int index = getNumber() + 1;
@@ -165,26 +129,21 @@ public class TrackCheckpoint
 		if (index >= checkpoints.size()) return null;
 		return checkpoints.get(index);
 	}
-	
-	public TrackRaceCheckpoint getRaceCheckpoint()
-	{
-		return raceCheckpoint;
-	}
-	
+
 	public float getNextDistance()
 	{
 		TrackCheckpoint next = getNext();
 		if (next == null) return 0.0f;
 		return location.distance(next.getLocation());
 	}
-	
+
 	public float getTotalDistance()
 	{
 		TrackCheckpoint next = getNext();
 		if (next == null) return 0.0f;
 		return location.distance(next.getLocation()) + next.getTotalDistance();
 	}
-	
+
 	public float getDistance(TrackCheckpoint checkpoint)
 	{
 		float distance = 0.0f;
