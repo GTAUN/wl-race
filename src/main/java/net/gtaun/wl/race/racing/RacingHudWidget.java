@@ -39,7 +39,7 @@ import net.gtaun.wl.race.track.Track;
 public class RacingHudWidget extends PlayerLifecycleObject
 {
 	private final RaceServiceImpl raceService;
-	private final RacingPlayerContext racingPlayerContext;
+	private final RacingPlayerContent racingPlayerContext;
 
 	private Timer timer;
 	private Timer progressBarTimer;
@@ -51,9 +51,9 @@ public class RacingHudWidget extends PlayerLifecycleObject
 
 	private PlayerTextdraw progressBarBg;
 	private List<PlayerTextdraw> progressBarTextdraws;
-	
-	
-	public RacingHudWidget(EventManager rootEventManager, RaceServiceImpl raceService, Player player, RacingPlayerContext racingPlayerContext)
+
+
+	public RacingHudWidget(EventManager rootEventManager, RaceServiceImpl raceService, Player player, RacingPlayerContent racingPlayerContext)
 	{
 		super(rootEventManager, player);
 		this.raceService = raceService;
@@ -64,7 +64,7 @@ public class RacingHudWidget extends PlayerLifecycleObject
 	@Override
 	protected void onInit()
 	{
-		
+
 		checkpointNumber = TextDrawUtils.createPlayerText(player, 0, 435, "0/0");
 		checkpointNumber.setAlignment(TextDrawAlign.LEFT);
 		checkpointNumber.setFont(TextDrawFont.FONT2);
@@ -78,27 +78,27 @@ public class RacingHudWidget extends PlayerLifecycleObject
 		rankingNumber.setLetterSize(1.2f, 3.75f);
 		rankingNumber.setShadowSize(2);
 		rankingNumber.show();
-		
+
 		timeDiffDraw = TextDrawUtils.createPlayerText(player, 320, 440, "-");
 		timeDiffDraw.setAlignment(TextDrawAlign.CENTER);
 		timeDiffDraw.setFont(TextDrawFont.PRICEDOWN);
 		timeDiffDraw.setLetterSize(1.2f, 3.75f);
 		timeDiffDraw.setShadowSize(2);
-		
+
 		bottomInfo = TextDrawUtils.createPlayerText(player, 0, 460, "-");
 		bottomInfo.setAlignment(TextDrawAlign.LEFT);
 		bottomInfo.setFont(TextDrawFont.FONT2);
 		bottomInfo.setLetterSize(0.25f, 0.8f);
 		bottomInfo.setShadowSize(1);
 		bottomInfo.show();
-		
+
 		progressBarBg = TextDrawUtils.createPlayerTextBG(player, 2, 240, 10, 200);
 		progressBarBg.setBoxColor(new Color(0, 0, 0, 128));
 		progressBarBg.show();
 
 		timer = Timer.create(100, (factualInterval) -> update());
 		timer.start();
-		
+
 		progressBarTimer = Timer.create(500, (factualInterval) -> updateProgressBar());
 		progressBarTimer.start();
 
@@ -109,7 +109,7 @@ public class RacingHudWidget extends PlayerLifecycleObject
 		addDestroyable(progressBarBg);
 		addDestroyable(timer);
 		addDestroyable(progressBarTimer);
-		
+
 		update();
 	}
 
@@ -119,25 +119,25 @@ public class RacingHudWidget extends PlayerLifecycleObject
 		for (PlayerTextdraw textdraw : progressBarTextdraws) textdraw.destroy();
 		progressBarTextdraws.clear();
 	}
-	
+
 	private void update()
 	{
 		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
-		
+
 		int passedCheckpoints = racingPlayerContext.getPassedCheckpoints();
 		int checkpoints = racingPlayerContext.getTrackCheckpoints();
-		
+
 		final String checkpointNumberformat = "%1$d/%2$d";
 		checkpointNumber.setText(String.format(checkpointNumberformat, passedCheckpoints + 1, checkpoints - 1));
 
 
 		Racing racing = racingPlayerContext.getRacing();
 		Track track = racing.getTrack();
-		
+
 		String rankingStr = racingPlayerContext.getRankingString();
 		rankingNumber.setText(rankingStr);
-		
-		
+
+
 		float timeDiff = racingPlayerContext.getTimeDiff();
 		if (timeDiff != 0.0f)
 		{
@@ -145,52 +145,51 @@ public class RacingHudWidget extends PlayerLifecycleObject
 			long milliseconds = diff % 1000;
 			long seconds = (diff / 1000) % 60;
 			long minutes = diff / 1000 / 60;
-			
+
 			String format = "+%1$02d:%2$02d.%3$03d";
 			if (minutes == 0) format = "+%2$02d.%3$03d";
 			String formatedTime = String.format(format, minutes, seconds, milliseconds);
 			timeDiffDraw.setText(formatedTime);
-			
+
 			if (!timeDiffDraw.isShowed()) timeDiffDraw.show();
 		}
 		else
 		{
 			if (timeDiffDraw.isShowed()) timeDiffDraw.hide();
 		}
-		
-		
+
+
 		float completionPercent = racingPlayerContext.getCompletionPercent();
-		
+
 		Date now = new Date();
 		Date startTime = racingPlayerContext.getStartTime();
 		if (startTime == null) startTime = now;
 		long time = now.getTime() - startTime.getTime();
-		
+
 		long milliseconds = time % 1000;
 		long seconds = (time / 1000) % 60;
 		long minutes = time / 1000 / 60;
 		String formatedTime = String.format("%1$02d:%2$02d.%3$03d", minutes, seconds, milliseconds);
-		
+
 		bottomInfo.setText(stringSet.format(player, "Textdraw.RacingHudWidget.BottomInfoFormat", racing.getName(), track.getName(), completionPercent * 100.0f, formatedTime));
 	}
-	
+
 	private void updateProgressBar()
 	{
 		Racing racing = racingPlayerContext.getRacing();
-		
+
 		for (PlayerTextdraw textdraw : progressBarTextdraws) textdraw.destroy();
 		progressBarTextdraws.clear();
-		
-		List<RacingPlayerContext> rankedList = racing.getRacingRankedList();
-		for (int i=0; i<rankedList.size(); i++)
+
+		List<RacingPlayerContent> rankedPlayers = racing.getSortedPlayerContents();
+		for (RacingPlayerContent content : rankedPlayers)
 		{
-			RacingPlayerContext context = rankedList.get(i);
-			float percent = context.getCompletionPercent();
-			
+			float percent = content.getCompletionPercent();
+
 			try
 			{
 				PlayerTextdraw draw = TextDrawUtils.createPlayerTextBG(player, 2, 240+189*(1.0f-percent), 15, 4);
-				draw.setBoxColor(new Color(context.getPlayer().getColor().getValue() & 0xFFFFFF00 | 0x7F));
+				draw.setBoxColor(new Color(content.getPlayer().getColor().getValue() & 0xFFFFFF00 | 0x7F));
 				draw.show();
 				progressBarTextdraws.add(draw);
 			}
@@ -198,10 +197,10 @@ public class RacingHudWidget extends PlayerLifecycleObject
 			{
 				System.err.println("PlayerTextdraw CreationFailed.");
 			}
-			
+
 			try
 			{
-				PlayerTextdraw text = TextDrawUtils.createPlayerText(player, 18, 240+189*(1.0f-percent)-4, context.getPlayer().getName());
+				PlayerTextdraw text = TextDrawUtils.createPlayerText(player, 18, 240+189*(1.0f-percent)-4, content.getPlayer().getName());
 				text.setAlignment(TextDrawAlign.LEFT);
 				text.setFont(TextDrawFont.FONT2);
 				text.setLetterSize(0.25f, 0.8f);

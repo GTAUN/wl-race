@@ -23,7 +23,7 @@ import java.util.Date;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.wl.race.script.ScriptExecutor;
 
-public interface RacingPlayerContext
+public interface RacingPlayerContent
 {
 	Player getPlayer();
 	Racing getRacing();

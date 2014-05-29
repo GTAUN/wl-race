@@ -49,7 +49,7 @@ import net.gtaun.wl.vehicle.PlayerOverrideLimit;
 import net.gtaun.wl.vehicle.VehicleManagerService;
 import net.gtaun.wl.vehicle.stat.OncePlayerVehicleStatistic;
 
-public class RacingPlayerContextImpl extends PlayerLifecycleObject implements RacingPlayerContext
+public class RacingPlayerContentImpl extends PlayerLifecycleObject implements RacingPlayerContent
 {
 	private final RaceServiceImpl raceService;
 	private final Racing racing;
@@ -70,7 +70,7 @@ public class RacingPlayerContextImpl extends PlayerLifecycleObject implements Ra
 	private Vehicle tempVehicle;
 	
 	
-	public RacingPlayerContextImpl(EventManager rootEventManager, Player player, RaceServiceImpl raceService, final Racing racing, TrackCheckpoint startCheckpoint)
+	public RacingPlayerContentImpl(EventManager rootEventManager, Player player, RaceServiceImpl raceService, final Racing racing, TrackCheckpoint startCheckpoint)
 	{
 		super(rootEventManager, player);
 		this.raceService = raceService;
@@ -255,7 +255,7 @@ public class RacingPlayerContextImpl extends PlayerLifecycleObject implements Ra
 	@Override
 	public int getRankingNumber()
 	{
-		return racing.getRacingRankingNumber(this);
+		return racing.getRacingSortedNumber(this);
 	}
 	
 	@Override
@@ -279,7 +279,7 @@ public class RacingPlayerContextImpl extends PlayerLifecycleObject implements Ra
 	@Override
 	public float getTimeDiff()
 	{
-		List<RacingPlayerContext> rankedList = racing.getRacingRankedList();
+		List<RacingPlayerContent> rankedList = racing.getSortedPlayerContents();
 		int index = rankedList.indexOf(this);
 		if (index <= 0) return 0.0f;
 		
@@ -292,7 +292,7 @@ public class RacingPlayerContextImpl extends PlayerLifecycleObject implements Ra
 			speed = (float) (stat.getDriveOdometer() / stat.getDriveSecondCount());
 		}
 		
-		RacingPlayerContext prev = rankedList.get(index-1);
+		RacingPlayerContent prev = rankedList.get(index-1);
 		float distanceDiff = getRemainingDistance() - prev.getRemainingDistance();
 		
 		float diff = distanceDiff / speed;

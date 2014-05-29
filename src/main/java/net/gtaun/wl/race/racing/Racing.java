@@ -19,8 +19,6 @@
 package net.gtaun.wl.race.racing;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -80,12 +78,12 @@ public class Racing extends AbstractShoebillContext
 	private List<Player> players;
 	private List<Player> finishedPlayers;
 
-	private Map<Player, RacingPlayerContextImpl> playerContexts;
+	private Map<Player, RacingPlayerContentImpl> playerContents;
 
 	private String name;
 	private RacingStatus status;
 
-	private List<RacingPlayerContext> racingRankedList;
+	private List<RacingPlayerContent> sortedPlayerContents;
 
 	private RacingSetting setting;
 
@@ -109,7 +107,7 @@ public class Racing extends AbstractShoebillContext
 		players = new ArrayList<>();
 		finishedPlayers = new ArrayList<>();
 
-		playerContexts = new HashMap<>();
+		playerContents = new HashMap<>();
 
 		status = RacingStatus.WAITING;
 	}
@@ -120,14 +118,14 @@ public class Racing extends AbstractShoebillContext
 		eventManagerNode.registerHandler(RaceCheckpointEnterEvent.class, (e) ->
 		{
 			Player player = e.getPlayer();
-			if (!playerContexts.containsKey(player)) return;
+			if (!playerContents.containsKey(player)) return;
 			if (status == RacingStatus.WAITING) return;
 			if (player.getState() != PlayerState.DRIVER) return;
 
 			final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
 
 			TrackCheckpoint checkpoint = (TrackCheckpoint) e.getCheckpoint();
-			RacingPlayerContextImpl context = playerContexts.get(player);
+			RacingPlayerContentImpl context = playerContents.get(player);
 			ScriptExecutor executor = context.getScriptExecutor();
 
 			String script = checkpoint.getScript();
@@ -187,14 +185,8 @@ public class Racing extends AbstractShoebillContext
 
 		});
 
-		timer = Timer.create(1000, (factualInterval) ->
-		{
-			updateRacingRankedList();
-		});
 		timer.start();
 		addDestroyable(timer);
-
-		updateRacingRankedList();
 	}
 
 	@Override
@@ -208,8 +200,8 @@ public class Racing extends AbstractShoebillContext
 		}
 		players.clear();
 
-		for (RacingPlayerContextImpl ctx : playerContexts.values()) ctx.destroy();
-		playerContexts.clear();
+		for (RacingPlayerContentImpl ctx : playerContents.values()) ctx.destroy();
+		playerContents.clear();
 
 		manager.destroyRacing(this);
 	}
@@ -285,11 +277,11 @@ public class Racing extends AbstractShoebillContext
 		manager.leaveRacing(this, player);
 		player.disableRaceCheckpoint();
 
-		RacingPlayerContextImpl context = playerContexts.get(player);
+		RacingPlayerContentImpl context = playerContents.get(player);
 		if (context != null)
 		{
 			context.destroy();
-			playerContexts.remove(player);
+			playerContents.remove(player);
 		}
 		players.remove(player);
 
@@ -325,9 +317,9 @@ public class Racing extends AbstractShoebillContext
 	{
 		final LocalizedStringSet stringSet = raceService.getLocalizedStringSet();
 
-		for (Player otherPlayer : getPlayers())
+		for (Player player : getPlayers())
 		{
-			otherPlayer.sendMessage(Color.LIGHTBLUE, stringSet.format(otherPlayer, "Racing.Message.KickPlayerMessage", getName()));
+			player.sendMessage(Color.LIGHTBLUE, stringSet.format(player, "Racing.Message.LeaveMessage", getName()));
 		}
 
 		end();
@@ -382,18 +374,16 @@ public class Racing extends AbstractShoebillContext
 		TrackCheckpoint first = track.getCheckpoints().get(0);
 		for (Player player : players)
 		{
-			RacingPlayerContextImpl context = new RacingPlayerContextImpl(rootEventManager, player, raceService, this, first);
+			RacingPlayerContentImpl context = new RacingPlayerContentImpl(rootEventManager, player, raceService, this, first);
 			context.init();
 			context.begin();
 
-			playerContexts.put(player, context);
+			playerContents.put(player, context);
 
 			player.playSound(1057);
 			player.setRaceCheckpoint(first);
 			player.sendGameText(1000, 6, stringSet.get(player, "Racing.GameText.GoMessage"));
 		}
-
-		updateRacingRankedList();
 	}
 
 	public void end()
@@ -410,14 +400,14 @@ public class Racing extends AbstractShoebillContext
 		player.setLocation(location);
 	}
 
-	public List<RacingPlayerContext> getRacingRankedList()
+	public List<RacingPlayerContent> getSortedPlayerContents()
 	{
-		return racingRankedList;
+		return sortedPlayerContents;
 	}
 
-	public int getRacingRankingNumber(RacingPlayerContext context)
+	public int getRacingSortedNumber(RacingPlayerContent context)
 	{
-		int index = racingRankedList.indexOf(context);
+		int index = sortedPlayerContents.indexOf(context);
 		if (index == -1) return finishedPlayers.indexOf(context.getPlayer()) + 1;
 		return index + 1 + finishedPlayers.size();
 	}
@@ -425,21 +415,5 @@ public class Racing extends AbstractShoebillContext
 	public int getPlayerNumber()
 	{
 		return players.size() + finishedPlayers.size();
-	}
-
-	private void updateRacingRankedList()
-	{
-		List<RacingPlayerContext> contexts = new ArrayList<>(playerContexts.size());
-		contexts.addAll(playerContexts.values());
-		Collections.sort(contexts, new Comparator<RacingPlayerContext>()
-		{
-			@Override
-			public int compare(RacingPlayerContext o1, RacingPlayerContext o2)
-			{
-				return (int)((o2.getCompletionPercent() - o1.getCompletionPercent())*1000.0f);
-			}
-		});
-
-		racingRankedList = Collections.unmodifiableList(contexts);
 	}
 }
