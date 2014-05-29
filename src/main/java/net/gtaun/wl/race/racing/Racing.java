@@ -19,6 +19,7 @@
 package net.gtaun.wl.race.racing;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -185,8 +186,14 @@ public class Racing extends AbstractShoebillContext
 
 		});
 
+		timer = Timer.create(1000, (factualInterval) ->
+		{
+			updateSortedPlayerContents();
+		});
 		timer.start();
 		addDestroyable(timer);
+
+		updateSortedPlayerContents();
 	}
 
 	@Override
@@ -384,6 +391,8 @@ public class Racing extends AbstractShoebillContext
 			player.setRaceCheckpoint(first);
 			player.sendGameText(1000, 6, stringSet.get(player, "Racing.GameText.GoMessage"));
 		}
+
+		updateSortedPlayerContents();
 	}
 
 	public void end()
@@ -405,7 +414,7 @@ public class Racing extends AbstractShoebillContext
 		return sortedPlayerContents;
 	}
 
-	public int getRacingSortedNumber(RacingPlayerContent context)
+	public int getRacingRankedNumber(RacingPlayerContent context)
 	{
 		int index = sortedPlayerContents.indexOf(context);
 		if (index == -1) return finishedPlayers.indexOf(context.getPlayer()) + 1;
@@ -415,5 +424,14 @@ public class Racing extends AbstractShoebillContext
 	public int getPlayerNumber()
 	{
 		return players.size() + finishedPlayers.size();
+	}
+
+	private void updateSortedPlayerContents()
+	{
+		List<RacingPlayerContent> contexts = new ArrayList<>(playerContents.size());
+		contexts.addAll(playerContents.values());
+		Collections.sort(contexts, (o1, o2) -> (int)((o2.getCompletionPercent() - o1.getCompletionPercent())*1000.0f));
+
+		sortedPlayerContents = Collections.unmodifiableList(contexts);
 	}
 }

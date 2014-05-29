@@ -53,23 +53,23 @@ public class RacingPlayerContentImpl extends PlayerLifecycleObject implements Ra
 {
 	private final RaceServiceImpl raceService;
 	private final Racing racing;
-	
+
 	private ScriptExecutor scriptExecutor;
 	private TrackCheckpoint currentCheckpoint;
-	
+
 	private RacingHudWidget hudWidget;
 	private Map<TrackCheckpoint, MapIcon> mapIcons;
-	
+
 	private Date startTime;
 	private PlayerOverrideLimit vehicleManagerLimit;
-	
+
 	private int lastVehicleModel;
 	private AngledLocation lastPassLocation;
 	private Velocity lastPassVelocity;
-	
+
 	private Vehicle tempVehicle;
-	
-	
+
+
 	public RacingPlayerContentImpl(EventManager rootEventManager, Player player, RaceServiceImpl raceService, final Racing racing, TrackCheckpoint startCheckpoint)
 	{
 		super(rootEventManager, player);
@@ -77,7 +77,7 @@ public class RacingPlayerContentImpl extends PlayerLifecycleObject implements Ra
 		this.racing = racing;
 		this.currentCheckpoint = startCheckpoint;
 		this.mapIcons = new HashMap<>();
-		
+
 		vehicleManagerLimit = new PlayerOverrideLimit()
 		{
 			@Override
@@ -85,19 +85,19 @@ public class RacingPlayerContentImpl extends PlayerLifecycleObject implements Ra
 			{
 				return previous && racing.getSetting().getLimit().isAllowInfiniteNitrous();
 			}
-			
+
 			@Override
 			public boolean isAutoRepair(boolean previous)
 			{
 				return previous && racing.getSetting().getLimit().isAllowAutoRepair();
 			}
-			
+
 			@Override
 			public boolean isAutoFlip(boolean previous)
 			{
 				return previous && racing.getSetting().getLimit().isAllowAutoFlip();
 			}
-			
+
 			@Override
 			public boolean isAutoCarryPassengers(boolean previous)
 			{
@@ -105,29 +105,29 @@ public class RacingPlayerContentImpl extends PlayerLifecycleObject implements Ra
 			}
 		};
 	}
-	
+
 	@Override
 	protected void onInit()
 	{
 		scriptExecutor = ScriptExecutorFactory.createCheckpointScriptExecutor(player);
-		
+
 		hudWidget = new RacingHudWidget(rootEventManager, raceService, player, this);
 		hudWidget.init();
 		addDestroyable(hudWidget);
-		
+
 		if (player.isInAnyVehicle()) lastVehicleModel = player.getVehicle().getModelId();
-		
+
 		eventManagerNode.registerHandler(PlayerUpdateEvent.class, HandlerPriority.NORMAL, Attentions.create().object(player), (e) ->
 		{
 			if (player.getUpdateCount() % 40 != 0) return;
 			updateMapIcons();
 		});
-		
+
 		eventManagerNode.registerHandler(PlayerDeathEvent.class, HandlerPriority.NORMAL, Attentions.create().object(player), (e) ->
 		{
 			if (racing.getSetting().getDeathRule() == DeathRule.KNOCKOUT) racing.leave(player);
 		});
-		
+
 		eventManagerNode.registerHandler(PlayerSpawnEvent.class, HandlerPriority.BOTTOM, Attentions.create().object(player), (e) ->
 		{
 			if (lastVehicleModel != 0)
@@ -147,29 +147,29 @@ public class RacingPlayerContentImpl extends PlayerLifecycleObject implements Ra
 			if (player.isInAnyVehicle()) lastVehicleModel = player.getVehicle().getModelId();
 		});
 	}
-	
+
 	@Override
 	protected void onDestroy()
 	{
 		scriptExecutor = null;
-		
+
 		VehicleManagerService service = Service.get(VehicleManagerService.class);
 		if (service != null)
 		{
 			service.endRacingStatistic(player);
 			service.removeOverrideLimit(player, vehicleManagerLimit);
 		}
-		
+
 		if (tempVehicle != null) tempVehicle.destroy();
-		
+
 		for (MapIcon icon : mapIcons.values()) icon.destroy();
 		mapIcons.clear();
 	}
-	
+
 	void onPassCheckpoint(TrackCheckpoint checkpoint)
 	{
 		currentCheckpoint = checkpoint;
-		
+
 		Vehicle vehicle = player.getVehicle();
 		if (vehicle != null)
 		{
@@ -181,10 +181,10 @@ public class RacingPlayerContentImpl extends PlayerLifecycleObject implements Ra
 			lastPassLocation = player.getLocation();
 			lastPassVelocity = player.getVelocity();
 		}
-		
+
 		updateMapIcons();
 	}
-	
+
 	public void begin()
 	{
 		startTime = new Date();
@@ -195,7 +195,7 @@ public class RacingPlayerContentImpl extends PlayerLifecycleObject implements Ra
 			service.addOverrideLimit(player, vehicleManagerLimit);
 		}
 	}
-	
+
 	@Override
 	public Date getStartTime()
 	{
@@ -213,57 +213,57 @@ public class RacingPlayerContentImpl extends PlayerLifecycleObject implements Ra
 	{
 		return scriptExecutor;
 	}
-	
+
 	@Override
 	public boolean isCompleted()
 	{
 		return false;
 	}
-	
+
 	@Override
 	public int getPassedCheckpoints()
 	{
 		return currentCheckpoint.getNumber();
 	}
-	
+
 	@Override
 	public int getTrackCheckpoints()
 	{
 		return racing.getTrack().getCheckpoints().size();
 	}
-	
+
 	@Override
 	public float getRemainingDistance()
 	{
 		TrackCheckpoint next = currentCheckpoint.getNext();
 		float distance = 0.0f, cpDistance = currentCheckpoint.getNextDistance();
-		
+
 		float nextTotalDistance = (next != null) ? next.getTotalDistance() : 0.0f;
 		if (next != null) distance = next.getLocation().distance(player.getLocation());
 		if (distance > cpDistance) distance = cpDistance;
-		
+
 		return nextTotalDistance + distance;
 	}
-	
+
 	@Override
 	public float getCompletionPercent()
 	{
 		TrackCheckpoint first = racing.getTrack().getCheckpoints().get(0);
 		return 1.0f - (getRemainingDistance() / first.getTotalDistance());
 	}
-	
+
 	@Override
 	public int getRankingNumber()
 	{
-		return racing.getRacingSortedNumber(this);
+		return racing.getRacingRankedNumber(this);
 	}
-	
+
 	@Override
 	public String getRankingString()
 	{
 		int num = getRankingNumber();
 		String str;
-		
+
 		switch (num)
 		{
 		case 0:		str = "N/A";		break;
@@ -272,17 +272,17 @@ public class RacingPlayerContentImpl extends PlayerLifecycleObject implements Ra
 		case 3:		str = "3rd";		break;
 		default:	str = num + "th";	break;
 		}
-		
+
 		return str;
 	}
-	
+
 	@Override
 	public float getTimeDiff()
 	{
 		List<RacingPlayerContent> rankedList = racing.getSortedPlayerContents();
 		int index = rankedList.indexOf(this);
 		if (index <= 0) return 0.0f;
-		
+
 		float speed;
 		VehicleManagerService service = Service.get(VehicleManagerService.class);
 		if (service == null) speed = player.getVelocity().speed3d() * 50;
@@ -291,14 +291,14 @@ public class RacingPlayerContentImpl extends PlayerLifecycleObject implements Ra
 			OncePlayerVehicleStatistic stat = service.getPlayerCurrentOnceStatistic(player);
 			speed = (float) (stat.getDriveOdometer() / stat.getDriveSecondCount());
 		}
-		
+
 		RacingPlayerContent prev = rankedList.get(index-1);
 		float distanceDiff = getRemainingDistance() - prev.getRemainingDistance();
-		
+
 		float diff = distanceDiff / speed;
 		return diff >= 0.0f ? diff : 0.0f;
 	}
-	
+
 	private void updateMapIcons()
 	{
 		Map<TrackCheckpoint, MapIcon> lastMapIcons = mapIcons;
@@ -310,7 +310,7 @@ public class RacingPlayerContentImpl extends PlayerLifecycleObject implements Ra
 		for (TrackCheckpoint checkpoint = next2; checkpoint != null && count < 2; checkpoint = checkpoint.getNext())
 		{
 			MapIcon icon = lastMapIcons.get(checkpoint);
-			
+
 			if (icon == null) icon = player.getMapIcon().createIcon();
 			else lastMapIcons.remove(checkpoint);
 
@@ -319,29 +319,29 @@ public class RacingPlayerContentImpl extends PlayerLifecycleObject implements Ra
 			if (distance > fadeOutDistance) distance = fadeOutDistance;
 			else if (distance < 0.0f) distance = 0.0f;
 			int alpha = (int) (255 * distance / fadeOutDistance);
-			
+
 			Color subColor = new Color(Color.GREEN);
 			subColor.setA(0);
 			Color color = ColorUtils.colorBlend(Color.RED, subColor, alpha);
-			
+
 			icon.update(checkpoint.getLocation(), 0, color, MapIconStyle.GLOBAL_CHECKPOINT);
 			mapIcons.put(checkpoint, icon);
-			
+
 			count++;
 		}
 
 		for (MapIcon icon : lastMapIcons.values()) icon.destroy();
 	}
-	
+
 	private void createTempVehicle(int modelId)
 	{
 		AngledLocation location = player.getLocation();
 		Velocity velocity = player.getVelocity();
-		
+
 		if (tempVehicle != null) tempVehicle.destroy();
 		tempVehicle = Vehicle.create(lastVehicleModel, player.getLocation(), 0, 0, 3600);
 		tempVehicle.putPlayer(player, 0);
-		
+
 		tempVehicle.setLocation(location);
 		tempVehicle.setVelocity(velocity);
 	}
