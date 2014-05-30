@@ -158,14 +158,9 @@ public class TrackEditDialog extends WlListDialog
 					String msgboxCaption = stringSet.get("Dialog.TrackDeleteCompleteDialog.Caption");
 					String msgboxMessage = stringSet.format("Dialog.TrackDeleteCompleteDialog.Text", track.getName());
 					WlMsgboxDialog.create(player, rootEventManager)
-						.parentDialog(this)
 						.caption(msgboxCaption)
 						.message(msgboxMessage)
-						.onClickOk((dialog) ->
-						{
-							player.playSound(1083);
-							dialog.showParentDialog();
-						})
+						.onClickOk((dialog) -> player.playSound(1083))
 						.build().show();
 				})
 				.build().show();
