@@ -87,7 +87,7 @@ public class TrackDialog
 							player.playSound(1083);
 							service.editTrack(player, track);
 						})
-						.build();
+						.build().show();
 				}
 				else if (track.getStatus() == TrackStatus.RANKING)
 				{
