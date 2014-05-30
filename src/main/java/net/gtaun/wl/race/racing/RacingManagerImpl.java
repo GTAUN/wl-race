@@ -31,6 +31,7 @@ import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.event.player.PlayerDisconnectEvent;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.util.event.EventManager;
+import net.gtaun.wl.lang.LocalizedStringSet.PlayerStringSet;
 import net.gtaun.wl.race.RacingManager;
 import net.gtaun.wl.race.exception.AlreadyJoinedException;
 import net.gtaun.wl.race.impl.RaceServiceImpl;
@@ -42,16 +43,16 @@ import org.mongodb.morphia.Datastore;
 public class RacingManagerImpl extends AbstractShoebillContext implements RacingManager
 {
 	private final RaceServiceImpl raceService;
-	
+
 	private List<Racing> racings;
 	private Map<Player, Racing> playerRacings;
-	
+
 
 	public RacingManagerImpl(EventManager rootEventManager, RaceServiceImpl raceService, Datastore datastore)
 	{
 		super(rootEventManager);
 		this.raceService = raceService;
-		
+
 		racings = new ArrayList<>();
 		playerRacings = new HashMap<>();
 	}
@@ -69,7 +70,7 @@ public class RacingManagerImpl extends AbstractShoebillContext implements Racing
 	@Override
 	protected void onDestroy()
 	{
-		
+
 	}
 
 	@Override
@@ -93,16 +94,17 @@ public class RacingManagerImpl extends AbstractShoebillContext implements Racing
 		Racing racing = new Racing(rootEventManager, raceService, this, track, sponsor, name);
 		racings.add(racing);
 		racing.join(sponsor);
-		
+
 		for (Player player : Player.get())
 		{
 			if (player == sponsor) continue;
-			player.sendMessage(Color.LIGHTBLUE, "%1$s: %2$s 举办了新比赛 %3$s (赛道 %4$s)，请在车上按下两下 End 键来参加比赛。", "赛车系统", sponsor.getName(), racing.getName(), track.getName());
+			PlayerStringSet stringSet = raceService.getLocalizedStringSet().getStringSet(player);
+			stringSet.sendMessage(Color.LIGHTBLUE, "Racing.Message.NewRacingMessage", sponsor.getName(), racing.getName(), track.getName());
 		}
-			
+
 		return racing;
 	}
-	
+
 	public void destroyRacing(Racing racing)
 	{
 		racings.remove(racing);
@@ -112,19 +114,19 @@ public class RacingManagerImpl extends AbstractShoebillContext implements Racing
 			if (entry.getValue() == racing) it.remove();
 		}
 	}
-	
+
 	@Override
 	public boolean isPlayerInRacing(Player player)
 	{
 		return playerRacings.containsKey(player);
 	}
-	
+
 	@Override
 	public Racing getPlayerRacing(Player player)
 	{
 		return playerRacings.get(player);
 	}
-	
+
 	@Override
 	public PlayerRacingStatus getPlayerRacingStatus(Player player)
 	{
@@ -132,15 +134,15 @@ public class RacingManagerImpl extends AbstractShoebillContext implements Racing
 		if (racing == null) return PlayerRacingStatus.NONE;
 		return racing.getStatus() == RacingStatus.WAITING ? PlayerRacingStatus.WAITING : PlayerRacingStatus.RACING;
 	}
-	
+
 	void joinRacing(Racing racing, Player player) throws AlreadyJoinedException
 	{
 		if (playerRacings.containsKey(player)) throw new AlreadyJoinedException();
 		if (!racings.contains(racing)) throw new IllegalArgumentException("Unknown Racing");
-		
+
 		playerRacings.put(player, racing);
 	}
-	
+
 	void leaveRacing(Racing racing, Player player)
 	{
 		if (playerRacings.get(player) != racing) throw new IllegalStateException("Invaild Racing or Player");

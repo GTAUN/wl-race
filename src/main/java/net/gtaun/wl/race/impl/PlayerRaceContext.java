@@ -20,7 +20,6 @@ package net.gtaun.wl.race.impl;
 
 import net.gtaun.shoebill.common.player.PlayerLifecycleObject;
 import net.gtaun.shoebill.constant.PlayerKey;
-import net.gtaun.shoebill.data.Color;
 import net.gtaun.shoebill.event.player.PlayerKeyStateChangeEvent;
 import net.gtaun.shoebill.object.Player;
 import net.gtaun.shoebill.object.PlayerKeyState;
@@ -42,12 +41,12 @@ import net.gtaun.wl.race.util.PlayerKeyUtils;
 public class PlayerRaceContext extends PlayerLifecycleObject
 {
 	private final RaceServiceImpl raceService;
-	
+
 	private TrackEditor trackEditor;
 	private long lastHornKeyPressedTime;
 	private long lastAnalogDownKeyPressedTime;
-	
-	
+
+
 	public PlayerRaceContext(EventManager rootEventManager, Player player, RaceServiceImpl raceService)
 	{
 		super(rootEventManager, player);
@@ -60,8 +59,7 @@ public class PlayerRaceContext extends PlayerLifecycleObject
 		eventManagerNode.registerHandler(PlayerKeyStateChangeEvent.class, HandlerPriority.NORMAL, Attentions.create().object(player), (e) ->
 		{
 			PlayerKeyState keyState = player.getKeyState();
-			if (player.isAdmin()) player.sendMessage(Color.WHITE, "OLD " + e.getOldState().getKeys() + ", NOW " + keyState.getKeys());
-			
+
 			Track editingTrack = getEditingTrack();
 			if (editingTrack != null)
 			{
@@ -78,7 +76,7 @@ public class PlayerRaceContext extends PlayerLifecycleObject
 				{
 					TrackCheckpoint checkpoint = editingTrack.createCheckpoint(player.getLocation());
 					trackEditor.updateMapIcons();
-					
+
 					TrackCheckpointEditDialog.create(player, eventManagerNode, null, raceService, checkpoint, true).show();
 				}
 			}
@@ -114,7 +112,7 @@ public class PlayerRaceContext extends PlayerLifecycleObject
 	@Override
 	protected void onDestroy()
 	{
-		
+
 	}
 
 	public boolean isEditingTrack()
@@ -127,11 +125,11 @@ public class PlayerRaceContext extends PlayerLifecycleObject
 		if (track == null)
 		{
 			if (trackEditor == null) return;
-			
+
 			Track lastTrack = trackEditor.getTrack();
 			trackEditor.destroy();
 			trackEditor = null;
-			
+
 			raceService.getTrackManager().save(lastTrack);
 		}
 		else
@@ -140,10 +138,10 @@ public class PlayerRaceContext extends PlayerLifecycleObject
 
 			if (track.getStatus() == TrackStatus.RANKING) throw new UnsupportedOperationException();
 			track.setStatus(TrackStatus.EDITING);
-			
+
 			trackEditor = new TrackEditor(rootEventManager, player, raceService, track);
 			trackEditor.init();
-			
+
 			new TrackEditDialog(player, eventManagerNode, null, raceService, track).show();
 		}
 	}

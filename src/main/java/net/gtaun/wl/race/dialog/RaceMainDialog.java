@@ -40,52 +40,52 @@ public class RaceMainDialog
 		PlayerStringSet stringSet = service.getLocalizedStringSet().getStringSet(player);
 		TrackManagerImpl trackManager = service.getTrackManager();
 		RacingManagerImpl racingManager = service.getRacingManager();
-		
+
 		return WlListDialog.create(player, eventManager)
 			.parentDialog(parent)
 			.caption(stringSet.get("Dialog.RaceMainDialog.Caption"))
-			
+
 			.item(() ->
 			{
 				Racing racing = racingManager.getPlayerRacing(player);
 				return stringSet.format("Dialog.RaceMainDialog.Racing", racing.getName());
 			}, () ->
 			{
-				return racingManager.isPlayerInRacing(player);	
+				return racingManager.isPlayerInRacing(player);
 			}, (i) ->
 			{
 				Racing racing = racingManager.getPlayerRacing(player);
 				new RacingDialog(player, eventManager, i.getCurrentDialog(), service, racing).show();
 			})
-			
+
 			.item(() ->
 			{
 				Track track = service.getEditingTrack(player);
 				return stringSet.format("Dialog.RaceMainDialog.Editing", track.getName());
 			}, () ->
 			{
-				return service.getEditingTrack(player) != null;	
+				return service.getEditingTrack(player) != null;
 			}, (i) ->
 			{
 				Track track = service.getEditingTrack(player);
 				new TrackEditDialog(player, eventManager, i.getCurrentDialog(), service, track).show();
 			})
-			
+
 			.item(() -> stringSet.get("Dialog.RaceMainDialog.TrackList"), (i) ->
 			{
 				TrackListMainDialog.create(player, eventManager, i.getCurrentDialog(), service).show();
 			})
-			
+
 			.item(() -> stringSet.get("Dialog.RaceMainDialog.TrackFavorites"), (i) ->
 			{
-				
+
 			})
-			
+
 			.item(() -> stringSet.get("Dialog.RaceMainDialog.RacingList"), (i) ->
 			{
 				new RacingListDialog(player, eventManager, i.getCurrentDialog(), service).show();
 			})
-			
+
 			.item(() -> stringSet.get("Dialog.RaceMainDialog.CreateTrack"), () ->
 			{
 				if (service.isEditingTrack(player)) return false;
@@ -94,7 +94,7 @@ public class RaceMainDialog
 			{
 				String caption = stringSet.get("Dialog.CreateNewTrackNamingDialog.Caption");
 				String message = stringSet.get("Dialog.CreateNewTrackNamingDialog.Text");
-				
+
 				TrackNamingDialog.create(player, eventManager, i.getCurrentDialog(), caption, message, service, (d, name) ->
 				{
 					try
@@ -115,55 +115,55 @@ public class RaceMainDialog
 					}
 				}).show();
 			})
-			
+
 			.item(() -> stringSet.get("Dialog.RaceMainDialog.MyRacerInfo"), (i) ->
 			{
-				
+
 			})
-			
+
 			.item(() -> stringSet.get("Dialog.RaceMainDialog.MyRaceRecord"), (i) ->
 			{
-				
+
 			})
-			
+
 			.item(() -> stringSet.get("Dialog.RaceMainDialog.WorldRanking"), (i) ->
 			{
-				
+
 			})
-			
+
 			.item(() -> stringSet.get("Dialog.RaceMainDialog.PersonalPreferences"), (i) ->
 			{
-				
+
 			})
-			
+
 			.item(() -> stringSet.get("Dialog.RaceMainDialog.Help"), (i) ->
-			{
-				Plugin plugin = service.getPlugin();
-				ResourceDescription desc = plugin.getDescription();
-				
-				String caption = stringSet.get("Dialog.AboutDialog.Caption");
-				String format = stringSet.get("Dialog.AboutDialog.Text");
-				String message = String.format(format, desc.getVersion(), desc.getBuildNumber(), desc.getBuildDate());
-				
-				WlMsgboxDialog.create(player, eventManager)
-				.parentDialog(i.getCurrentDialog())
-				.caption(caption)
-				.message(message)
-				.build().show();
-			})
-			
-			.item(() -> stringSet.get("Dialog.RaceMainDialog.About"), (i) ->
 			{
 				String caption = stringSet.get("Dialog.HelpDialog.Caption");
 				String text = stringSet.get("Dialog.HelpDialog.Text");
-				
+
 				WlMsgboxDialog.create(player, eventManager)
 					.parentDialog(i.getCurrentDialog())
 					.caption(caption)
 					.message(text)
 					.build().show();
 			})
-			
+
+			.item(() -> stringSet.get("Dialog.RaceMainDialog.About"), (i) ->
+			{
+				Plugin plugin = service.getPlugin();
+				ResourceDescription desc = plugin.getDescription();
+
+				String caption = stringSet.get("Dialog.AboutDialog.Caption");
+				String format = stringSet.get("Dialog.AboutDialog.Text");
+				String message = String.format(format, desc.getVersion(), desc.getBuildNumber(), desc.getBuildDate());
+
+				WlMsgboxDialog.create(player, eventManager)
+				.parentDialog(i.getCurrentDialog())
+				.caption(caption)
+				.message(message)
+				.build().show();
+			})
+
 			.onClickOk((d, i) -> player.playSound(1083))
 			.build();
 	}

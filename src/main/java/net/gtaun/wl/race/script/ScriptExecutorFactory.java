@@ -28,6 +28,7 @@ import net.gtaun.shoebill.object.Player;
 import org.mozilla.javascript.ClassShutter;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
+import org.mozilla.javascript.EcmaError;
 import org.mozilla.javascript.ErrorReporter;
 import org.mozilla.javascript.EvaluatorException;
 import org.mozilla.javascript.NativeJavaObject;
@@ -40,41 +41,41 @@ public final class ScriptExecutorFactory
 	{
 		private int timeLimit;
 		private int instructionCountLimit;
-		
+
 		private long startTime;
 		private int instructionCount;
-		
+
 		public TimeLimitContext()
 		{
 			super(CONTEXT_FACTORY);
 		}
-		
+
 		public void setTimeLimit(int timeLimit)
 		{
 			this.timeLimit = timeLimit;
 		}
-		
+
 		public void setInstructionCountLimit(int instructionCountLimit)
 		{
 			this.instructionCountLimit = instructionCountLimit;
 		}
-		
+
 		public void start()
 		{
 			startTime = System.currentTimeMillis();
 			instructionCount = 0;
 		}
-		
+
 		@Override
 		protected void observeInstructionCount(int count)
 		{
 			instructionCount += count;
-			
+
 			if (timeLimit != 0 && System.currentTimeMillis() - startTime > timeLimit) throw new ScriptTimeoutException();
 			if (instructionCount > instructionCountLimit) throw new ScriptInstructionCountLimitException();
 		}
 	}
-	
+
 	private static class ScriptContextFactory extends ContextFactory
 	{
 		@Override
@@ -128,10 +129,10 @@ public final class ScriptExecutorFactory
 			return (TimeLimitContext) super.enterContext();
 		}
 	};
-	
+
 	public static final ScriptContextFactory CONTEXT_FACTORY = new ScriptContextFactory();
-	
-	
+
+
 	public static ScriptExecutor createCheckpointScriptExecutor(Player player)
 	{
 		final Deque<ScriptException> exceptions = new LinkedList<>();
@@ -146,14 +147,14 @@ public final class ScriptExecutorFactory
 			{
 				exceptions.add(new ScriptException(message, sourceName, line, lineSource, lineOffset));
 			}
-			
+
 			@Override
 			public EvaluatorException runtimeError(String message, String sourceName, int line, String lineSource, int lineOffset)
 			{
 				exceptions.add(new ScriptException(message, sourceName, line, lineSource, lineOffset));
 				return new EvaluatorException(message, sourceName, line, lineSource, lineOffset);
 			}
-			
+
 			@Override
 			public void error(String message, String sourceName, int line, String lineSource, int lineOffset)
 			{
@@ -161,19 +162,19 @@ public final class ScriptExecutorFactory
 			}
 		});
 		Context.exit();
-		
+
 		final Scriptable scope = context.initStandardObjects();
-		
+
 		final List<ScriptBinding> bindings = new ArrayList<>();
-		
+
 		PlayerBinding playerBinding = new PlayerBinding(player);
 		scope.put("player", scope, playerBinding);
 		bindings.add(playerBinding);
-		
+
 		PlayerVehicleBinding playerVehicleBinding = new PlayerVehicleBinding(player);
 		scope.put("vehicle", scope, playerVehicleBinding);
 		bindings.add(playerVehicleBinding);
-		
+
 		return new ScriptExecutor()
 		{
 			@Override
@@ -185,14 +186,14 @@ public final class ScriptExecutorFactory
 					ScriptBinding binding = (ScriptBinding) obj;
 					binding.update();
 				}
-				
+
 				try
 				{
 					CONTEXT_FACTORY.enterContext(context);
 					context.start();
 					context.evaluateString(scope, script, "UNKNOWN", 0, null);
 				}
-				catch (EvaluatorException e)
+				catch (EvaluatorException | EcmaError e)
 				{
 					exceptions.clear();
 					throw new ScriptException(e.details(), e.sourceName(), e.lineNumber(), e.lineSource(), e.columnNumber());
@@ -205,7 +206,7 @@ public final class ScriptExecutorFactory
 				{
 					Context.exit();
 				}
-				
+
 				if (!exceptions.isEmpty())
 				{
 					ScriptException exception = exceptions.pollLast();
@@ -215,9 +216,9 @@ public final class ScriptExecutorFactory
 			}
 		};
 	}
-	
+
 	private ScriptExecutorFactory()
 	{
-		
+
 	}
 }
