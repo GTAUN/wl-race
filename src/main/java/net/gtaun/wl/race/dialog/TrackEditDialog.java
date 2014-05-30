@@ -45,29 +45,29 @@ import org.apache.commons.lang3.StringUtils;
 public class TrackEditDialog extends WlListDialog
 {
 	private final PlayerStringSet stringSet;
-	
+
 	private final RaceServiceImpl raceService;
 	private final Track track;
-	
+
 
 	public TrackEditDialog(Player player, EventManager eventManager, AbstractDialog parent, RaceServiceImpl service, Track track)
 	{		super(player, eventManager);
 		setParentDialog(parent);
-		
+
 		this.raceService = service;
 		this.track = track;
-		
+
 		stringSet = service.getLocalizedStringSet().getStringSet(player);
 		setCaption(() -> stringSet.format("Dialog.TrackEditDialog.Caption", track.getName()));
-		
+
 		setClickOkHandler((d, i) -> player.playSound(1083));
 	}
-	
+
 	@Override
 	public void show()
 	{
 		RacingManagerImpl racingManager = raceService.getRacingManager();
-		
+
 		items.clear();
 		addItem(stringSet.format("Dialog.TrackEditDialog.Name", track.getName()), (i) ->
 		{
@@ -93,7 +93,7 @@ public class TrackEditDialog extends WlListDialog
 				}
 			}).show();
 		});
-		
+
 		addItem(() ->
 		{
 			String desc = track.getDesc();
@@ -113,27 +113,27 @@ public class TrackEditDialog extends WlListDialog
 					desc = StringUtils.replace(desc, "%", "#");
 					desc = StringUtils.replace(desc, "\t", " ");
 					desc = StringUtils.replace(desc, "\n", " ");
-					
+
 					track.setDesc(desc);
 					d.showParentDialog();
 				})
 				.build().show();
 		});
-		
+
 		addItem(() -> stringSet.format("Dialog.TrackEditDialog.Checkpoints", track.getCheckpoints().size()), (i) -> show());
 		addItem(() -> stringSet.format("Dialog.TrackEditDialog.Length", track.getLength()/1000.0f), (i) -> show());
-		
+
 		addItem(() -> stringSet.get("Dialog.TrackEditDialog.AddCheckpoint"), (i) ->
 		{
 			TrackCheckpoint checkpoint = track.createCheckpoint(player.getLocation());
 			TrackCheckpointEditDialog.create(player, eventManagerNode, null, raceService, checkpoint, true).show();
 		});
-		
+
 		addItem(() -> stringSet.get("Dialog.TrackEditDialog.Setting"), (i) ->
 		{
 			TrackSettingDialog.create(player, rootEventManager, this, raceService, track).show();
 		});
-		
+
 		addItem(() -> stringSet.get("Dialog.TrackEditDialog.Delete"), (i) ->
 		{
 			String caption = stringSet.get("Dialog.TrackDeleteConfirmDialog.Caption");
@@ -144,17 +144,17 @@ public class TrackEditDialog extends WlListDialog
 				.message(message)
 				.onClickOk((d, text) ->
 				{
-					if (!track.equals(text))
+					if (!track.getName().equals(text))
 					{
 						d.showParentDialog();
 						return;
 					}
-					
+
 					raceService.stopEditingTrack(player);
-					
+
 					TrackManagerImpl trackManager = raceService.getTrackManager();
 					trackManager.deleteTrack(track);
-					
+
 					String msgboxCaption = stringSet.get("Dialog.TrackDeleteCompleteDialog.Caption");
 					String msgboxMessage = stringSet.format("Dialog.TrackDeleteCompleteDialog.Text", track.getName());
 					WlMsgboxDialog.create(player, rootEventManager)
@@ -170,12 +170,12 @@ public class TrackEditDialog extends WlListDialog
 				})
 				.build().show();
 		});
-		
+
 		addItem(stringSet.get("Dialog.TrackEditDialog.StopEditing"), (i) ->
 		{
 			raceService.stopEditingTrack(player);
 		});
-		
+
 		addItem(stringSet.get("Dialog.TrackEditDialog.FinishEditing"), () ->
 		{
 			if (track.getCheckpoints().size() < 2) return false;
@@ -184,22 +184,22 @@ public class TrackEditDialog extends WlListDialog
 		{
 			String caption = stringSet.get("Dialog.TrackFinishEditingConfirmDialog.Caption");
 			String message = stringSet.format("Dialog.TrackFinishEditingConfirmDialog.Text", track.getName());
-			
+
 			MsgboxDialog.create(player, rootEventManager)
 				.caption(caption)
 				.message(message)
 				.onClickOk((d) ->
 				{
 					player.playSound(1083);
-					
+
 					raceService.stopEditingTrack(player);
 					track.setStatus(TrackStatus.COMPLETED);
-					
+
 					showParentDialog();
 				})
 				.build().show();;
 		});
-		
+
 		addItem(stringSet.get("Dialog.TrackEditDialog.Test"), () ->
 		{
 			if (track.getCheckpoints().isEmpty()) return false;
@@ -212,10 +212,10 @@ public class TrackEditDialog extends WlListDialog
 				racing.teleToStartingPoint(player);
 				racing.beginCountdown();
 			};
-			
+
 			List<TrackCheckpoint> checkpoints = track.getCheckpoints();
 			if (checkpoints.isEmpty()) return;
-			
+
 			if (racingManager.isPlayerInRacing(player))
 			{
 				Racing racing = racingManager.getPlayerRacing(player);
@@ -226,9 +226,9 @@ public class TrackEditDialog extends WlListDialog
 			}
 			else startNewRacing.run();
 		});
-		
+
 		addItem("-", (i) -> show());
-		
+
 		List<TrackCheckpoint> checkpoints = track.getCheckpoints();
 		for (int i=0; i<checkpoints.size(); i++)
 		{
@@ -240,7 +240,7 @@ public class TrackEditDialog extends WlListDialog
 				TrackCheckpointEditDialog.create(player, eventManagerNode, this, raceService, checkpoint, false).show();
 			});
 		}
-		
+
 		super.show();
 	}
 }
