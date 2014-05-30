@@ -47,20 +47,20 @@ public class TrackDialog
 		return WlListDialog.create(player, eventManager)
 			.parentDialog(parent)
 			.caption(() -> stringSet.format("Dialog.TrackDialog.Caption", track.getName()))
-			
+
 			.item(() -> stringSet.format("Dialog.TrackDialog.Name", track.getName()), (i) -> i.getCurrentDialog().show())
 			.item(() -> stringSet.format("Dialog.TrackDialog.Author", track.getAuthorUniqueId()), (i) -> i.getCurrentDialog().show())
-			
+
 			.item(() ->
 			{
 				String desc = track.getDesc();
 				if (StringUtils.isBlank(desc)) desc = stringSet.get("Common.Empty");
-				return stringSet.format("Dialog.TrackDialog.Desc", StringUtils.abbreviate(desc, 60));				
+				return stringSet.format("Dialog.TrackDialog.Desc", StringUtils.abbreviate(desc, 60));
 			}, (i) ->
 			{
 				i.getCurrentDialog().show();
 			})
-			
+
 			.item(() -> stringSet.format("Dialog.TrackDialog.Status", track.getStatus()), (i) -> i.getCurrentDialog().show())
 			.item(() -> stringSet.format("Dialog.TrackDialog.Checkpoints", track.getCheckpoints().size()), (i) -> i.getCurrentDialog().show())
 			.item(() -> stringSet.format("Dialog.TrackDialog.Length", track.getLength()/1000.0f), (i) -> i.getCurrentDialog().show())
@@ -70,14 +70,14 @@ public class TrackDialog
 			{
 				if (track.getStatus() == TrackStatus.RANKING) return false;
 				if (player.isAdmin()) return true;
-				return player.getName().equals(track.getAuthorUniqueId());
+				return player.getName().equalsIgnoreCase(track.getAuthorUniqueId());
 			}, (i) ->
 			{
 				if (track.getStatus() == TrackStatus.COMPLETED)
 				{
 					String caption = stringSet.get("Dialog.TrackEditConfirmDialog.Caption");
 					String text = stringSet.format("Dialog.TrackEditConfirmDialog.Text", track.getName());
-					
+
 					MsgboxDialog.create(player, eventManager)
 						.parentDialog(i.getCurrentDialog())
 						.caption(caption)
@@ -85,7 +85,7 @@ public class TrackDialog
 						.onClickOk((d) ->
 						{
 							player.playSound(1083);
-							service.editTrack(player, track);	
+							service.editTrack(player, track);
 						})
 						.build();
 				}
@@ -98,7 +98,7 @@ public class TrackDialog
 					service.editTrack(player, track);
 				}
 			})
-			
+
 			.item(() -> stringSet.get("Dialog.TrackDialog.Test"), () ->
 			{
 				if (track.getCheckpoints().isEmpty()) return false;
@@ -114,7 +114,7 @@ public class TrackDialog
 
 				List<TrackCheckpoint> checkpoints = track.getCheckpoints();
 				if (checkpoints.isEmpty()) return;
-				
+
 				if (racingManager.isPlayerInRacing(player))
 				{
 					Racing racing = racingManager.getPlayerRacing(player);
@@ -125,7 +125,7 @@ public class TrackDialog
 				}
 				else startNewRacing.run();
 			})
-			
+
 			.item(() -> stringSet.get("Dialog.TrackDialog.NewRacing"), () ->
 			{
 				if (track.getCheckpoints().isEmpty()) return false;
@@ -134,7 +134,7 @@ public class TrackDialog
 			{
 				NewRacingDialog.create(player, eventManager, i.getCurrentDialog(), service, track).show();
 			})
-			
+
 			.item(() -> stringSet.get("Dialog.TrackDialog.QuickNewRacing"), () ->
 			{
 				if (track.getCheckpoints().isEmpty()) return false;
@@ -152,7 +152,7 @@ public class TrackDialog
 					Racing racing = racingManager.getPlayerRacing(player);
 					String caption = stringSet.get("Dialog.TrackNewRacingConfirmDialog.Caption");
 					String text = stringSet.format("Dialog.TrackNewRacingConfirmDialog.Text", racing.getName());
-					
+
 					WlMsgboxDialog.create(player, eventManager)
 						.parentDialog(parent)
 						.caption(caption)
@@ -167,7 +167,7 @@ public class TrackDialog
 				}
 				else startNewRacing.run();
 			})
-			
+
 			.onClickOk((d, i) -> player.playSound(1083))
 			.build();
 	}

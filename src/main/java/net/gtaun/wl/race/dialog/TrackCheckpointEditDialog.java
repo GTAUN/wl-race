@@ -44,15 +44,15 @@ public class TrackCheckpointEditDialog
 	{
 		PlayerStringSet stringSet = service.getLocalizedStringSet().getStringSet(player);
 		Track track = checkpoint.getTrack();
-		
+
 		if (track.getCheckpoints().contains(checkpoint) == false) player.setLocation(checkpoint.getLocation());
-		
+
 		return WlListDialog.create(player, eventManager)
 			.parentDialog(parent)
 			.caption(() -> stringSet.format("Dialog.TrackCheckpointEditDialog.Caption", track.getName(), checkpoint.getNumber()))
-			
+
 			.item(() -> stringSet.get("Common.OK"), () -> isCreateNew, (i) -> i.getCurrentDialog().showParentDialog())
-			
+
 			.item(() -> stringSet.get("Dialog.TrackCheckpointEditDialog.Teleport"), () ->
 			{
 				if (player.getLocation().equals(checkpoint.getLocation())) return false;
@@ -62,7 +62,7 @@ public class TrackCheckpointEditDialog
 				player.setLocation(checkpoint.getLocation());
 				i.getCurrentDialog().show();
 			})
-			
+
 			.item(() ->
 			{
 				Radius loc = checkpoint.getLocation();
@@ -73,7 +73,7 @@ public class TrackCheckpointEditDialog
 				Radius oldLoc = checkpoint.getLocation();
 				String caption = stringSet.get("Dialog.TrackCheckpointEditPositionDialog.Caption");
 				String message = stringSet.format("Dialog.TrackCheckpointEditPositionDialog.Text", oldLoc.getX(), oldLoc.getY(), oldLoc.getZ(), oldLoc.getInteriorId());
-				
+
 				WlInputDialog.create(player, eventManager)
 					.parentDialog(i.getCurrentDialog())
 					.caption(caption)
@@ -81,7 +81,7 @@ public class TrackCheckpointEditDialog
 					.onClickOk((d, text) ->
 					{
 						player.playSound(1083);
-						
+
 						try (Scanner scanner = new Scanner(text))
 						{
 							Radius loc = new Radius(scanner.nextFloat(), scanner.nextFloat(), scanner.nextFloat(), scanner.nextInt(), oldLoc.getWorldId(), oldLoc.getRadius());
@@ -96,7 +96,7 @@ public class TrackCheckpointEditDialog
 					})
 					.build().show();
 			})
-			
+
 			.item(ListDialogItemRadio.create()
 				.selectedIndex(() -> checkpoint.getType() == RaceCheckpointType.NORMAL ? 0 : 1)
 				.itemText(() -> stringSet.get("Dialog.TrackCheckpointEditDialog.Type"))
@@ -104,7 +104,7 @@ public class TrackCheckpointEditDialog
 				.item(stringSet.get("Track.Checkpoint.Type.Air"), Color.BLUE, () -> checkpoint.setType(RaceCheckpointType.AIR))
 				.onSelect((i) -> i.getCurrentDialog().show())
 				.build())
-			
+
 			.item(() -> stringSet.format("Dialog.TrackCheckpointEditDialog.Size", checkpoint.getSize()), (i) ->
 			{
 				String caption = stringSet.get("Dialog.TrackCheckpointEditSizeDialog.Caption");
@@ -117,7 +117,7 @@ public class TrackCheckpointEditDialog
 					.onClickOk((d, text) ->
 					{
 						player.playSound(1083);
-						
+
 						try (Scanner scanner = new Scanner(text))
 						{
 							checkpoint.setSize(scanner.nextFloat());
@@ -131,7 +131,7 @@ public class TrackCheckpointEditDialog
 					})
 					.build().show();
 			})
-			
+
 			.item(() ->
 			{
 				String code = checkpoint.getScript();
@@ -147,7 +147,7 @@ public class TrackCheckpointEditDialog
 					i.getCurrentDialog().showParentDialog();
 				}).show();
 			})
-			
+
 			.item(() -> stringSet.get("Dialog.TrackCheckpointEditDialog.UpdatePosition"), () ->
 			{
 				if (player.getLocation().equals(checkpoint.getLocation())) return false;
@@ -158,13 +158,12 @@ public class TrackCheckpointEditDialog
 				player.sendMessage(Color.LIGHTBLUE, stringSet.get("Dialog.TrackCheckpointEditDialog.UpdatePositionMessage"));
 				i.getCurrentDialog().show();
 			})
-			
+
 			.item(() -> stringSet.get("Dialog.TrackCheckpointEditDialog.Delete"), () -> track.getCheckpoints().contains(checkpoint), (i) ->
 			{
 				track.removeChechpoint(checkpoint);
-				i.getCurrentDialog().show();
 			})
-			
+
 			.onClickOk((d, i) -> player.playSound(1083))
 			.build();
 	}
