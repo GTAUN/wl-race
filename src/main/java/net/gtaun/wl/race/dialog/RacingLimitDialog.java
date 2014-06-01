@@ -20,45 +20,45 @@ public class RacingLimitDialog
 
 		String allow = stringSet.get("Common.Allow");
 		String disallow = stringSet.get("Common.Disallow");
-		
+
 		return WlListDialog.create(player, eventManager)
 			.parentDialog(parent)
 			.caption(() -> stringSet.get("Dialog.RacingLimitDialog.Caption"))
-			
+
 			.item(ListDialogItemRadio.create()
 				.itemText(() -> stringSet.get("Racing.Limit.AutoRepair") + ":")
 				.selectedIndex(() -> limit.isAllowAutoRepair() ? 0 : 1)
-				.item(allow, Color.GREEN, () -> limit.setAllowAutoRepair(true))
-				.item(disallow, Color.RED, () -> limit.setAllowAutoRepair(false))
+				.item(allow, Color.GREEN, (i) -> limit.setAllowAutoRepair(true))
+				.item(disallow, Color.RED, (i) -> limit.setAllowAutoRepair(false))
 				.onSelect((i) -> i.getCurrentDialog().show())
 				.build())
-				
+
 			.item(ListDialogItemRadio.create()
 				.itemText(() -> stringSet.get("Racing.Limit.InfiniteNitrous") + ":")
 				.selectedIndex(() -> limit.isAllowInfiniteNitrous() ? 0 : 1)
-				.item(allow, Color.GREEN, () -> limit.setAllowInfiniteNitrous(true))
-				.item(disallow, Color.RED, () -> limit.setAllowInfiniteNitrous(false))
+				.item(allow, Color.GREEN, (i) -> limit.setAllowInfiniteNitrous(true))
+				.item(disallow, Color.RED, (i) -> limit.setAllowInfiniteNitrous(false))
 				.onSelect((i) -> i.getCurrentDialog().show())
 				.build())
-			
+
 			.item(ListDialogItemRadio.create()
 				.itemText(() -> stringSet.get("Racing.Limit.AutoFlip") + ":")
 				.selectedIndex(() -> limit.isAllowAutoFlip() ? 0 : 1)
-				.item(allow, Color.GREEN, () -> limit.setAllowAutoFlip(true))
-				.item(disallow, Color.RED, () -> limit.setAllowAutoFlip(false))
+				.item(allow, Color.GREEN, (i) -> limit.setAllowAutoFlip(true))
+				.item(disallow, Color.RED, (i) -> limit.setAllowAutoFlip(false))
 				.onSelect((i) -> i.getCurrentDialog().show())
 				.build())
-			
+
 			.item(ListDialogItemRadio.create()
 				.itemText(() -> stringSet.get("Racing.Limit.ChangeVehicle") + ":")
 				.selectedIndex(() -> limit.isAllowChangeVehicle() ? 0 : 1)
-				.item(allow, Color.GREEN, () -> limit.setAllowChangeVehicle(true))
-				.item(disallow, Color.RED, () -> limit.setAllowChangeVehicle(false))
+				.item(allow, Color.GREEN, (i) -> limit.setAllowChangeVehicle(true))
+				.item(disallow, Color.RED, (i) -> limit.setAllowChangeVehicle(false))
 				.onSelect((i) -> i.getCurrentDialog().show())
 				.build())
-			
+
 			.item(() -> stringSet.get("Common.OK"), (i) -> i.getCurrentDialog().showParentDialog())
-			
+
 			.onClickOk((d, i) -> player.playSound(1083))
 			.build();
 	}

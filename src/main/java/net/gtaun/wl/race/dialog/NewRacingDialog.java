@@ -46,19 +46,19 @@ public class NewRacingDialog
 	(Player player, EventManager eventManager, AbstractDialog parent, RaceServiceImpl service, Track track)
 	{
 		PlayerStringSet stringSet = service.getLocalizedStringSet().getStringSet(player);
-		
+
 		RacingManagerImpl racingManager = service.getRacingManager();
 		String racingMode = stringSet.get((track.getStatus() == TrackStatus.EDITING) ? "Dialog.NewRacingDialog.RacingTestCaption" : "Dialog.NewRacingDialog.RacingNormalCaption");
-		
+
 		String[] racingName = new String[1];
 		racingName[0] = RacingUtils.getDefaultName(player, track);
-		
+
 		RacingSetting setting = new RacingSetting(track);
-		
+
 		return WlListDialog.create(player, eventManager)
 			.parentDialog(parent)
 			.caption(() -> stringSet.format("Dialog.NewRacingDialog.Caption", racingMode))
-			
+
 			.item(() -> stringSet.format("Dialog.NewRacingDialog.Name", racingName[0]), () ->
 			{
 				if (track.getStatus() == TrackStatus.EDITING) return false;
@@ -66,10 +66,10 @@ public class NewRacingDialog
 			}, (i) ->
 			{
 				player.playSound(1083);
-				
+
 				String caption = stringSet.format("Dialog.NewRacingEditNameDialog.Caption", racingMode);
 				String message = stringSet.get("Dialog.NewRacingEditNameDialog.Text");
-				
+
 				WlInputDialog.create(player, eventManager)
 					.parentDialog(i.getCurrentDialog())
 					.caption(caption)
@@ -83,18 +83,18 @@ public class NewRacingDialog
 							d.show();
 							return;
 						}
-						
+
 						racingName[0] = name;
 					})
 					.build().show();
 			})
-			
+
 			.item(() -> stringSet.format("Dialog.NewRacingDialog.Track", track.getName(), track.getCheckpoints().size(), track.getLength()/1000.0f), (i) ->
 			{
 				player.playSound(1083);
-				TrackDialog.create(player, eventManager, i.getCurrentDialog(), service, track).show();	
+				TrackDialog.create(player, eventManager, i.getCurrentDialog(), service, track).show();
 			})
-			
+
 			.item(() ->
 			{
 				String trackType = stringSet.get("Track.Type.Normal");
@@ -105,43 +105,43 @@ public class NewRacingDialog
 				player.playSound(1083);
 				i.getCurrentDialog().show();
 			})
-			
+
 			.item(ListDialogItemRadio.create()
 				.itemText(stringSet.get("Dialog.NewRacingDialog.RacingType"))
 				.selectedIndex(() -> setting.getRacingType().ordinal())
-				.item(stringSet.get("Racing.Type.Normal"), Color.CORNFLOWERBLUE, () -> setting.setRacingType(RacingType.NORMAL))
-				.item(stringSet.get("Racing.Type.Knockout"), Color.MAGENTA, () -> setting.setRacingType(RacingType.KNOCKOUT))
+				.item(stringSet.get("Racing.Type.Normal"), Color.CORNFLOWERBLUE, (dialogItem) -> setting.setRacingType(RacingType.NORMAL))
+				.item(stringSet.get("Racing.Type.Knockout"), Color.MAGENTA, (dialogItem) -> setting.setRacingType(RacingType.KNOCKOUT))
 				.onSelect((i) ->
 				{
 					player.playSound(1083);
 					i.getCurrentDialog().show();
 				})
 				.build())
-				
+
 			.item(() ->
 			{
 				String format = stringSet.get("Dialog.NewRacingDialog.DepartureInterval");
 				int interval = setting.getDepartureInterval();
 				if (interval == 0) return String.format(format, stringSet.get("Common.None"));
-				return String.format(format, stringSet.format("Time.Format.S", interval));	
+				return String.format(format, stringSet.format("Time.Format.S", interval));
 			}, (i) ->
 			{
 				player.playSound(1083);
 				RacingDepartureSettingDialog.create(player, eventManager, i.getCurrentDialog(), service, setting).show();
 			})
-			
+
 			.item(ListDialogItemRadio.create()
 				.selectedIndex(() -> setting.getDeathRule().ordinal())
 				.itemText(stringSet.get("Dialog.NewRacingDialog.DeathRule"))
-				.item(stringSet.get("Racing.DeathRule.WaitAndReturn"), Color.AQUA, () -> setting.setDeathRule(DeathRule.WAIT_AND_RETURN))
-				.item(stringSet.get("Racing.DeathRule.Knockout"), Color.FUCHSIA, () -> setting.setDeathRule(DeathRule.KNOCKOUT))
+				.item(stringSet.get("Racing.DeathRule.WaitAndReturn"), Color.AQUA, (dialogItem) -> setting.setDeathRule(DeathRule.WAIT_AND_RETURN))
+				.item(stringSet.get("Racing.DeathRule.Knockout"), Color.FUCHSIA, (dialogItem) -> setting.setDeathRule(DeathRule.KNOCKOUT))
 				.onSelect((i) ->
 				{
 					player.playSound(1083);
 					i.getCurrentDialog().show();
 				})
 				.build())
-				
+
 			.item(ListDialogItemCheck.create()
 				.itemText(stringSet.get("Dialog.NewRacingDialog.Limit"))
 				.item(stringSet.get("Racing.Limit.AutoRepair"), Color.LIME, () -> setting.getLimit().isAllowAutoRepair())
@@ -154,19 +154,19 @@ public class NewRacingDialog
 					RacingLimitDialog.create(player, eventManager, i.getCurrentDialog(), service, track, setting.getLimit()).show();
 				})
 				.build())
-				
+
 			.item(() ->
 			{
 				int min = track.getSetting().getMinPlayers();
 				int max = setting.getMaxPlayers();
 				if (min != 0 && max != 0) return stringSet.format("Dialog.NewRacingDialog.PlayersLimitFormat", min, max);
-				return stringSet.get("Dialog.NewRacingDialog.PlayersLimit") + " " + stringSet.get("Dialog.NewRacingDialog.PlayersLimitNone");	
+				return stringSet.get("Dialog.NewRacingDialog.PlayersLimit") + " " + stringSet.get("Dialog.NewRacingDialog.PlayersLimitNone");
 			}, (i) ->
 			{
 				player.playSound(1083);
 				i.getCurrentDialog().show();
 			})
-			
+
 			.item(() ->
 			{
 				String itemText = stringSet.get("Dialog.NewRacingDialog.Password");
@@ -177,7 +177,7 @@ public class NewRacingDialog
 				player.playSound(1083);
 				i.getCurrentDialog().show();
 			})
-			
+
 			.item(stringSet.get("Dialog.NewRacingDialog.Create"), (i) ->
 			{
 				Runnable startNewRacing = () ->
@@ -186,9 +186,9 @@ public class NewRacingDialog
 					racing.teleToStartingPoint(player);
 					racing.setSetting(setting);
 				};
-				
+
 				player.playSound(1083);
-				
+
 				if (track.getCheckpoints().isEmpty()) return;
 				if (racingManager.isPlayerInRacing(player))
 				{
@@ -197,7 +197,7 @@ public class NewRacingDialog
 				}
 				else startNewRacing.run();
 			})
-			
+
 			.build();
 	}
 }

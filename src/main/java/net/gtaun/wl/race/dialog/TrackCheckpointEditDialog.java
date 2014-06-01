@@ -100,8 +100,8 @@ public class TrackCheckpointEditDialog
 			.item(ListDialogItemRadio.create()
 				.selectedIndex(() -> checkpoint.getType() == RaceCheckpointType.NORMAL ? 0 : 1)
 				.itemText(() -> stringSet.get("Dialog.TrackCheckpointEditDialog.Type"))
-				.item(stringSet.get("Track.Checkpoint.Type.Normal"), Color.RED, () -> checkpoint.setType(RaceCheckpointType.NORMAL))
-				.item(stringSet.get("Track.Checkpoint.Type.Air"), Color.BLUE, () -> checkpoint.setType(RaceCheckpointType.AIR))
+				.item(stringSet.get("Track.Checkpoint.Type.Normal"), Color.RED, (i) -> checkpoint.setType(RaceCheckpointType.NORMAL))
+				.item(stringSet.get("Track.Checkpoint.Type.Air"), Color.BLUE, (i) -> checkpoint.setType(RaceCheckpointType.AIR))
 				.onSelect((i) -> i.getCurrentDialog().show())
 				.build())
 
